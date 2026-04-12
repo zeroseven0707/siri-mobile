@@ -11,7 +11,7 @@ const DARK_GREEN = '#27AE60';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '', address: user?.address ?? '' });
@@ -19,7 +19,13 @@ export default function ProfileScreen() {
 
   const handleSave = async () => {
     setLoading(true);
-    try { await api.put('/profile/update', form); setEditing(false); }
+    try { 
+      const res = await api.put('/profile/update', form); 
+      // Ambil data yang dikembalikan DB, kalau tidak ada, pakai form lokal
+      const updatedUser = res.data?.data || form;
+      await updateUser(updatedUser);
+      setEditing(false); 
+    }
     catch (e: any) { Alert.alert('Gagal', e.message); }
     finally { setLoading(false); }
   };

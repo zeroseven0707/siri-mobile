@@ -11,6 +11,7 @@ interface AuthState {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   loadSession: () => Promise<void>;
+  updateUser: (updatedData: Partial<User>) => Promise<void>;
 }
 
 interface RegisterData {
@@ -54,6 +55,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     await SecureStore.setItemAsync('auth_token', token);
     await SecureStore.setItemAsync('auth_user', JSON.stringify(user));
     set({ user, token });
+  },
+
+  updateUser: async (updatedData: Partial<User>) => {
+    set((state) => {
+      if (!state.user) return state;
+      const newUser = { ...state.user, ...updatedData };
+      SecureStore.setItem('auth_user', JSON.stringify(newUser));
+      return { user: newUser };
+    });
   },
 
   logout: async () => {
