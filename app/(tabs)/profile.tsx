@@ -68,15 +68,18 @@ export default function ProfileScreen() {
                   { label: 'Nama', key: 'name', icon: 'person-outline', value: form.name },
                   { label: 'No. HP', key: 'phone', icon: 'call-outline', value: form.phone },
                   { label: 'Alamat', key: 'address', icon: 'location-outline', value: form.address },
-                ].map(f => (
-                  <View key={f.key} style={styles.fieldWrap}>
-                    <Text style={styles.fieldLabel}>{f.label}</Text>
-                    <View style={styles.inputRow}>
-                      <Ionicons name={f.icon as any} size={16} color="#9CA3AF" style={{ marginRight: 8 }} />
-                      <TextInput style={styles.input} value={f.value} onChangeText={set(f.key as any)} placeholderTextColor="#9CA3AF" />
-                    </View>
-                  </View>
-                ))}
+                ].map(f => {
+                  const ItemView = View as any;
+                  return (
+                    <ItemView key={f.key} style={styles.fieldWrap}>
+                      <Text style={styles.fieldLabel}>{f.label}</Text>
+                      <View style={styles.inputRow}>
+                        <Ionicons name={f.icon as any} size={16} color="#9CA3AF" style={{ marginRight: 8 }} />
+                        <TextInput style={styles.input} value={f.value} onChangeText={set(f.key as any)} placeholderTextColor="#9CA3AF" />
+                      </View>
+                    </ItemView>
+                  );
+                })}
                 <Pressable style={[styles.saveBtn, loading && { opacity: 0.6 }]} onPress={handleSave} disabled={loading}>
                   <Text style={styles.saveTxt}>Simpan Perubahan</Text>
                 </Pressable>
@@ -87,12 +90,15 @@ export default function ProfileScreen() {
                 { icon: 'mail-outline', value: user?.email },
                 { icon: 'call-outline', value: user?.phone },
                 { icon: 'location-outline', value: user?.address ?? 'Belum diisi' },
-              ].map((item, i) => (
-                <View key={i} style={[styles.infoRow, i < 3 && styles.infoRowBorder]}>
-                  <View style={styles.infoIcon}><Ionicons name={item.icon as any} size={16} color={DARK_GREEN} /></View>
-                  <Text style={styles.infoText}>{item.value}</Text>
-                </View>
-              ))
+              ].map((item, i) => {
+                const ItemView = View as any;
+                return (
+                  <ItemView key={i} style={[styles.infoRow, i < 3 && styles.infoRowBorder]}>
+                    <View style={styles.infoIcon}><Ionicons name={item.icon as any} size={16} color={DARK_GREEN} /></View>
+                    <Text style={styles.infoText}>{item.value}</Text>
+                  </ItemView>
+                );
+              })
             )}
           </View>
 

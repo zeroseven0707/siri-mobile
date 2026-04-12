@@ -135,8 +135,9 @@ export default function StoreDetailScreen() {
             <View style={styles.gridContainer}>
               {foods.map((food) => {
                 const qty = cart[food.id]?.qty || 0;
+                const ItemView = View as any;
                 return (
-                  <View key={food.id} style={styles.foodCard}>
+                  <ItemView key={food.id} style={styles.foodCard}>
                     <Pressable style={{ flex: 1 }} onPress={() => router.push(`/food/${food.id}` as any)}>
                       {food.image ? (
                         <Image source={{ uri: food.image }} style={styles.foodImage} resizeMode="cover" />
@@ -171,7 +172,7 @@ export default function StoreDetailScreen() {
                         <Text style={styles.unavailableText}>Habis</Text>
                       )}
                     </View>
-                  </View>
+                  </ItemView>
                 );
               })}
             </View>

@@ -132,20 +132,23 @@ export default function OrderDetailScreen() {
           {order.food_items && order.food_items.length > 0 && (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Rincian Pesanan</Text>
-              {order.food_items.map((fi: any) => (
-                <View key={fi.id} style={styles.foodItem}>
-                  <View style={styles.qtyBox}>
-                    <Text style={styles.qtyText}>{fi.qty}x</Text>
-                  </View>
-                  <View style={{ flex: 1, paddingHorizontal: 12 }}>
-                    <Text style={styles.foodName}>{fi.food_item.name}</Text>
-                    {fi.food_item.description && (
-                      <Text style={styles.foodDesc} numberOfLines={1}>{fi.food_item.description}</Text>
-                    )}
-                  </View>
-                  <Text style={styles.foodPrice}>Rp {Number(fi.price).toLocaleString('id-ID')}</Text>
-                </View>
-              ))}
+              {order.food_items.map((fi: any) => {
+                const ItemView = View as any;
+                return (
+                  <ItemView key={fi.id} style={styles.foodItem}>
+                    <View style={styles.qtyBox}>
+                      <Text style={styles.qtyText}>{fi.qty}x</Text>
+                    </View>
+                    <View style={{ flex: 1, paddingHorizontal: 12 }}>
+                      <Text style={styles.foodName}>{fi.food_item.name}</Text>
+                      {fi.food_item.description && (
+                        <Text style={styles.foodDesc} numberOfLines={1}>{fi.food_item.description}</Text>
+                      )}
+                    </View>
+                    <Text style={styles.foodPrice}>Rp {Number(fi.price).toLocaleString('id-ID')}</Text>
+                  </ItemView>
+                );
+              })}
             </View>
           )}
 

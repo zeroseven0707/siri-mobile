@@ -1,8 +1,8 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// Change this to your machine's local IP when testing on a physical device
-export const BASE_URL = 'https://duniakarya.store/api';
+// Take the API URL from the environment variable (.env)
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://duniakarya.store/api';
 
 const api = axios.create({
   baseURL: BASE_URL,

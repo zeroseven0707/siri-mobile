@@ -42,8 +42,9 @@ export default function HomeScreen() {
 
   const renderBanner = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
+    const ItemView = View as any;
     return (
-      <View key={section.id} style={styles.section}>
+      <ItemView key={section.id} style={styles.section}>
         <FlatList
           data={section.items}
           horizontal
@@ -63,14 +64,15 @@ export default function HomeScreen() {
             </Pressable>
           )}
         />
-      </View>
+      </ItemView>
     );
   };
 
   const renderServices = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
+    const ItemView = View as any;
     return (
-      <View key={section.id} style={styles.section}>
+      <ItemView key={section.id} style={styles.section}>
         {section.title && <Text style={styles.sectionTitle}>{section.title}</Text>}
         <View style={styles.servicesGrid}>
           {section.items.map(item => {
@@ -86,14 +88,15 @@ export default function HomeScreen() {
             );
           })}
         </View>
-      </View>
+      </ItemView>
     );
   };
 
   const renderStores = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
+    const ItemView = View as any;
     return (
-      <View key={section.id} style={styles.section}>
+      <ItemView key={section.id} style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <Text style={styles.seeAll}>Lihat semua</Text>
@@ -117,14 +120,15 @@ export default function HomeScreen() {
             </Pressable>
           )}
         />
-      </View>
+      </ItemView>
     );
   };
 
   const renderFoods = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
+    const ItemView = View as any;
     return (
-      <View key={section.id} style={[styles.section, { paddingBottom: 10 }]}>
+      <ItemView key={section.id} style={[styles.section, { paddingBottom: 10 }]}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <Text style={styles.seeAll}>Lihat semua</Text>
@@ -144,14 +148,15 @@ export default function HomeScreen() {
             </Pressable>
           )}
         />
-      </View>
+      </ItemView>
     );
   };
 
   const renderPromo = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
+    const ItemView = View as any;
     return (
-      <View key={section.id} style={styles.section}>
+      <ItemView key={section.id} style={styles.section}>
         <Text style={styles.sectionTitle}>{section.title}</Text>
         {section.items.map((item: HomeSectionItem) => (
           <Pressable key={item.id} style={styles.promoBanner}>
@@ -166,7 +171,7 @@ export default function HomeScreen() {
             )}
           </Pressable>
         ))}
-      </View>
+      </ItemView>
     );
   };
 
