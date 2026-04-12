@@ -120,44 +120,37 @@ export default function OrdersScreen() {
     } catch { }
   };
 
+  if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color={GREEN} /></SafeAreaView>;
+
   return (
     <SafeAreaView style={styles.flex}>
       <View style={styles.header}>
         <Text style={styles.title}>Pesanan Saya</Text>
       </View>
-
-      {loading ? (
-        <View style={styles.centerLoading}>
-          <ActivityIndicator size="large" color={GREEN} />
-          <Text style={styles.loadingText}>Memuat pesanan...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={orders}
-          keyExtractor={o => o.id}
-          contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} tintColor={GREEN} />}
-          ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={{ fontSize: 56 }}>📦</Text>
-              <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
-              <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
-            </View>
-          }
-          renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
-        />
-      )}
+      <FlatList
+        data={orders}
+        keyExtractor={o => o.id}
+        contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} tintColor={GREEN} />}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={{ fontSize: 56 }}>📦</Text>
+            <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
+            <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
+          </View>
+        }
+        renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#F8FFF8' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FFF8' },
   header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
   list: { padding: 16, gap: 12 },
-  centerLoading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { marginTop: 12, color: '#9CA3AF', fontSize: 14 },
   empty: { alignItems: 'center', paddingVertical: 80 },
   emptyTitle: { color: '#374151', fontSize: 18, fontWeight: '700', marginTop: 12 },
   emptySubtitle: { color: '#9CA3AF', fontSize: 14, marginTop: 4 },
