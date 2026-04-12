@@ -99,7 +99,7 @@ export default function ProfileScreen() {
           {/* Menu */}
           <View style={styles.menuCard}>
             {[
-              { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/(tabs)/orders' },
+              { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/(tabs)/history' },
               { icon: 'help-circle-outline', label: 'Bantuan', color: '#F97316', route: '/help' },
               { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#A855F7', route: '/about' },
               { icon: 'document-text-outline', label: 'Syarat & Ketentuan', color: '#10B981', route: '/terms' },
