@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../lib/authStore';
 import api from '../../lib/api';
 
@@ -9,6 +10,7 @@ const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, logout } = useAuthStore();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -91,11 +93,12 @@ export default function ProfileScreen() {
           {/* Menu */}
           <View style={styles.menuCard}>
             {[
-              { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6' },
-              { icon: 'help-circle-outline', label: 'Bantuan', color: '#F97316' },
-              { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#A855F7' },
-            ].map((item, i) => (
-              <Pressable key={i} style={[styles.menuItem, i < 2 && styles.menuBorder]}>
+              { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/(tabs)/orders' },
+              { icon: 'help-circle-outline', label: 'Bantuan', color: '#F97316', route: '/help' },
+              { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#A855F7', route: '/about' },
+              { icon: 'document-text-outline', label: 'Syarat & Ketentuan', color: '#10B981', route: '/terms' },
+            ].map((item, i, arr) => (
+              <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
                 <View style={[styles.menuIcon, { backgroundColor: item.color + '20' }]}>
                   <Ionicons name={item.icon as any} size={18} color={item.color} />
                 </View>
