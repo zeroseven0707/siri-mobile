@@ -25,28 +25,43 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
   const [timeLeft, setTimeLeft] = useState(10);
   const [localStatus, setLocalStatus] = useState<Order['status']>(item.status);
 
+  // Sync if item from server changes
   useEffect(() => {
     setLocalStatus(item.status);
-    if (item.status === 'pending') setTimeLeft(10);
+    if (item.status === 'pending') {
+      setTimeLeft(10);
+    }
   }, [item.status]);
 
+  // 10 second countdown for local 'pending'
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setInterval>;
     if (localStatus === 'pending' && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+      timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
     } else if (localStatus === 'pending' && timeLeft === 0) {
+      // Auto-accept after 10s via API
       api.put(`/orders/${item.id}/confirm`).then(() => {
         setLocalStatus('accepted');
-      }).catch(() => setLocalStatus('accepted'));
+      }).catch((e) => {
+        console.error('Failed to auto-confirm order', e);
+        // fallback to accepted in UI anyway since it's demo simulating driver acceptance
+        setLocalStatus('accepted');
+      });
     }
     return () => clearInterval(timer);
   }, [localStatus, timeLeft]);
 
   const confirmCancel = () => {
-    Alert.alert('Konfirmasi', 'Batalkan pesanan ini?', [
-      { text: 'Tidak', style: 'cancel' },
-      { text: 'Ya', style: 'destructive', onPress: () => onCancel(item.id) }
-    ]);
+    Alert.alert(
+      'Konfirmasi Pembatalan',
+      'Apakah Anda yakin ingin membatalkan pesanan ini?',
+      [
+        { text: 'Tidak', style: 'cancel' },
+        { text: 'Ya, Batalkan', style: 'destructive', onPress: () => onCancel(item.id) }
+      ]
+    );
   };
 
   const st = STATUS[localStatus] || STATUS.pending;
@@ -60,6 +75,7 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
         <View style={styles.cardInfo}>
           <Text style={styles.serviceName}>{item.service?.name ?? 'Layanan'}</Text>
           <Text style={styles.location} numberOfLines={1}>📍 {item.pickup_location}</Text>
+          <Text style={styles.destination} numberOfLines={1}>🏁 {item.destination_location}</Text>
         </View>
         <View style={[styles.badge, { backgroundColor: st.bg }]}>
           <Text style={[styles.badgeText, { color: st.color }]}>
@@ -80,42 +96,32 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
 }
 
 export default function OrdersScreen() {
-  const { user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = async (isInitial = false) => {
-    if (!user) return;
     if (isInitial) setLoading(true);
     try {
       const res = await api.get('/orders');
       setOrders(res.data.data.orders ?? []);
-    } catch { }
+    }
+    catch { }
     finally {
       setRefreshing(false);
       setLoading(false);
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchOrders(); }, [user]));
+  useEffect(() => { fetchOrders(true); }, []);
 
   const handleCancel = async (id: string) => {
     try {
       await api.put(`/orders/${id}/cancel`);
       fetchOrders();
+      Alert.alert('Berhasil', 'Pesanan telah dibatalkan');
     } catch { }
   };
-
-  if (!user) {
-    return (
-      <AuthPlaceholder 
-        icon="receipt-outline"
-        title="Pantau Pesanan Anda"
-        description="Masuk untuk melihat status pesanan makanan, kurir, dan layanan Siri lainnya secara real-time."
-      />
-    );
-  }
 
   if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color={GREEN} /></SafeAreaView>;
 
@@ -129,6 +135,13 @@ export default function OrdersScreen() {
         keyExtractor={o => o.id}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} tintColor={GREEN} />}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={{ fontSize: 56 }}>📦</Text>
+            <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
+            <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
+          </View>
+        }
         renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
       />
     </SafeAreaView>
@@ -141,12 +154,16 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
   list: { padding: 16, gap: 12 },
+  empty: { alignItems: 'center', paddingVertical: 80 },
+  emptyTitle: { color: '#374151', fontSize: 18, fontWeight: '700', marginTop: 12 },
+  emptySubtitle: { color: '#9CA3AF', fontSize: 14, marginTop: 4 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F3F4F6', elevation: 1 },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   serviceIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1 },
   serviceName: { fontWeight: '700', color: '#1F2937', fontSize: 14 },
   location: { color: '#6B7280', fontSize: 12, marginTop: 3 },
+  destination: { color: '#9CA3AF', fontSize: 12, marginTop: 2 },
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
   badgeText: { fontSize: 11, fontWeight: '700' },
   cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
