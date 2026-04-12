@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/images/siri.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "id.siri.mobile"
+      "package": "id.siri.mobile",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "plugins": [
       "expo-router",

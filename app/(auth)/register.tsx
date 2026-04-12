@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   owlEmoji: { fontSize: 38 },
   appName: { color: '#fff', fontSize: 26, fontWeight: '800' },
   tagline: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 4 },
-  card: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, flex: 1, padding: 28, paddingTop: 28 },
+  card: { backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, flex: 1, padding: 28, paddingTop: 28, paddingBottom: 100 },
   errorBox: { backgroundColor: '#FEF2F2', borderRadius: 10, padding: 12, marginBottom: 16 },
   errorText: { color: '#DC2626', fontSize: 13 },
   fieldWrap: { marginBottom: 14 },
