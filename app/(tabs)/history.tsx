@@ -13,13 +13,13 @@ export default function HistoryScreen() {
 
   const fetch = async (isInitial = false) => {
     if (isInitial) setLoading(true);
-    try { 
-      const res = await api.get('/transactions'); 
-      setTransactions(res.data.data.transactions ?? []); 
+    try {
+      const res = await api.get('/transactions');
+      setTransactions(res.data.data.transactions ?? []);
     }
-    catch {} 
-    finally { 
-      setRefreshing(false); 
+    catch { }
+    finally {
+      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -29,11 +29,11 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.flex}>
       <View style={styles.header}><Text style={styles.title}>Riwayat</Text></View>
-      
+
       {loading ? (
         <View style={styles.centerLoading}>
-           <ActivityIndicator size="large" color="#2ECC71" />
-           <Text style={styles.loadingText}>Memuat riwayat...</Text>
+          <ActivityIndicator size="large" color="#2ECC71" />
+          <Text style={styles.loadingText}>Memuat riwayat...</Text>
         </View>
       ) : (
         <FlatList
@@ -48,20 +48,20 @@ export default function HistoryScreen() {
             </View>
           }
           renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={[styles.iconBox, { backgroundColor: item.type === 'payment' ? '#FEF2F2' : '#F0FDF4' }]}>
-              <Ionicons name={item.type === 'payment' ? 'arrow-up-outline' : 'arrow-down-outline'} size={20} color={item.type === 'payment' ? '#EF4444' : '#22C55E'} />
+            <View style={styles.card}>
+              <View style={[styles.iconBox, { backgroundColor: item.type === 'payment' ? '#FEF2F2' : '#F0FDF4' }]}>
+                <Ionicons name={item.type === 'payment' ? 'arrow-up-outline' : 'arrow-down-outline'} size={20} color={item.type === 'payment' ? '#EF4444' : '#22C55E'} />
+              </View>
+              <View style={styles.info}>
+                <Text style={styles.type}>{item.type === 'payment' ? 'Pembayaran' : 'Refund'}</Text>
+                <Text style={styles.ref}>{item.reference ?? '-'}</Text>
+              </View>
+              <Text style={[styles.amount, { color: item.type === 'payment' ? '#EF4444' : '#22C55E' }]}>
+                {item.type === 'payment' ? '-' : '+'}Rp {Number(item.amount).toLocaleString('id-ID')}
+              </Text>
             </View>
-            <View style={styles.info}>
-              <Text style={styles.type}>{item.type === 'payment' ? 'Pembayaran' : 'Refund'}</Text>
-              <Text style={styles.ref}>{item.reference ?? '-'}</Text>
-            </View>
-            <Text style={[styles.amount, { color: item.type === 'payment' ? '#EF4444' : '#22C55E' }]}>
-              {item.type === 'payment' ? '-' : '+'}Rp {Number(item.amount).toLocaleString('id-ID')}
-            </Text>
-          </View>
-        )}
-      />
+          )}
+        />
       )}
     </SafeAreaView>
   );

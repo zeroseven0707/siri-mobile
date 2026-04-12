@@ -10,11 +10,11 @@ const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
 const STATUS: Record<Order['status'], { label: string; bg: string; color: string }> = {
-  pending:     { label: 'Menunggu',   bg: '#FEF9C3', color: '#A16207' },
-  accepted:    { label: 'Diterima',   bg: '#DBEAFE', color: '#1D4ED8' },
-  on_progress: { label: 'Diproses',   bg: '#EDE9FE', color: '#6D28D9' },
-  completed:   { label: 'Selesai',    bg: '#DCFCE7', color: '#15803D' },
-  cancelled:   { label: 'Dibatalkan', bg: '#FEE2E2', color: '#B91C1C' },
+  pending: { label: 'Menunggu', bg: '#FEF9C3', color: '#A16207' },
+  accepted: { label: 'Diterima', bg: '#DBEAFE', color: '#1D4ED8' },
+  on_progress: { label: 'Diproses', bg: '#EDE9FE', color: '#6D28D9' },
+  completed: { label: 'Selesai', bg: '#DCFCE7', color: '#15803D' },
+  cancelled: { label: 'Dibatalkan', bg: '#FEE2E2', color: '#B91C1C' },
 };
 
 function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => void }) {
@@ -26,7 +26,7 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
   useEffect(() => {
     setLocalStatus(item.status);
     if (item.status === 'pending') {
-       setTimeLeft(10);
+      setTimeLeft(10);
     }
   }, [item.status]);
 
@@ -99,13 +99,13 @@ export default function OrdersScreen() {
 
   const fetchOrders = async (isInitial = false) => {
     if (isInitial) setLoading(true);
-    try { 
-      const res = await api.get('/orders'); 
-      setOrders(res.data.data.orders ?? []); 
+    try {
+      const res = await api.get('/orders');
+      setOrders(res.data.data.orders ?? []);
     }
-    catch {} 
-    finally { 
-      setRefreshing(false); 
+    catch { }
+    finally {
+      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -113,11 +113,11 @@ export default function OrdersScreen() {
   useFocusEffect(useCallback(() => { fetchOrders(orders.length === 0); }, []));
 
   const handleCancel = async (id: string) => {
-    try { 
-      await api.put(`/orders/${id}/cancel`); 
-      fetchOrders(); 
+    try {
+      await api.put(`/orders/${id}/cancel`);
+      fetchOrders();
       Alert.alert('Berhasil', 'Pesanan telah dibatalkan');
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -125,11 +125,11 @@ export default function OrdersScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Pesanan Saya</Text>
       </View>
-      
+
       {loading ? (
         <View style={styles.centerLoading}>
-           <ActivityIndicator size="large" color={GREEN} />
-           <Text style={styles.loadingText}>Memuat pesanan...</Text>
+          <ActivityIndicator size="large" color={GREEN} />
+          <Text style={styles.loadingText}>Memuat pesanan...</Text>
         </View>
       ) : (
         <FlatList

@@ -11,10 +11,10 @@ const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
 const SERVICE_ICONS: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }> = {
-  food:     { icon: 'fast-food-outline',  color: '#F97316', bg: '#FFF7ED' },
-  ojek:     { icon: 'bicycle-outline',    color: '#2ECC71', bg: '#F0FDF4' },
-  car:      { icon: 'car-outline',        color: '#3B82F6', bg: '#EFF6FF' },
-  delivery: { icon: 'cube-outline',       color: '#A855F7', bg: '#FAF5FF' },
+  food: { icon: 'fast-food-outline', color: '#F97316', bg: '#FFF7ED' },
+  ojek: { icon: 'bicycle-outline', color: '#2ECC71', bg: '#F0FDF4' },
+  car: { icon: 'car-outline', color: '#3B82F6', bg: '#EFF6FF' },
+  delivery: { icon: 'cube-outline', color: '#A855F7', bg: '#FAF5FF' },
 };
 
 export default function HomeScreen() {
@@ -28,11 +28,11 @@ export default function HomeScreen() {
     try {
       const homeRes = await api.get('/home');
       let data = homeRes.data.data || [];
-      
+
       // Sort sections by order
       data.sort((a: HomeSection, b: HomeSection) => a.order - b.order);
       setSections(data);
-    } catch {}
+    } catch { }
     finally { setLoading(false); setRefreshing(false); }
   };
 
@@ -102,9 +102,9 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <Pressable style={styles.storeCard} onPress={() => router.push(`/store/${item.action_value}` as any)}>
               {item.image ? (
-                  <Image source={{ uri: item.image }} style={styles.storeImg} resizeMode="cover" />
+                <Image source={{ uri: item.image }} style={styles.storeImg} resizeMode="cover" />
               ) : (
-                  <View style={styles.storeImg}><Text style={{ fontSize: 32 }}>🍽️</Text></View>
+                <View style={styles.storeImg}><Text style={{ fontSize: 32 }}>🍽️</Text></View>
               )}
               <View style={styles.storeInfo}>
                 <Text style={styles.storeName} numberOfLines={1}>{item.title}</Text>
@@ -133,9 +133,9 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <Pressable style={styles.foodCard} onPress={() => router.push(`/food/${item.action_value}` as any)}>
               {item.image ? (
-                  <Image source={{ uri: item.image }} style={styles.foodImg} resizeMode="cover" />
+                <Image source={{ uri: item.image }} style={styles.foodImg} resizeMode="cover" />
               ) : (
-                  <View style={styles.foodImg}><Text style={{ fontSize: 28 }}>🍱</Text></View>
+                <View style={styles.foodImg}><Text style={{ fontSize: 28 }}>🍱</Text></View>
               )}
               <View style={styles.foodInfo}>
                 <Text style={styles.foodName} numberOfLines={1}>{item.title}</Text>
@@ -180,7 +180,7 @@ export default function HomeScreen() {
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
               <View style={styles.owlBadge}>
-                <Image source={require('../../assets/images/siri.png')} style={{width: 26, height: 26}} resizeMode="contain" />
+                <Image source={require('../../assets/images/siri.png')} style={{ width: 26, height: 26 }} resizeMode="contain" />
               </View>
               <View>
                 <Text style={styles.greeting}>Hi, {user?.name?.split(' ')[0]}!</Text>
