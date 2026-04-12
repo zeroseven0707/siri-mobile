@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import api from '../../lib/api';
 import { Order } from '../../types';
 
@@ -18,6 +18,7 @@ const STATUS: Record<Order['status'], { label: string; bg: string; color: string
 };
 
 function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => void }) {
+  const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(10);
   const [localStatus, setLocalStatus] = useState<Order['status']>(item.status);
 
@@ -57,7 +58,7 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
   const st = STATUS[localStatus] || STATUS.pending;
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={() => router.push(`/order/${item.id}` as any)}>
       <View style={styles.cardTop}>
         <View style={[styles.serviceIcon, { backgroundColor: '#F0FDF4' }]}>
           <Ionicons name="receipt-outline" size={20} color={DARK_GREEN} />
@@ -81,7 +82,7 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
           </Pressable>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
