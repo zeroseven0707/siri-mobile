@@ -160,6 +160,7 @@ export default function ProfileScreen() {
           <View style={styles.menuCard}>
             {[
               { icon: 'help-circle-outline', label: 'Pusat Bantuan', color: '#10B981', route: '/help' },
+              { icon: 'shield-checkmark-outline', label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
               { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#6366F1', route: '/about' },
               { icon: 'document-text-outline', label: 'Kebijakan Privasi', color: '#4B5563', route: '/terms' },
             ].map((item, i, arr) => (
