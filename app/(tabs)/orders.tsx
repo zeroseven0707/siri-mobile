@@ -110,7 +110,7 @@ export default function OrdersScreen() {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchOrders(orders.length === 0); }, []));
+  useEffect(() => { fetchOrders(true); }, []);
 
   const handleCancel = async (id: string) => {
     try {

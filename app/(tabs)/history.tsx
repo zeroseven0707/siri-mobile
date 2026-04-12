@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +24,7 @@ export default function HistoryScreen() {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetch(transactions.length === 0); }, []));
+  useEffect(() => { fetch(true); }, []);
 
   if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color="#2ECC71" /></SafeAreaView>;
 
