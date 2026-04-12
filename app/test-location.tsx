@@ -76,7 +76,6 @@ export default function TestLocationScreen() {
             <MapViewFree 
               latitude={location.coords.latitude} 
               longitude={location.coords.longitude} 
-              title="Posisi Anda"
             />
           </View>
         )}

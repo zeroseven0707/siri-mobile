@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453570755973",
+    "project_id": "river-engine-474307-s4",
+    "storage_bucket": "river-engine-474307-s4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453570755973:android:e39221f0ac0aeb93c258ec",
+        "android_client_info": {
+          "package_name": "si.ri"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClabs_xBvqQYBpqhAovdu6N4xv0hteG4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "id.siri.mobile",
+      "package": "si.ri",
+      "googleServicesFile": "./google-services.json",
       "softwareKeyboardLayoutMode": "pan"
     },
     "plugins": [
@@ -32,6 +33,17 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Izinkan Siri mengakses lokasi Anda agar driver dapat menjemput Anda dengan tepat."
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "@notifee/react-native",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepo": "https://maven.google.com"
+          }
         }
       ]
     ],

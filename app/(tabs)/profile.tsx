@@ -50,7 +50,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} bouncy={false}>
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Profile Card Header */}
         <View style={styles.header}>
           <View style={styles.userInfoRow}>
@@ -102,19 +102,22 @@ export default function ProfileScreen() {
                {[
                  { label: 'Nama Lengkap', key: 'name', icon: 'person-outline', value: form.name },
                  { label: 'Nomor WhatsApp', key: 'phone', icon: 'logo-whatsapp', value: form.phone },
-               ].map(f => (
-                 <View key={f.key} style={styles.fieldWrap}>
-                   <View style={styles.inputRow}>
-                     <Ionicons name={f.icon as any} size={18} color={GREEN} style={{ marginRight: 10 }} />
-                     <TextInput 
-                        style={styles.input} 
-                        value={f.value as any} 
-                        onChangeText={set(f.key as any)} 
-                        placeholder={f.label}
-                     />
-                   </View>
-                 </View>
-               ))}
+               ].map(f => {
+                 const ItemView = View as any;
+                 return (
+                   <ItemView key={f.key} style={styles.fieldWrap}>
+                     <View style={styles.inputRow}>
+                       <Ionicons name={f.icon as any} size={18} color={GREEN} style={{ marginRight: 10 }} />
+                       <TextInput 
+                          style={styles.input} 
+                          value={f.value as any} 
+                          onChangeText={set(f.key as any)} 
+                          placeholder={f.label}
+                       />
+                     </View>
+                   </ItemView>
+                 );
+               })}
                <Pressable style={[styles.saveBtn, loading && { opacity: 0.6 }]} onPress={handleSave} disabled={loading}>
                  <Text style={styles.saveTxt}>Update Profil</Text>
                </Pressable>

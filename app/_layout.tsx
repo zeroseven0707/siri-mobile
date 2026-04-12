@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../lib/authStore';
 import SplashScreen from '../components/SplashScreen';
+import { requestUserPermission, setupCloudMessaging } from '../lib/notificationService';
 
 export default function RootLayout() {
   const { user, isLoading, loadSession } = useAuthStore();
@@ -15,6 +16,19 @@ export default function RootLayout() {
   });
 
   useEffect(() => { loadSession(); }, []);
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      // Inisialisasi Notifikasi
+      requestUserPermission();
+      const unsubscribe = setupCloudMessaging();
+      
+      return () => {
+        // Cleanup listener saat app ditutup
+        unsubscribe.then(unsub => unsub && (unsub as any)());
+      };
+    }
+  }, [fontsLoaded]);
 
   useEffect(() => {
     if (isLoading || !fontsLoaded) return;
