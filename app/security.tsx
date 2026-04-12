@@ -37,15 +37,10 @@ export default function SecurityScreen() {
       router.push('/change-password');
     } else if (title === 'Riwayat Login') {
       router.push('/login-history');
+    } else if (title === 'Perangkat Terintegrasi') {
+      router.push('/devices');
     } else if (title === 'Hapus Akun') {
-      Alert.alert(
-        'Hapus Akun?',
-        'Tindakan ini tidak dapat dibatalkan. Seluruh data pesanan dan profil Anda akan dihapus permanen.',
-        [
-          { text: 'Batal', style: 'cancel' },
-          { text: 'Hapus Permanen', style: 'destructive', onPress: () => console.log('Delete account') }
-        ]
-      );
+      router.push('/delete-account');
     } else {
       Alert.alert('Info', `Fitur ${title} segera hadir.`);
     }
