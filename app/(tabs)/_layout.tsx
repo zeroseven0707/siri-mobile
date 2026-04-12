@@ -35,7 +35,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="home" options={{ title: 'Beranda', tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
       <Tabs.Screen name="orders" options={{ title: 'Pesanan', tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" size={size} color={color} /> }} />
-      <Tabs.Screen name="history" options={{ title: 'Riwayat', tabBarIcon: ({ color, size }) => <Ionicons name="time-outline" size={size} color={color} /> }} />
+      <Tabs.Screen name="notifications" options={{ title: 'Notifikasi', tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="profile" options={{ title: 'Akun', tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} /> }} />
     </Tabs>
   );

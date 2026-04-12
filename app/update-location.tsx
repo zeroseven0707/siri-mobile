@@ -8,6 +8,8 @@ import MapViewFree from '../components/MapViewFree';
 import api from '../lib/api';
 import { useAuthStore } from '../lib/authStore';
 
+import CustomHeader from '../components/CustomHeader';
+
 export default function UpdateLocationScreen() {
   const { user, updateUser } = useAuthStore();
   const [address, setAddress] = useState(user?.address || '');
@@ -84,8 +86,9 @@ export default function UpdateLocationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ title: 'Atur Alamat & Lokasi', headerTintColor: '#000' }} />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title="Atur Alamat & Lokasi" />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -176,7 +179,7 @@ export default function UpdateLocationScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

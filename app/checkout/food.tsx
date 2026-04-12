@@ -10,6 +10,8 @@ import { Service } from '../../types';
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
+import CustomHeader from '../../components/CustomHeader';
+
 export default function FoodCheckoutScreen() {
   const { storeId, cartItems: cartItemsStr, storeName, storeAddress } = useLocalSearchParams<{
     storeId: string;
@@ -62,8 +64,9 @@ export default function FoodCheckoutScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ title: 'Konfirmasi Pesanan', headerTintColor: '#000' }} />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title="Konfirmasi Pesanan" />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
@@ -213,7 +216,7 @@ export default function FoodCheckoutScreen() {
           )}
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

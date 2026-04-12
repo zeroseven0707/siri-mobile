@@ -3,8 +3,10 @@ import { FlatList, RefreshControl, StyleSheet, Text, View, ActivityIndicator } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import api from '../../lib/api';
-import { Transaction } from '../../types';
+import api from '../lib/api';
+import { Transaction } from '../types';
+import CustomHeader from '../components/CustomHeader';
+import { Stack } from 'expo-router';
 
 export default function HistoryScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -26,11 +28,12 @@ export default function HistoryScreen() {
 
   useEffect(() => { fetch(true); }, []);
 
-  if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color="#2ECC71" /></SafeAreaView>;
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#2ECC71" /></View>;
 
   return (
-    <SafeAreaView style={styles.flex}>
-      <View style={styles.header}><Text style={styles.title}>Riwayat</Text></View>
+    <View style={styles.flex}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <CustomHeader title="Riwayat Transaksi" />
       <FlatList
         data={transactions}
         keyExtractor={t => t.id}
@@ -57,7 +60,7 @@ export default function HistoryScreen() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
