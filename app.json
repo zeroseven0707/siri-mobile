@@ -6,9 +6,11 @@
     "orientation": "portrait",
     "scheme": "siri",
     "userInterfaceStyle": "light",
+    "icon": "./assets/images/siri.png",
     "splash": {
+      "image": "./assets/images/siri.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6C63FF"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": false,
@@ -16,7 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#6C63FF"
+        "foregroundImage": "./assets/images/siri.png",
+        "backgroundColor": "#ffffff"
       },
       "package": "id.siri.mobile"
     },

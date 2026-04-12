@@ -179,7 +179,9 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
-              <View style={styles.owlBadge}><Text style={{ fontSize: 20 }}>🦉</Text></View>
+              <View style={styles.owlBadge}>
+                <Image source={require('../../assets/images/siri.png')} style={{width: 26, height: 26}} resizeMode="contain" />
+              </View>
               <View>
                 <Text style={styles.greeting}>Hi, {user?.name?.split(' ')[0]}!</Text>
                 <Text style={styles.subGreeting}>Mau ke mana hari ini?</Text>

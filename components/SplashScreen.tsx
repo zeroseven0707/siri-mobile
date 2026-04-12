@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function SplashScreen() {
   return (
@@ -12,10 +11,7 @@ export default function SplashScreen() {
       <View style={styles.topSpace} />
       
       <View style={styles.logoContainer}>
-        {/* Shield background */}
-        <FontAwesome5 name="shield-alt" size={120} color="#F2A02C" style={styles.shield} />
-        {/* Owl icon as placeholder */}
-        <MaterialCommunityIcons name="owl" size={80} color="#1F9E54" style={styles.owl} />
+        <Image source={require('../assets/images/siri.png')} style={{ width: 160, height: 160 }} resizeMode="contain" />
       </View>
 
       <Text style={styles.title}>Siri</Text>
