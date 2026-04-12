@@ -190,11 +190,11 @@ export default function HomeScreen() {
           </View>
 
           {/* Search bar */}
-          <View style={styles.searchBar}>
+          <Pressable style={styles.searchBar} onPress={() => router.push('/search')}>
             <Ionicons name="search-outline" size={18} color="#9CA3AF" />
-            <Text style={styles.searchPlaceholder}>Cari layanan atau tujuan ...</Text>
-            <Ionicons name="mic-outline" size={18} color="#9CA3AF" />
-          </View>
+            <Text style={styles.searchPlaceholder}>Cari layanan, toko, atau makanan...</Text>
+            <Ionicons name="options-outline" size={18} color="#9CA3AF" />
+          </Pressable>
         </View>
 
         <View style={styles.content}>
