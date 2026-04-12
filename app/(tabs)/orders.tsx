@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -95,13 +95,22 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchOrders = async () => {
-    try { const res = await api.get('/orders'); setOrders(res.data.data.orders ?? []); }
-    catch {} finally { setRefreshing(false); }
+  const fetchOrders = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
+    try { 
+      const res = await api.get('/orders'); 
+      setOrders(res.data.data.orders ?? []); 
+    }
+    catch {} 
+    finally { 
+      setRefreshing(false); 
+      setLoading(false);
+    }
   };
 
-  useFocusEffect(useCallback(() => { fetchOrders(); }, []));
+  useFocusEffect(useCallback(() => { fetchOrders(orders.length === 0); }, []));
 
   const handleCancel = async (id: string) => {
     try { 
@@ -116,20 +125,28 @@ export default function OrdersScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Pesanan Saya</Text>
       </View>
-      <FlatList
-        data={orders}
-        keyExtractor={o => o.id}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} tintColor={GREEN} />}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={{ fontSize: 56 }}>📦</Text>
-            <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
-            <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
-          </View>
-        }
-        renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
-      />
+      
+      {loading ? (
+        <View style={styles.centerLoading}>
+           <ActivityIndicator size="large" color={GREEN} />
+           <Text style={styles.loadingText}>Memuat pesanan...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={orders}
+          keyExtractor={o => o.id}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} tintColor={GREEN} />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={{ fontSize: 56 }}>📦</Text>
+              <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
+              <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
+            </View>
+          }
+          renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -139,6 +156,8 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
   list: { padding: 16, gap: 12 },
+  centerLoading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { marginTop: 12, color: '#9CA3AF', fontSize: 14 },
   empty: { alignItems: 'center', paddingVertical: 80 },
   emptyTitle: { color: '#374151', fontSize: 18, fontWeight: '700', marginTop: 12 },
   emptySubtitle: { color: '#9CA3AF', fontSize: 14, marginTop: 4 },

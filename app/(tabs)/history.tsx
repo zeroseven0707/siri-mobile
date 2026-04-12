@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
@@ -9,29 +9,45 @@ import { Transaction } from '../../types';
 export default function HistoryScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetch = async () => {
-    try { const res = await api.get('/transactions'); setTransactions(res.data.data.transactions ?? []); }
-    catch {} finally { setRefreshing(false); }
+  const fetch = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
+    try { 
+      const res = await api.get('/transactions'); 
+      setTransactions(res.data.data.transactions ?? []); 
+    }
+    catch {} 
+    finally { 
+      setRefreshing(false); 
+      setLoading(false);
+    }
   };
 
-  useFocusEffect(useCallback(() => { fetch(); }, []));
+  useFocusEffect(useCallback(() => { fetch(transactions.length === 0); }, []));
 
   return (
     <SafeAreaView style={styles.flex}>
       <View style={styles.header}><Text style={styles.title}>Riwayat</Text></View>
-      <FlatList
-        data={transactions}
-        keyExtractor={t => t.id}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetch(); }} tintColor="#2ECC71" />}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="time-outline" size={56} color="#D1D5DB" />
-            <Text style={styles.emptyText}>Belum ada riwayat</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
+      
+      {loading ? (
+        <View style={styles.centerLoading}>
+           <ActivityIndicator size="large" color="#2ECC71" />
+           <Text style={styles.loadingText}>Memuat riwayat...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={transactions}
+          keyExtractor={t => t.id}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetch(); }} tintColor="#2ECC71" />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Ionicons name="time-outline" size={56} color="#D1D5DB" />
+              <Text style={styles.emptyText}>Belum ada riwayat</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={[styles.iconBox, { backgroundColor: item.type === 'payment' ? '#FEF2F2' : '#F0FDF4' }]}>
               <Ionicons name={item.type === 'payment' ? 'arrow-up-outline' : 'arrow-down-outline'} size={20} color={item.type === 'payment' ? '#EF4444' : '#22C55E'} />
@@ -46,6 +62,7 @@ export default function HistoryScreen() {
           </View>
         )}
       />
+      )}
     </SafeAreaView>
   );
 }
@@ -55,6 +72,8 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
   list: { padding: 16, gap: 10 },
+  centerLoading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { marginTop: 12, color: '#9CA3AF', fontSize: 14 },
   empty: { alignItems: 'center', paddingVertical: 80 },
   emptyText: { color: '#9CA3AF', fontSize: 16, marginTop: 12 },
   card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#F3F4F6' },
