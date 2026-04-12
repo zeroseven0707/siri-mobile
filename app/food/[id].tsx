@@ -39,23 +39,29 @@ export default function FoodDetailScreen() {
     if (!food || !store) return;
     setIsSubmitting(true);
     try {
+      const servicesRes = await api.get('/services');
+      const foodService = servicesRes.data.data.find((s: any) => s.slug === 'food');
+      if (!foodService) throw new Error('Layanan Food tidak ditemukan');
+
       const payload = {
-        store_id: store.id,
-        items: [{
+        service_id: foodService.id,
+        pickup_location: store.address || 'Lokasi Toko',
+        destination_location: 'Lokasi Anda (Default)', 
+        price: Number(food.price) * quantity,
+        notes: '',
+        food_items: [{
           food_item_id: food.id,
-          quantity: quantity,
-          price: food.price
+          qty: quantity,
+          price: food.price,
         }],
-        total_price: Number(food.price) * quantity,
-        delivery_address: 'Lokasi Jemput/Tujuan'
       };
       
       await api.post('/food-orders', payload);
-      Alert.alert('Sukses', 'Pesanan makanan berhasi dibuat!', [
-        { text: 'OK', onPress: () => router.push('/(tabs)/home') }
+      Alert.alert('Sukses', 'Pesanan makanan berhasil dibuat!', [
+        { text: 'OK', onPress: () => router.push('/(tabs)/orders' as any) }
       ]);
-    } catch (err) {
-      Alert.alert('Error', 'Gagal memproses pesanan.');
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.message || err.message || 'Gagal memproses pesanan.');
     } finally {
       setIsSubmitting(false);
     }
