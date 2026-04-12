@@ -2,11 +2,13 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotificationStore } from '../../lib/notificationStore';
 
 const GREEN = '#2ECC71';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { unreadCount } = useNotificationStore();
   
   // Deteksi: Jika insets.bottom kecil (biasanya < 20), kemungkinan navigasi tombol di Android 
   // atau user pakai gesture tapi butuh sedikit extra space. 
@@ -35,7 +37,15 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="home" options={{ title: 'Beranda', tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
       <Tabs.Screen name="orders" options={{ title: 'Pesanan', tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" size={size} color={color} /> }} />
-      <Tabs.Screen name="notifications" options={{ title: 'Notifikasi', tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} /> }} />
+      <Tabs.Screen 
+        name="notifications" 
+        options={{ 
+          title: 'Notifikasi', 
+          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} />,
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#EF4444', fontSize: 10, marginTop: Platform.OS === 'ios' ? -2 : 0 }
+        }} 
+      />
       <Tabs.Screen name="profile" options={{ title: 'Akun', tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} /> }} />
     </Tabs>
   );

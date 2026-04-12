@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import CustomHeader from '../../components/CustomHeader';
 import api from '../../lib/api';
+import { useNotificationStore } from '../../lib/notificationStore';
 
 const GREEN = '#2ECC71';
 
@@ -20,12 +21,14 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<SiriNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { setUnreadCount, decrementCount, clearCount } = useNotificationStore();
 
   const fetchNotifications = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const res = await api.get('/notifications');
       setNotifications(res.data.data.notifications || []);
+      setUnreadCount(res.data.data.unread_count || 0);
     } catch (err) {
       console.log('Gagal ambil notifikasi:', err);
     } finally {
@@ -49,6 +52,7 @@ export default function NotificationsScreen() {
     try {
       // Update UI lokal dulu agar cepat
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      decrementCount();
       // Panggil API
       await api.post(`/notifications/${id}/read`);
     } catch (err) {
@@ -66,6 +70,7 @@ export default function NotificationsScreen() {
         onPress: async () => {
           try {
             setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+            clearCount();
             await api.post('/notifications/read-all');
           } catch (err) {
             fetchNotifications(false);
