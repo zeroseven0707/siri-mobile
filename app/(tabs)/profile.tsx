@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../lib/authStore';
+import { useOrderStore } from '../../lib/orderStore';
 import api from '../../lib/api';
 
 const GREEN = '#2ECC71';
@@ -16,6 +17,19 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '' });
   const set = (key: keyof typeof form) => (val: string) => setForm(f => ({ ...f, [key]: val }));
+
+  const { setActiveTab } = useOrderStore();
+
+  const handleStatusPress = (status: any) => {
+    const map: any = {
+      'Menunggu': 'pending',
+      'Diproses': 'accepted',
+      'Dikirim': 'on_progress',
+      'Diterima': 'completed'
+    };
+    setActiveTab(map[status]);
+    router.push('/orders-list');
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -88,7 +102,11 @@ export default function ProfileScreen() {
                  { icon: 'bicycle-outline', label: 'Dikirim' },
                  { icon: 'checkmark-done-circle-outline', label: 'Diterima' },
                ].map((item, i) => (
-                 <Pressable key={i} style={styles.statusItem}>
+                 <Pressable 
+                    key={i} 
+                    style={styles.statusItem}
+                    onPress={() => handleStatusPress(item.label)}
+                 >
                     <Ionicons name={item.icon as any} size={24} color="#4B5563" />
                     <Text style={styles.statusLabel}>{item.label}</Text>
                  </Pressable>
