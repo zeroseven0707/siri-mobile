@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
 import api from './api';
 import { User } from '../types';
 
@@ -42,7 +44,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   login: async (identifier, password) => {
-    const res = await api.post('/login', { identifier, password });
+    const res = await api.post('/login', { 
+      identifier, 
+      password,
+      device: Device.modelName || 'Unknown Device',
+      platform: Platform.OS
+    });
     const { user, token } = res.data.data;
     await SecureStore.setItemAsync('auth_token', token);
     await SecureStore.setItemAsync('auth_user', JSON.stringify(user));

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
 import CustomHeader from '../components/CustomHeader';
 
 const GREEN = '#2ECC71';
@@ -29,8 +30,13 @@ export default function SecurityScreen() {
       });
 
       if (result.success) {
-        Alert.alert('Sukses', 'Autentikasi Biometrik Berhasil! Fitur ini sudah aktif.');
+        await SecureStore.setItemAsync('biometric_enabled', 'true');
+        Alert.alert('Sukses', 'Biometrik berhasil diaktifkan! Anda bisa login menggunakan sidik jari/wajah mulai sekarang.');
       }
+    } else if (title === 'Ganti Password') {
+      router.push('/change-password');
+    } else if (title === 'Riwayat Login') {
+      router.push('/login-history');
     } else if (title === 'Hapus Akun') {
       Alert.alert(
         'Hapus Akun?',
