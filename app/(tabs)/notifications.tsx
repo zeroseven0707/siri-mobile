@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, RefreshControl, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import CustomHeader from '../../components/CustomHeader';
 import api from '../../lib/api';
@@ -100,13 +101,11 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <View style={styles.flex}>
-      <View style={styles.headerRow}>
-        <View style={{ flex: 1 }}>
-          <CustomHeader title="Notifikasi" showBack={false} />
-        </View>
-        <Pressable style={styles.readAllBtn} onPress={handleReadAll}>
-          <Ionicons name="mail-open-outline" size={20} color={GREEN} />
+    <SafeAreaView style={styles.flex} edges={['top']}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Notifikasi</Text>
+        <Pressable onPress={handleReadAll} style={styles.readAllBox}>
+          <Ionicons name="mail-open-outline" size={22} color={GREEN} />
         </Pressable>
       </View>
       
@@ -152,29 +151,24 @@ export default function NotificationsScreen() {
           )}
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#F9FAFB' },
-  headerRow: { position: 'relative' },
-  readAllBtn: { 
-    position: 'absolute', 
-    right: 16, 
-    top: 54, // Sesuai dengan insets top + padding header
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 20, 
+    paddingVertical: 16, 
+    backgroundColor: '#fff', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#F3F4F6' 
   },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
+  readAllBox: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 16 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 120 },
