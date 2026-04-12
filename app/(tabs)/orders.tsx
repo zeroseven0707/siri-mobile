@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useState, useEffect } from 'react';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
@@ -17,6 +17,74 @@ const STATUS: Record<Order['status'], { label: string; bg: string; color: string
   cancelled:   { label: 'Dibatalkan', bg: '#FEE2E2', color: '#B91C1C' },
 };
 
+function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => void }) {
+  const [timeLeft, setTimeLeft] = useState(10);
+  const [localStatus, setLocalStatus] = useState<Order['status']>(item.status);
+
+  // Sync if item from server changes
+  useEffect(() => {
+    setLocalStatus(item.status);
+    if (item.status === 'pending') {
+       setTimeLeft(10);
+    }
+  }, [item.status]);
+
+  // 10 second countdown for local 'pending'
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    if (localStatus === 'pending' && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (localStatus === 'pending' && timeLeft === 0) {
+      // Auto-accept after 10s if still pending locally
+      setLocalStatus('accepted');
+    }
+    return () => clearInterval(timer);
+  }, [localStatus, timeLeft]);
+
+  const confirmCancel = () => {
+    Alert.alert(
+      'Konfirmasi Pembatalan',
+      'Apakah Anda yakin ingin membatalkan pesanan ini?',
+      [
+        { text: 'Tidak', style: 'cancel' },
+        { text: 'Ya, Batalkan', style: 'destructive', onPress: () => onCancel(item.id) }
+      ]
+    );
+  };
+
+  const st = STATUS[localStatus] || STATUS.pending;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={[styles.serviceIcon, { backgroundColor: '#F0FDF4' }]}>
+          <Ionicons name="receipt-outline" size={20} color={DARK_GREEN} />
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.serviceName}>{item.service?.name ?? 'Layanan'}</Text>
+          <Text style={styles.location} numberOfLines={1}>📍 {item.pickup_location}</Text>
+          <Text style={styles.destination} numberOfLines={1}>🏁 {item.destination_location}</Text>
+        </View>
+        <View style={[styles.badge, { backgroundColor: st.bg }]}>
+          <Text style={[styles.badgeText, { color: st.color }]}>
+            {localStatus === 'pending' ? `${st.label} (${timeLeft}s)` : st.label}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.cardBottom}>
+        <Text style={styles.price}>Rp {Number(item.price).toLocaleString('id-ID')}</Text>
+        {localStatus === 'pending' && (
+          <Pressable onPress={confirmCancel} style={styles.cancelBtn}>
+            <Text style={styles.cancelText}>Batalkan</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
 export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,7 +97,11 @@ export default function OrdersScreen() {
   useFocusEffect(useCallback(() => { fetchOrders(); }, []));
 
   const handleCancel = async (id: string) => {
-    try { await api.put(`/orders/${id}/cancel`); fetchOrders(); } catch {}
+    try { 
+      await api.put(`/orders/${id}/cancel`); 
+      fetchOrders(); 
+      Alert.alert('Berhasil', 'Pesanan telah dibatalkan');
+    } catch {}
   };
 
   return (
@@ -49,34 +121,7 @@ export default function OrdersScreen() {
             <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
           </View>
         }
-        renderItem={({ item }) => {
-          const st = STATUS[item.status];
-          return (
-            <View style={styles.card}>
-              <View style={styles.cardTop}>
-                <View style={[styles.serviceIcon, { backgroundColor: '#F0FDF4' }]}>
-                  <Ionicons name="receipt-outline" size={20} color={DARK_GREEN} />
-                </View>
-                <View style={styles.cardInfo}>
-                  <Text style={styles.serviceName}>{item.service?.name ?? 'Layanan'}</Text>
-                  <Text style={styles.location} numberOfLines={1}>📍 {item.pickup_location}</Text>
-                  <Text style={styles.destination} numberOfLines={1}>🏁 {item.destination_location}</Text>
-                </View>
-                <View style={[styles.badge, { backgroundColor: st.bg }]}>
-                  <Text style={[styles.badgeText, { color: st.color }]}>{st.label}</Text>
-                </View>
-              </View>
-              <View style={styles.cardBottom}>
-                <Text style={styles.price}>Rp {Number(item.price).toLocaleString('id-ID')}</Text>
-                {['pending', 'accepted'].includes(item.status) && (
-                  <Pressable onPress={() => handleCancel(item.id)} style={styles.cancelBtn}>
-                    <Text style={styles.cancelText}>Batalkan</Text>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-          );
-        }}
+        renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
       />
     </SafeAreaView>
   );
