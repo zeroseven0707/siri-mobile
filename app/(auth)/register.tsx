@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../lib/authStore';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
+
+const Field = ({ label, icon, ...props }: any) => (
+  <View style={styles.fieldWrap}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.inputRow}>
+      <Ionicons name={icon} size={18} color="#9CA3AF" style={styles.inputIcon} />
+      <TextInput style={styles.input} placeholderTextColor="#9CA3AF" {...props} />
+    </View>
+  </View>
+);
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -24,16 +34,6 @@ export default function RegisterScreen() {
     finally { setLoading(false); }
   };
 
-  const Field = ({ label, icon, ...props }: any) => (
-    <View style={styles.fieldWrap}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputRow}>
-        <Ionicons name={icon} size={18} color="#9CA3AF" style={styles.inputIcon} />
-        <TextInput style={styles.input} placeholderTextColor="#9CA3AF" {...props} />
-      </View>
-    </View>
-  );
-
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -41,7 +41,9 @@ export default function RegisterScreen() {
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color="#fff" />
           </Pressable>
-          <View style={styles.owlCircle}><Text style={styles.owlEmoji}>🦉</Text></View>
+          <View style={styles.owlCircle}>
+            <Image source={require('../../assets/images/siri.png')} style={{ width: 100, height: 100 }} resizeMode="contain" />
+          </View>
           <Text style={styles.appName}>Daftar Akun</Text>
           <Text style={styles.tagline}>Bergabung dengan Siri sekarang</Text>
         </View>
@@ -73,7 +75,7 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1 },
   header: { paddingHorizontal: 24, paddingTop: 56, paddingBottom: 32, alignItems: 'center' },
   backBtn: { position: 'absolute', top: 56, left: 24, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  owlCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  owlCircle: { alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   owlEmoji: { fontSize: 38 },
   appName: { color: '#fff', fontSize: 26, fontWeight: '800' },
   tagline: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 4 },

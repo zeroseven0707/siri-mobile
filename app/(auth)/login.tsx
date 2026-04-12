@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../lib/authStore';
@@ -27,7 +27,7 @@ export default function LoginScreen() {
         {/* Header green */}
         <View style={styles.header}>
           <View style={styles.owlCircle}>
-            <Text style={styles.owlEmoji}>🦉</Text>
+            <Image source={require('../../assets/images/siri.png')} style={{ width: 120, height: 120 }} resizeMode="contain" />
           </View>
           <Text style={styles.appName}>Siri</Text>
           <Text style={styles.tagline}>Mudah, Cepat, Nyaman</Text>
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: GREEN },
   scroll: { flexGrow: 1 },
   header: { alignItems: 'center', paddingTop: 80, paddingBottom: 40 },
-  owlCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  owlCircle: { alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   owlEmoji: { fontSize: 48 },
   appName: { color: '#fff', fontSize: 36, fontWeight: '800', letterSpacing: 1 },
   tagline: { color: 'rgba(255,255,255,0.85)', fontSize: 15, marginTop: 4 },
