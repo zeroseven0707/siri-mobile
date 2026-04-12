@@ -106,6 +106,7 @@ export default function ProfileScreen() {
           <View style={styles.menuCard}>
             {[
               { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/(tabs)/history' },
+              { icon: 'location-outline', label: 'Cek Lokasi GPS', color: '#2ECC71', route: '/test-location' },
               { icon: 'help-circle-outline', label: 'Bantuan', color: '#F97316', route: '/help' },
               { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#A855F7', route: '/about' },
               { icon: 'document-text-outline', label: 'Syarat & Ketentuan', color: '#10B981', route: '/terms' },

@@ -27,7 +27,13 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Izinkan Siri mengakses lokasi Anda agar driver dapat menjemput Anda dengan tepat."
+        }
+      ]
     ],
     "extra": {
       "router": {},
