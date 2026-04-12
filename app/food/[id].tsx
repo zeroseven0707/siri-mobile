@@ -109,7 +109,7 @@ export default function FoodDetailScreen() {
           </Text>
 
           {store && (
-             <Pressable style={styles.storeMiniCard} onPress={() => router.push(`/store/${store.slug || store.id}` as any)}>
+             <Pressable style={styles.storeMiniCard} onPress={() => router.push(`/store/${store.id}` as any)}>
                 <View style={styles.storeMiniIcon}>
                    <Text style={{ fontSize: 24 }}>🍽️</Text>
                 </View>

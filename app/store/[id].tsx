@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -59,7 +59,6 @@ export default function StoreDetailScreen() {
     
     setIsSubmitting(true);
     try {
-      // Find food service id first!
       const servicesRes = await api.get('/services');
       const foodService = servicesRes.data.data.find((s: Service) => s.slug === 'food');
       if (!foodService) throw new Error('Layanan Food tidak ditemukan');
@@ -67,8 +66,8 @@ export default function StoreDetailScreen() {
       const payload = {
         service_id: foodService.id,
         pickup_location: store?.address || 'Lokasi Toko',
-        destination_location: 'Lokasi Anda (Default)', // Simplified for demo
-        price: calculateTotal(), // Actually delivery price! Let's just use total price for now or add flat delivery
+        destination_location: 'Lokasi Anda (Default)', 
+        price: calculateTotal(),
         notes: '',
         food_items: cartItems.map((item) => ({
           food_item_id: item.id,
@@ -115,9 +114,13 @@ export default function StoreDetailScreen() {
         headerTintColor: '#fff',
       }} />
       <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <View style={styles.storeIcon}><Text style={{fontSize: 40}}>🍽️</Text></View>
+            {store.image ? (
+                <Image source={{ uri: store.image }} style={styles.storeHeroImage} />
+            ) : (
+                <View style={styles.storeIcon}><Text style={{fontSize: 40}}>🍽️</Text></View>
+            )}
             <Text style={styles.storeName}>{store.name}</Text>
             <Text style={styles.storeAddress}>{store.address}</Text>
             <View style={styles.badge}>
@@ -125,43 +128,53 @@ export default function StoreDetailScreen() {
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Menu</Text>
+          <Text style={styles.sectionTitle}>Menu Tersedia</Text>
           {foods.length === 0 ? (
             <Text style={styles.emptyText}>Belum ada menu di toko ini.</Text>
           ) : (
-            foods.map((food) => {
-              const qty = cart[food.id]?.qty || 0;
-              return (
-                <View key={food.id} style={styles.foodItem}>
-                  <View style={styles.foodInfo}>
-                    <Text style={styles.foodName}>{food.name}</Text>
-                    {food.description && <Text style={styles.foodDesc} numberOfLines={2}>{food.description}</Text>}
-                    <Text style={styles.foodPrice}>Rp {Number(food.price).toLocaleString('id-ID')}</Text>
-                  </View>
-                  {food.is_available ? (
-                    <View style={styles.actionContainer}>
-                      {qty > 0 ? (
-                        <View style={styles.qtyControls}>
-                          <Pressable style={styles.btnSm} onPress={() => updateCart(food, -1)}>
-                            <Ionicons name="remove" size={18} color="#fff" />
-                          </Pressable>
-                          <Text style={styles.qtyText}>{qty}</Text>
-                          <Pressable style={styles.btnSm} onPress={() => updateCart(food, 1)}>
-                            <Ionicons name="add" size={18} color="#fff" />
-                          </Pressable>
-                        </View>
+            <View style={styles.gridContainer}>
+              {foods.map((food) => {
+                const qty = cart[food.id]?.qty || 0;
+                return (
+                  <View key={food.id} style={styles.foodCard}>
+                    <Pressable style={{ flex: 1 }} onPress={() => router.push(`/food/${food.id}` as any)}>
+                      {food.image ? (
+                        <Image source={{ uri: food.image }} style={styles.foodImage} resizeMode="cover" />
                       ) : (
-                        <Pressable style={styles.btnAdd} onPress={() => updateCart(food, 1)}>
-                          <Text style={styles.btnAddText}>Tambah</Text>
-                        </Pressable>
+                        <View style={[styles.foodImage, { backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' }]}>
+                          <Text style={{ fontSize: 30 }}>🍱</Text>
+                        </View>
+                      )}
+                      <View style={styles.foodCardInfo}>
+                        <Text style={styles.foodName} numberOfLines={2}>{food.name}</Text>
+                        <Text style={styles.foodPrice}>Rp {Number(food.price).toLocaleString('id-ID')}</Text>
+                      </View>
+                    </Pressable>
+                    <View style={styles.actionContainer}>
+                      {food.is_available ? (
+                        qty > 0 ? (
+                          <View style={styles.qtyControls}>
+                            <Pressable style={styles.btnSm} onPress={() => updateCart(food, -1)}>
+                              <Ionicons name="remove" size={16} color="#fff" />
+                            </Pressable>
+                            <Text style={styles.qtyText}>{qty}</Text>
+                            <Pressable style={styles.btnSm} onPress={() => updateCart(food, 1)}>
+                              <Ionicons name="add" size={16} color="#fff" />
+                            </Pressable>
+                          </View>
+                        ) : (
+                          <Pressable style={styles.btnAdd} onPress={() => updateCart(food, 1)}>
+                            <Text style={styles.btnAddText}>Tambah</Text>
+                          </Pressable>
+                        )
+                      ) : (
+                        <Text style={styles.unavailableText}>Habis</Text>
                       )}
                     </View>
-                  ) : (
-                    <Text style={styles.unavailableText}>Habis</Text>
-                  )}
-                </View>
-              );
-            })
+                  </View>
+                );
+              })}
+            </View>
           )}
         </ScrollView>
 
@@ -195,24 +208,26 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 16, paddingBottom: 100 },
   header: { alignItems: 'center', backgroundColor: '#ffffff', padding: 20, borderRadius: 16, marginBottom: 20, elevation: 1 },
   storeIcon: { width: 80, height: 80, backgroundColor: '#E5E7EB', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  storeHeroImage: { width: 100, height: 100, borderRadius: 50, marginBottom: 12 },
   storeName: { fontSize: 20, fontWeight: 'bold', color: '#111827', textAlign: 'center' },
   storeAddress: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginTop: 4, marginBottom: 12 },
   badge: { backgroundColor: '#D1FAE5', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
   badgeText: { color: DARK_GREEN, fontSize: 12, fontWeight: '600' },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827', marginBottom: 16 },
   emptyText: { color: '#6B7280', fontStyle: 'italic' },
-  foodItem: { flexDirection: 'row', backgroundColor: '#fff', padding: 16, borderRadius: 16, marginBottom: 12, elevation: 1, alignItems: 'center' },
-  foodInfo: { flex: 1, paddingRight: 12 },
-  foodName: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
-  foodDesc: { fontSize: 12, color: '#6B7280', marginTop: 4 },
-  foodPrice: { fontSize: 14, fontWeight: 'bold', color: DARK_GREEN, marginTop: 8 },
-  actionContainer: { width: 90, alignItems: 'center' },
-  btnAdd: { backgroundColor: GREEN, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20 },
-  btnAddText: { color: '#fff', fontSize: 13, fontWeight: '600' },
-  qtyControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 20, padding: 4 },
-  btnSm: { backgroundColor: GREEN, width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  qtyText: { marginHorizontal: 10, fontSize: 14, fontWeight: 'bold', color: '#111827' },
-  unavailableText: { color: '#EF4444', fontWeight: 'bold', fontSize: 13 },
+  gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 5 },
+  foodCard: { width: '48%', backgroundColor: '#fff', borderRadius: 16, marginBottom: 16, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, overflow: 'hidden' },
+  foodImage: { width: '100%', height: 120, backgroundColor: '#FFF7ED' },
+  foodCardInfo: { padding: 12, flex: 1 },
+  foodName: { fontSize: 13, fontWeight: '600', color: '#1F2937', marginBottom: 6, lineHeight: 18 },
+  foodPrice: { fontSize: 13, fontWeight: 'bold', color: DARK_GREEN },
+  actionContainer: { paddingHorizontal: 12, paddingBottom: 12, alignItems: 'center' },
+  btnAdd: { backgroundColor: GREEN, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, width: '100%', alignItems: 'center' },
+  btnAddText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  qtyControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F0FDF4', borderRadius: 12, padding: 6, width: '100%' },
+  btnSm: { backgroundColor: GREEN, width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1, elevation: 2 },
+  qtyText: { fontSize: 14, fontWeight: 'bold', color: '#111827' },
+  unavailableText: { color: '#EF4444', fontWeight: 'bold', fontSize: 12, textAlign: 'center', paddingVertical: 8 },
   bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#E5E7EB', elevation: 4 },
   cartInfo: { fontSize: 13, color: '#6B7280' },
   cartTotal: { fontSize: 18, fontWeight: 'bold', color: DARK_GREEN },
