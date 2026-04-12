@@ -5,10 +5,15 @@ import { WebView } from 'react-native-webview';
 interface MapViewFreeProps {
   latitude: number;
   longitude: number;
-  title?: string;
+  type?: 'standard' | 'satellite';
 }
 
-export default function MapViewFree({ latitude, longitude }: MapViewFreeProps) {
+export default function MapViewFree({ latitude, longitude, type = 'standard' }: MapViewFreeProps) {
+  const standardLayer = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const satelliteLayer = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  
+  const activeLayer = type === 'satellite' ? satelliteLayer : standardLayer;
+
   // HTML Leaflet untuk menampilkan OpenStreetMap
   const mapHtml = `
     <!DOCTYPE html>
@@ -26,11 +31,19 @@ export default function MapViewFree({ latitude, longitude }: MapViewFreeProps) {
       <body>
         <div id="map"></div>
         <script>
-          var map = L.map('map', { zoomControl: false }).setView([${latitude}, ${longitude}], 15);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          var map = L.map('map', { zoomControl: false }).setView([${latitude}, ${longitude}], ${type === 'satellite' ? 17 : 15});
+          var layer = L.tileLayer('${activeLayer}', {
             maxZoom: 19,
           }).addTo(map);
           L.marker([${latitude}, ${longitude}]).addTo(map);
+
+          window.addEventListener('message', function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'updateLayer') {
+               map.removeLayer(layer);
+               layer = L.tileLayer(data.url, { maxZoom: 19 }).addTo(map);
+            }
+          });
         </script>
       </body>
     </html>

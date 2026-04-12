@@ -53,38 +53,19 @@ export default function StoreDetailScreen() {
     return Object.values(cart).reduce((sum, item) => sum + item.price * item.qty, 0);
   };
 
-  const handleCreateOrder = async () => {
+  const handleCreateOrder = () => {
     const cartItems = Object.values(cart);
     if (cartItems.length === 0) return;
     
-    setIsSubmitting(true);
-    try {
-      const servicesRes = await api.get('/services');
-      const foodService = servicesRes.data.data.find((s: Service) => s.slug === 'food');
-      if (!foodService) throw new Error('Layanan Food tidak ditemukan');
-
-      const payload = {
-        service_id: foodService.id,
-        pickup_location: store?.address || 'Lokasi Toko',
-        destination_location: 'Lokasi Anda (Default)', 
-        price: calculateTotal(),
-        notes: '',
-        food_items: cartItems.map((item) => ({
-          food_item_id: item.id,
-          qty: item.qty,
-          price: item.price,
-        })),
-      };
-
-      await api.post('/food-orders', payload);
-      Alert.alert('Berhasil', 'Pesanan berhasil dibuat!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)/orders') }
-      ]);
-    } catch (err: any) {
-      Alert.alert('Error', err.message || 'Gagal membuat pesanan');
-    } finally {
-      setIsSubmitting(false);
-    }
+    router.push({
+      pathname: '/checkout/food',
+      params: {
+        storeId: id,
+        storeName: store?.name,
+        storeAddress: store?.address,
+        cartItems: JSON.stringify(cartItems)
+      }
+    });
   };
 
   if (loading) {

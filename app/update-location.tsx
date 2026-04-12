@@ -16,6 +16,7 @@ export default function UpdateLocationScreen() {
       ? { lat: Number(user.latitude), lng: Number(user.longitude) } 
       : null
   );
+  const [mapType, setMapType] = useState<'standard' | 'satellite'>('standard');
   
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -93,14 +94,30 @@ export default function UpdateLocationScreen() {
         <ScrollView contentContainerStyle={styles.scroll}>
           
           <View style={styles.card}>
-            <Text style={styles.label}>Titik Lokasi (Maps)</Text>
+            <View style={styles.rowBetween}>
+              <Text style={styles.label}>Titik Lokasi (Maps)</Text>
+              <View style={styles.typeSelector}>
+                <Pressable 
+                  style={[styles.typeBtn, mapType === 'standard' && styles.typeBtnActive]} 
+                  onPress={() => setMapType('standard')}
+                >
+                  <Text style={[styles.typeBtnText, mapType === 'standard' && styles.typeBtnTextActive]}>Standar</Text>
+                </Pressable>
+                <Pressable 
+                  style={[styles.typeBtn, mapType === 'satellite' && styles.typeBtnActive]} 
+                  onPress={() => setMapType('satellite')}
+                >
+                  <Text style={[styles.typeBtnText, mapType === 'satellite' && styles.typeBtnTextActive]}>Satelit</Text>
+                </Pressable>
+              </View>
+            </View>
             
             {coords && coords.lat != null && coords.lng != null ? (
               <View style={styles.mapWrap}>
                 <MapViewFree 
                   latitude={coords.lat} 
                   longitude={coords.lng} 
-                  title="Lokasi Penjemputan"
+                  type={mapType}
                 />
                 <View style={styles.coordBadge}>
                     <Text style={styles.coordText}>{coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}</Text>
@@ -167,7 +184,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   scroll: { padding: 16 },
   card: { backgroundColor: '#fff', borderRadius: 20, padding: 16, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
-  label: { fontSize: 14, fontWeight: '700', color: '#374151', marginBottom: 12 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  label: { fontSize: 14, fontWeight: '700', color: '#374151', marginBottom: 0 },
+  typeSelector: { flexDirection: 'row', backgroundColor: '#F3F4F6', borderRadius: 10, padding: 3 },
+  typeBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  typeBtnActive: { backgroundColor: '#fff', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3 },
+  typeBtnText: { fontSize: 11, color: '#6B7280', fontWeight: 'bold' },
+  typeBtnTextActive: { color: '#2ECC71' },
   mapWrap: { height: 250, borderRadius: 16, overflow: 'hidden', position: 'relative' },
   coordBadge: { position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
   coordText: { fontSize: 10, color: '#6B7280', fontWeight: 'bold' },
