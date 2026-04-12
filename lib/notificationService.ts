@@ -1,24 +1,44 @@
-import messaging from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance } from '@notifee/react-native';
-import { Platform } from 'react-native';
+import { Platform, NativeModules } from 'react-native';
+
+// Fungsi bantuan untuk cek apakah modul Firebase terpasang (Native)
+const isFirebaseAvailable = () => {
+  return !!NativeModules.RNFBAppModule;
+};
 
 export async function requestUserPermission() {
+  if (!isFirebaseAvailable()) {
+    console.log('Firebase Native Module not found. Skip requestPermission');
+    return false;
+  }
+
+  // Import dinamis agar tidak crash di Expo Go saat booting
+  const messaging = require('@react-native-firebase/messaging').default;
+  const notifee = require('@notifee/react-native').default;
+
   if (Platform.OS === 'ios') {
     const authStatus = await messaging().requestPermission();
     const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      authStatus === 1 || // messaging.AuthorizationStatus.AUTHORIZED
+      authStatus === 2;   // messaging.AuthorizationStatus.PROVISIONAL
 
-    if (enabled) {
-      console.log('Authorization status:', authStatus);
-    }
+    return enabled;
   } else {
-    // Android: Notifee handles permission for Android 13+
     await notifee.requestPermission();
+    return true;
   }
 }
 
 export async function setupCloudMessaging() {
+  if (!isFirebaseAvailable()) {
+    console.log('Firebase Native Module not found. Skip setupCloudMessaging');
+    return () => {};
+  }
+
+  // Import dinamis
+  const messaging = require('@react-native-firebase/messaging').default;
+  const notifee = require('@notifee/react-native').default;
+  const { AndroidImportance } = require('@notifee/react-native');
+
   // Buat channel notifikasi (Wajib untuk Android)
   const channelId = await notifee.createChannel({
     id: 'siri-orders',
@@ -27,13 +47,11 @@ export async function setupCloudMessaging() {
   });
 
   // Mendengarkan pesan saat aplikasi di FOREGROUND
-  const unsubscribe = messaging().onMessage(async remoteMessage => {
+  const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
     console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
 
-    // Ekstrak data
     const { title, body } = remoteMessage.notification || {};
     
-    // Tampilkan notifikasi via Notifee
     if (title || body || remoteMessage.data) {
       await notifee.displayNotification({
         title: title || String(remoteMessage.data?.title || 'Notifikasi Baru'),
@@ -53,14 +71,13 @@ export async function setupCloudMessaging() {
   return unsubscribe;
 }
 
-// Mendapatkan Token FCM (Untuk dikirim ke Backend nantinya)
 export async function getFCMToken() {
+  if (!isFirebaseAvailable()) return null;
   try {
+    const messaging = require('@react-native-firebase/messaging').default;
     const token = await messaging().getToken();
-    console.log('FCM Token:', token);
     return token;
   } catch (err) {
-    console.log('Gagal ambil FCM Token:', err);
     return null;
   }
 }

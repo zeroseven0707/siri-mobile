@@ -18,14 +18,17 @@ export default function RootLayout() {
   useEffect(() => { loadSession(); }, []);
 
   useEffect(() => {
+    let unsub: (() => void) | undefined;
+
     if (fontsLoaded) {
       // Inisialisasi Notifikasi
       requestUserPermission();
-      const unsubscribe = setupCloudMessaging();
+      setupCloudMessaging().then(u => {
+        unsub = u;
+      });
       
       return () => {
-        // Cleanup listener saat app ditutup
-        unsubscribe.then(unsub => unsub && (unsub as any)());
+        if (unsub) unsub();
       };
     }
   }, [fontsLoaded]);
