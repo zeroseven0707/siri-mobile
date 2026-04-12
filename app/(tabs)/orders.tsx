@@ -1,170 +1,244 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, Pressable, RefreshControl, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import api from '../../lib/api';
-import { Order } from '../../types';
 
 const GREEN = '#2ECC71';
-const DARK_GREEN = '#27AE60';
 
-const STATUS: Record<Order['status'], { label: string; bg: string; color: string }> = {
-  pending: { label: 'Menunggu', bg: '#FEF9C3', color: '#A16207' },
-  accepted: { label: 'Diterima', bg: '#DBEAFE', color: '#1D4ED8' },
-  on_progress: { label: 'Diproses', bg: '#EDE9FE', color: '#6D28D9' },
-  completed: { label: 'Selesai', bg: '#DCFCE7', color: '#15803D' },
-  cancelled: { label: 'Dibatalkan', bg: '#FEE2E2', color: '#B91C1C' },
-};
+type OrderStatus = 'pending' | 'accepted' | 'on_progress' | 'completed' | 'cancelled';
 
-function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => void }) {
+interface TabItem {
+  id: OrderStatus;
+  label: string;
+}
+
+const TABS: TabItem[] = [
+  { id: 'pending', label: 'Menunggu' },
+  { id: 'accepted', label: 'Diproses' },
+  { id: 'on_progress', label: 'Dikirim' },
+  { id: 'completed', label: 'Selesai' },
+  { id: 'cancelled', label: 'Dibatalkan' },
+];
+
+export default function OrdersScreen() {
+  const [activeTab, setActiveTab] = useState<OrderStatus>('accepted'); // Default ke diproses sesuai permintaan
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-  const [timeLeft, setTimeLeft] = useState(10);
-  const [localStatus, setLocalStatus] = useState<Order['status']>(item.status);
 
-  // Sync if item from server changes
-  useEffect(() => {
-    setLocalStatus(item.status);
-    if (item.status === 'pending') {
-      setTimeLeft(10);
+  const fetchOrders = async (status: string, showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
+      const res = await api.get(`/orders?status=${status}`);
+      setOrders(res.data.data.orders || []);
+    } catch (err) {
+      console.log('Error fetch orders:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, [item.status]);
-
-  // 10 second countdown for local 'pending'
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
-    if (localStatus === 'pending' && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (localStatus === 'pending' && timeLeft === 0) {
-      // Auto-accept after 10s via API
-      api.put(`/orders/${item.id}/confirm`).then(() => {
-        setLocalStatus('accepted');
-      }).catch((e) => {
-        console.error('Failed to auto-confirm order', e);
-        // fallback to accepted in UI anyway since it's demo simulating driver acceptance
-        setLocalStatus('accepted');
-      });
-    }
-    return () => clearInterval(timer);
-  }, [localStatus, timeLeft]);
-
-  const confirmCancel = () => {
-    Alert.alert(
-      'Konfirmasi Pembatalan',
-      'Apakah Anda yakin ingin membatalkan pesanan ini?',
-      [
-        { text: 'Tidak', style: 'cancel' },
-        { text: 'Ya, Batalkan', style: 'destructive', onPress: () => onCancel(item.id) }
-      ]
-    );
   };
 
-  const st = STATUS[localStatus] || STATUS.pending;
+  useEffect(() => {
+    fetchOrders(activeTab);
+  }, [activeTab]);
 
-  return (
-    <Pressable style={styles.card} onPress={() => router.push(`/order/${item.id}` as any)}>
-      <View style={styles.cardTop}>
-        <View style={[styles.serviceIcon, { backgroundColor: '#F0FDF4' }]}>
-          <Ionicons name="receipt-outline" size={20} color={DARK_GREEN} />
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchOrders(activeTab, false);
+  }, [activeTab]);
+
+  const renderOrderItem = ({ item }: { item: any }) => (
+    <Pressable 
+      style={styles.card} 
+      onPress={() => router.push(`/order/${item.id}` as any)}
+    >
+      <View style={styles.cardHeader}>
+        <View style={styles.serviceInfo}>
+          <View style={styles.serviceIcon}>
+             <Ionicons 
+                name={item.service?.slug === 'food' ? 'fast-food' : 'bicycle'} 
+                size={20} 
+                color={GREEN} 
+             />
+          </View>
+          <View>
+            <Text style={styles.serviceName}>{item.service?.name}</Text>
+            <Text style={styles.orderDate}>
+              {new Date(item.created_at).toLocaleDateString('id-ID', { 
+                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+              })}
+            </Text>
+          </View>
         </View>
-        <View style={styles.cardInfo}>
-          <Text style={styles.serviceName}>{item.service?.name ?? 'Layanan'}</Text>
-          <Text style={styles.location} numberOfLines={1}>📍 {item.pickup_location}</Text>
-          <Text style={styles.destination} numberOfLines={1}>🏁 {item.destination_location}</Text>
-        </View>
-        <View style={[styles.badge, { backgroundColor: st.bg }]}>
-          <Text style={[styles.badgeText, { color: st.color }]}>
-            {localStatus === 'pending' ? `${st.label} (${timeLeft}s)` : st.label}
+        <View style={[styles.statusBadge, { backgroundColor: getStatusBg(item.status) }]}>
+          <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+            {getStatusLabel(item.status)}
           </Text>
         </View>
       </View>
-      <View style={styles.cardBottom}>
-        <Text style={styles.price}>Rp {Number(item.price).toLocaleString('id-ID')}</Text>
-        {localStatus === 'pending' && (
-          <Pressable onPress={confirmCancel} style={styles.cancelBtn}>
-            <Text style={styles.cancelText}>Batalkan</Text>
-          </Pressable>
+
+      <View style={styles.cardBody}>
+        <View style={styles.locationRow}>
+          <View style={styles.dot} />
+          <Text style={styles.locationText} numberOfLines={1}>{item.pickup_location}</Text>
+        </View>
+        <View style={styles.line} />
+        <View style={styles.locationRow}>
+          <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
+          <Text style={styles.locationText} numberOfLines={1}>{item.destination_location}</Text>
+        </View>
+
+        {item.food_items && item.food_items.length > 0 && (
+          <View style={styles.foodPreview}>
+            <Text style={styles.foodText}>
+              {item.food_items[0].food_item.name} 
+              {item.food_items.length > 1 ? ` +${item.food_items.length - 1} menu lainnya` : ''}
+            </Text>
+          </View>
         )}
+      </View>
+
+      <View style={styles.cardFooter}>
+        {item.driver ? (
+          <View style={styles.driverInfo}>
+            <View style={styles.driverAvatar}>
+              <Ionicons name="person" size={14} color="#9CA3AF" />
+            </View>
+            <Text style={styles.driverName}>{item.driver.name}</Text>
+          </View>
+        ) : <View />}
+        
+        <Text style={styles.totalPrice}>Rp {Number(item.price).toLocaleString('id-ID')}</Text>
       </View>
     </Pressable>
   );
-}
-
-export default function OrdersScreen() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchOrders = async (isInitial = false) => {
-    if (isInitial) setLoading(true);
-    try {
-      const res = await api.get('/orders');
-      setOrders(res.data.data.orders ?? []);
-    }
-    catch { }
-    finally {
-      setRefreshing(false);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchOrders(true); }, []);
-
-  const handleCancel = async (id: string) => {
-    try {
-      await api.put(`/orders/${id}/cancel`);
-      fetchOrders();
-      Alert.alert('Berhasil', 'Pesanan telah dibatalkan');
-    } catch { }
-  };
-
-  if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color={GREEN} /></SafeAreaView>;
 
   return (
-    <SafeAreaView style={styles.flex}>
+    <SafeAreaView style={styles.flex} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Pesanan Saya</Text>
+        <Text style={styles.headerTitle}>Pesanan Saya</Text>
       </View>
-      <FlatList
-        data={orders}
-        keyExtractor={o => o.id}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} tintColor={GREEN} />}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={{ fontSize: 56 }}>📦</Text>
-            <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
-            <Text style={styles.emptySubtitle}>Yuk pesan sesuatu!</Text>
-          </View>
-        }
-        renderItem={({ item }) => <OrderCard item={item} onCancel={handleCancel} />}
-      />
+
+      {/* Tabs Selector */}
+      <View style={styles.tabContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
+          {TABS.map((tab) => (
+            <Pressable 
+              key={tab.id} 
+              onPress={() => setActiveTab(tab.id)}
+              style={[styles.tabBtn, activeTab === tab.id && styles.tabBtnActive]}
+            >
+              <Text style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+
+      {loading && !refreshing ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={GREEN} />
+        </View>
+      ) : (
+        <FlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          renderItem={renderOrderItem}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GREEN} />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Image 
+                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2038/2038854.png' }} 
+                style={styles.emptyImg} 
+              />
+              <Text style={styles.emptyTitle}>Belum ada pesanan</Text>
+              <Text style={styles.emptyDesc}>Pesanan dengan status {getStatusLabel(activeTab)} tidak ditemukan.</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
 
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'pending': return 'Menunggu';
+    case 'accepted': return 'Diproses';
+    case 'on_progress': return 'Dikirim';
+    case 'completed': return 'Selesai';
+    case 'cancelled': return 'Dibatalkan';
+    default: return status;
+  }
+};
+
+const getStatusBg = (status: string) => {
+  switch (status) {
+    case 'pending': return '#FEF9C3';
+    case 'accepted': return '#DBEAFE';
+    case 'on_progress': return '#EDE9FE';
+    case 'completed': return '#DCFCE7';
+    case 'cancelled': return '#FEE2E2';
+    default: return '#F3F4F6';
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'pending': return '#A16207';
+    case 'accepted': return '#1D4ED8';
+    case 'on_progress': return '#6D28D9';
+    case 'completed': return '#15803D';
+    case 'cancelled': return '#B91C1C';
+    default: return '#6B7280';
+  }
+};
+
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#F8FFF8' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FFF8' },
-  header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
-  list: { padding: 16, gap: 12 },
-  empty: { alignItems: 'center', paddingVertical: 80 },
-  emptyTitle: { color: '#374151', fontSize: 18, fontWeight: '700', marginTop: 12 },
-  emptySubtitle: { color: '#9CA3AF', fontSize: 14, marginTop: 4 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F3F4F6', elevation: 1 },
-  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  serviceIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  cardInfo: { flex: 1 },
-  serviceName: { fontWeight: '700', color: '#1F2937', fontSize: 14 },
-  location: { color: '#6B7280', fontSize: 12, marginTop: 3 },
-  destination: { color: '#9CA3AF', fontSize: 12, marginTop: 2 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  price: { color: DARK_GREEN, fontWeight: '700', fontSize: 15 },
-  cancelBtn: { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10 },
-  cancelText: { color: '#DC2626', fontSize: 12, fontWeight: '600' },
+  flex: { flex: 1, backgroundColor: '#F9FAFB' },
+  header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff' },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: '#1F2937' },
+  
+  tabContainer: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  tabScroll: { paddingHorizontal: 16, paddingBottom: 12 },
+  tabBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 8, backgroundColor: '#F3F4F6' },
+  tabBtnActive: { backgroundColor: GREEN },
+  tabLabel: { fontSize: 13, color: '#6B7280', fontWeight: '600' },
+  tabLabelActive: { color: '#fff' },
+
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  list: { padding: 16 },
+  card: { backgroundColor: '#fff', borderRadius: 20, padding: 16, marginBottom: 16, elevation: 3, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, borderWidth: 1, borderColor: '#F3F4F6' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  serviceInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  serviceIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center' },
+  serviceName: { fontSize: 15, fontWeight: '800', color: '#111827' },
+  orderDate: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  statusText: { fontSize: 10, fontWeight: '700' },
+
+  cardBody: { marginBottom: 16 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN },
+  locationText: { flex: 1, fontSize: 13, color: '#4B5563' },
+  line: { width: 1, height: 12, backgroundColor: '#E5E7EB', marginLeft: 3, marginVertical: 2 },
+  foodPreview: { marginTop: 12, padding: 10, backgroundColor: '#F9FAFB', borderRadius: 10, borderLeftWidth: 3, borderLeftColor: GREEN },
+  foodText: { fontSize: 12, color: '#374151', fontStyle: 'italic' },
+
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+  driverInfo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  driverAvatar: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  driverName: { fontSize: 13, color: '#4B5563', fontWeight: '500' },
+  totalPrice: { fontSize: 16, fontWeight: '800', color: GREEN },
+
+  empty: { alignItems: 'center', justifyContent: 'center', marginTop: 60 },
+  emptyImg: { width: 150, height: 150, opacity: 0.5 },
+  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#374151', marginTop: 16 },
+  emptyDesc: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', marginTop: 8, paddingHorizontal: 40 },
 });
