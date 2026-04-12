@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { UrlTile, Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 
 interface MapViewFreeProps {
   latitude: number;
@@ -8,45 +8,57 @@ interface MapViewFreeProps {
   title?: string;
 }
 
-export default function MapViewFree({ latitude, longitude, title = "Lokasi Saya" }: MapViewFreeProps) {
+export default function MapViewFree({ latitude, longitude }: MapViewFreeProps) {
+  // HTML Leaflet untuk menampilkan OpenStreetMap
+  const mapHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body { margin: 0; padding: 0; }
+          #map { height: 100vh; width: 100vw; }
+          .leaflet-control-attribution { display: none; }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          var map = L.map('map', { zoomControl: false }).setView([${latitude}, ${longitude}], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+          }).addTo(map);
+          L.marker([${latitude}, ${longitude}]).addTo(map);
+        </script>
+      </body>
+    </html>
+  `;
+
   return (
     <View style={styles.container}>
-      <MapView
-        provider={PROVIDER_DEFAULT}
+      <WebView
+        originWhitelist={['*']}
+        source={{ html: mapHtml }}
         style={styles.map}
-        initialRegion={{
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-        // Memaksa penggunaan OpenStreetMap Tile
-        mapType="none"
-      >
-        <UrlTile
-          urlTemplate="https://a.tile.openstreetmap.de/{z}/{x}/{y}.png"
-          maximumZ={19}
-          flipY={false}
-        />
-        <Marker 
-          coordinate={{ latitude, longitude }} 
-          title={title}
-          pinColor="#2ECC71"
-        />
-      </MapView>
+        scrollEnabled={false}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 300,
+    height: 350,
     width: '100%',
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
   },
 });
