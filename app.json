@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "scheme": "siri",
     "userInterfaceStyle": "light",
-    "icon": "./assets/images/siri.png",
+    "icon": "./assets/images/icon.png",
     "splash": {
       "image": "./assets/images/siri.png",
       "resizeMode": "contain",
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/siri.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "id.siri.mobile",
