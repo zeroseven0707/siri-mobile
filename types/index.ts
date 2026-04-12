@@ -1,0 +1,115 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'user' | 'driver' | 'admin';
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  driver_profile?: DriverProfile;
+  created_at: string;
+}
+
+export interface DriverProfile {
+  id: string;
+  vehicle_type: 'motor' | 'mobil';
+  license_plate: string;
+  status: 'online' | 'offline';
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  base_price: number;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  is_open: boolean;
+  food_items?: FoodItem[];
+}
+
+export interface FoodItem {
+  id: string;
+  store_id: string;
+  store?: Store;
+  name: string;
+  price: number;
+  description: string | null;
+  image: string | null;
+  is_available: boolean;
+}
+
+export interface Order {
+  id: string;
+  status: 'pending' | 'accepted' | 'on_progress' | 'completed' | 'cancelled';
+  pickup_location: string;
+  destination_location: string;
+  price: number;
+  notes: string | null;
+  service?: Service;
+  user?: User;
+  driver?: User;
+  food_items?: FoodOrderItem[];
+  created_at: string;
+}
+
+export interface FoodOrderItem {
+  id: string;
+  food_item?: FoodItem;
+  qty: number;
+  price: number;
+}
+
+export interface Transaction {
+  id: string;
+  amount: number;
+  type: 'payment' | 'refund';
+  status: 'pending' | 'success' | 'failed';
+  reference: string | null;
+  order_id: string | null;
+  created_at: string;
+}
+
+export interface HomeSection {
+  id: string;
+  title: string;
+  key: string;
+  type: 'banner' | 'store_list' | 'food_list' | 'service_list' | 'promo' | 'custom';
+  order: number;
+  is_active: boolean;
+  items: HomeSectionItem[];
+}
+
+export interface HomeSectionItem {
+  id: string;
+  title: string | null;
+  subtitle: string | null;
+  image: string | null;
+  action_type: string | null;
+  action_value: string | null;
+  order: number;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface Pagination {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
