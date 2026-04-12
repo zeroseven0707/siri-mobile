@@ -131,7 +131,7 @@ export default function HomeScreen() {
         </View>
         <FlatList data={section.items} horizontal showsHorizontalScrollIndicator={false} keyExtractor={f => f.id}
           renderItem={({ item }) => (
-            <Pressable style={styles.foodCard}>
+            <Pressable style={styles.foodCard} onPress={() => router.push(`/food/${item.action_value}` as any)}>
               {item.image ? (
                   <Image source={{ uri: item.image }} style={styles.foodImg} resizeMode="cover" />
               ) : (

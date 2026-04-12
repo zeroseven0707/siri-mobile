@@ -23,12 +23,9 @@ export default function StoreDetailScreen() {
   useEffect(() => {
     const fetchStore = async () => {
       try {
-        const [storeRes, foodsRes] = await Promise.all([
-          api.get(`/stores/${id}`),
-          api.get(`/stores/${id}/foods`),
-        ]);
-        setStore(storeRes.data.data);
-        setFoods(foodsRes.data.data.foods || []);
+        const res = await api.get(`/stores/${id}`);
+        setStore(res.data.data);
+        setFoods(res.data.data.food_items || []);
       } catch (err) {
         Alert.alert('Error', 'Gagal memuat detail toko');
       } finally {
