@@ -14,7 +14,7 @@ export default function ProfileScreen() {
   const { user, logout, updateUser } = useAuthStore();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '', address: user?.address ?? '' });
+  const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '' });
   const set = (key: keyof typeof form) => (val: string) => setForm(f => ({ ...f, [key]: val }));
 
   const handleSave = async () => {
@@ -67,7 +67,6 @@ export default function ProfileScreen() {
                 {[
                   { label: 'Nama', key: 'name', icon: 'person-outline', value: form.name },
                   { label: 'No. HP', key: 'phone', icon: 'call-outline', value: form.phone },
-                  { label: 'Alamat', key: 'address', icon: 'location-outline', value: form.address },
                 ].map(f => {
                   const ItemView = View as any;
                   return (
@@ -106,7 +105,7 @@ export default function ProfileScreen() {
           <View style={styles.menuCard}>
             {[
               { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/(tabs)/history' },
-              { icon: 'location-outline', label: 'Cek Lokasi GPS', color: '#2ECC71', route: '/test-location' },
+              { icon: 'location-outline', label: 'Atur Alamat & Lokasi', color: '#2ECC71', route: '/update-location' },
               { icon: 'help-circle-outline', label: 'Bantuan', color: '#F97316', route: '/help' },
               { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#A855F7', route: '/about' },
               { icon: 'document-text-outline', label: 'Syarat & Ketentuan', color: '#10B981', route: '/terms' },
