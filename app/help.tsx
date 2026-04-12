@@ -27,12 +27,15 @@ export default function HelpScreen() {
           { q: 'Bagaimana cara membatalkan pesanan?', a: 'Masuk ke menu Riwayat Transaksi (Orders), pilih pesanan yang berstatus Menunggu, lalu tekan tombol Batalkan.' },
           { q: 'Metode pembayaran apa saja yang didukung?', a: 'Saat ini kami melayani pembayaran tunai (Cash on Delivery) ke driver langsung.' },
           { q: 'Kenapa toko favorit saya tutup?', a: 'Toko mitra memiliki jam operasional masing-masing yang dapat Anda lihat pada keterangan profil mereka.' }
-        ].map((faq, i) => (
-          <View key={i} style={styles.faqCard}>
-            <Text style={styles.q}>{faq.q}</Text>
-            <Text style={styles.a}>{faq.a}</Text>
-          </View>
-        ))}
+        ].map((faq, i) => {
+          const ItemView = View as any;
+          return (
+            <ItemView key={i} style={styles.faqCard}>
+              <Text style={styles.q}>{faq.q}</Text>
+              <Text style={styles.a}>{faq.a}</Text>
+            </ItemView>
+          );
+        })}
 
         <Text style={styles.subtitle}>Masih butuh bantuan lain?</Text>
         <Pressable style={styles.btn} onPress={handleContact}>

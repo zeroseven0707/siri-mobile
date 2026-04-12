@@ -8,10 +8,6 @@
         "./*"
       ]
     },
-    "types": [
-      "react",
-      "react-native"
-    ]
   },
   "include": [
     "**/*.ts",
