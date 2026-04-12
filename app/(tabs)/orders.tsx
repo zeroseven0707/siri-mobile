@@ -6,6 +6,9 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import api from '../../lib/api';
 import { Order } from '../../types';
 
+import { useAuthStore } from '../../lib/authStore';
+import AuthPlaceholder from '../../components/AuthPlaceholder';
+
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
@@ -77,11 +80,13 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
 }
 
 export default function OrdersScreen() {
+  const { user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = async (isInitial = false) => {
+    if (!user) return;
     if (isInitial) setLoading(true);
     try {
       const res = await api.get('/orders');
@@ -93,7 +98,7 @@ export default function OrdersScreen() {
     }
   };
 
-  useFocusEffect(useCallback(() => { fetchOrders(); }, []));
+  useFocusEffect(useCallback(() => { fetchOrders(); }, [user]));
 
   const handleCancel = async (id: string) => {
     try {
@@ -101,6 +106,16 @@ export default function OrdersScreen() {
       fetchOrders();
     } catch { }
   };
+
+  if (!user) {
+    return (
+      <AuthPlaceholder 
+        icon="receipt-outline"
+        title="Pantau Pesanan Anda"
+        description="Masuk untuk melihat status pesanan makanan, kurir, dan layanan Siri lainnya secara real-time."
+      />
+    );
+  }
 
   if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color={GREEN} /></SafeAreaView>;
 

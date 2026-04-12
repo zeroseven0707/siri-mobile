@@ -5,17 +5,29 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../lib/authStore';
 import { useOrderStore } from '../../lib/orderStore';
+import AuthPlaceholder from '../../components/AuthPlaceholder';
 import api from '../../lib/api';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const { user, logout, updateUser } = useAuthStore();
-  const [editing, setEditing] = useState(false);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '' });
+
+  if (!user) {
+    return (
+      <AuthPlaceholder 
+        icon="person-outline"
+        title="Atur Profil & Keamanan"
+        description="Masuk untuk mengelola detail akun, melihat riwayat transaksi, dan mengatur metode pembayaran Anda."
+      />
+    );
+  }
+
+  const [editing, setEditing] = useState(false);
   const set = (key: keyof typeof form) => (val: string) => setForm(f => ({ ...f, [key]: val }));
 
   const { setActiveTab } = useOrderStore();

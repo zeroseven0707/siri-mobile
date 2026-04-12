@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import CustomHeader from '../../components/CustomHeader';
 import api from '../../lib/api';
 import { useNotificationStore } from '../../lib/notificationStore';
+import { useAuthStore } from '../../lib/authStore';
+import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 const GREEN = '#2ECC71';
 
@@ -18,12 +20,14 @@ interface SiriNotification {
 }
 
 export default function NotificationsScreen() {
+  const { user } = useAuthStore();
   const [notifications, setNotifications] = useState<SiriNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { setUnreadCount, decrementCount, clearCount } = useNotificationStore();
 
   const fetchNotifications = async (showLoading = true) => {
+    if (!user) return;
     if (showLoading) setLoading(true);
     try {
       const res = await api.get('/notifications');
@@ -39,7 +43,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [user]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -114,7 +118,13 @@ export default function NotificationsScreen() {
         </Pressable>
       </View>
       
-      {loading && !refreshing ? (
+      {!user ? (
+        <AuthPlaceholder 
+          icon="notifications-outline"
+          title="Jangan Ketinggalan Kabar"
+          description="Masuk untuk mendapatkan notifikasi promo eksklusif, status pesanan, dan pembaruan penting lainnya dari Siri."
+        />
+      ) : loading && !refreshing ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={GREEN} />
         </View>

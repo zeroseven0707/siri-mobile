@@ -36,7 +36,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (isLoading || !fontsLoaded) return;
     const inAuth = segments[0] === '(auth)';
-    if (!user && !inAuth) router.replace('/(auth)/login');
     if (user && inAuth) router.replace('/(tabs)/home');
   }, [user, isLoading, fontsLoaded]);
 

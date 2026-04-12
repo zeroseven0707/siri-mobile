@@ -5,15 +5,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../../lib/api';
 import { Service } from '../../types';
+import { useAuthStore } from '../../lib/authStore';
+import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 const GREEN = '#2ECC71';
 
 export default function ServiceOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
-
+  
   // State for Food Service
   const [query, setQuery] = useState('');
   const [stores, setStores] = useState<any[]>([]);
@@ -121,7 +124,7 @@ export default function ServiceOrderScreen() {
 
         <View style={styles.searchHeader}>
           <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color="#9CA3AF" />
+            <Ionicons name="search" size={18} color="#9CA3AF" />
             <TextInput
               style={styles.searchInput}
               placeholder="Cari restoran atau makanan..."
@@ -141,7 +144,7 @@ export default function ServiceOrderScreen() {
             <ActivityIndicator color={GREEN} />
           </View>
         ) : (
-          <ScrollView contentContainerStyle={styles.storeList}>
+          <ScrollView contentContainerStyle={styles.storeList} showsVerticalScrollIndicator={false}>
             <Text style={styles.sectionTitle}>
               {query ? `Hasil pencarian "${query}"` : 'Restoran Populer'}
             </Text>
@@ -185,6 +188,20 @@ export default function ServiceOrderScreen() {
             )}
           </ScrollView>
         )}
+      </View>
+    );
+  }
+
+  // PROTEKSI GUEST UNTUK LAYANAN SELAIN MAKANAN
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{ title: service.name, headerStyle: { backgroundColor: '#fff' }, headerTintColor: '#000' }} />
+        <AuthPlaceholder 
+          icon="bicycle-outline"
+          title={`Pesan ${service.name}`}
+          description={`Silakan masuk untuk melakukan pemesanan ${service.name} dan menikmati seluruh fitur Siri.`}
+        />
       </View>
     );
   }
@@ -281,7 +298,7 @@ export default function ServiceOrderScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: '#fff' },
-
+  
   // Search Styles
   searchHeader: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff' },
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 12, height: 44, gap: 10 },

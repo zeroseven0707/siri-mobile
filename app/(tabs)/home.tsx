@@ -188,8 +188,10 @@ export default function HomeScreen() {
                 <Image source={require('../../assets/images/siri.png')} style={{ width: 26, height: 26 }} resizeMode="contain" />
               </View>
               <View>
-                <Text style={styles.greeting}>Hi, {user?.name?.split(' ')[0]}!</Text>
-                <Text style={styles.subGreeting}>Mau ke mana hari ini?</Text>
+                <Text style={styles.greeting}>Hi, {user ? user.name?.split(' ')[0] : 'Teman Siri'}!</Text>
+                <Text style={styles.subGreeting}>
+                  {user ? 'Mau ke mana hari ini?' : 'Yuk, mulai jelajahi layanan kami'}
+                </Text>
               </View>
             </View>
           </View>
