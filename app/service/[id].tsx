@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +13,13 @@ export default function ServiceOrderScreen() {
   const router = useRouter();
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
+  // State for Food Service
+  const [query, setQuery] = useState('');
+  const [stores, setStores] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // State for Other Services
   const [pickup, setPickup] = useState('');
   const [destination, setDestination] = useState('');
   const [notes, setNotes] = useState('');
@@ -25,6 +31,9 @@ export default function ServiceOrderScreen() {
         const res = await api.get('/services');
         const found = res.data.data.find((s: Service) => s.id === id || s.slug === id);
         setService(found);
+        if (found?.slug === 'food') {
+          fetchStores();
+        }
       } catch (err) {
         Alert.alert('Error', 'Gagal memuat layanan');
       } finally {
@@ -33,6 +42,28 @@ export default function ServiceOrderScreen() {
     };
     if (id) fetchService();
   }, [id]);
+
+  const fetchStores = async (q = '') => {
+    setIsSearching(true);
+    try {
+      const endpoint = q ? `/search?q=${q}&type=store` : '/stores';
+      const res = await api.get(endpoint);
+      setStores(res.data.data.stores || res.data.data || []);
+    } catch {
+      setStores([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  useEffect(() => {
+    if (service?.slug === 'food') {
+      const delay = setTimeout(() => {
+        fetchStores(query);
+      }, 500);
+      return () => clearTimeout(delay);
+    }
+  }, [query]);
 
   const handleOrder = async () => {
     if (!pickup.trim() || !destination.trim()) {
@@ -46,7 +77,7 @@ export default function ServiceOrderScreen() {
         service_id: service?.id || id,
         pickup_location: pickup,
         destination_location: destination,
-        price: service?.base_price || 15000, 
+        price: service?.base_price || 15000,
         notes,
       };
 
@@ -77,15 +108,97 @@ export default function ServiceOrderScreen() {
     );
   }
 
+  // KHUSUS TAMPILAN PESAN MAKANAN (LIST STORE)
+  if (service.slug === 'food') {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen options={{
+          title: service.name,
+          headerStyle: { backgroundColor: '#fff' },
+          headerTintColor: '#000',
+          headerShadowVisible: false,
+        }} />
+
+        <View style={styles.searchHeader}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color="#9CA3AF" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Cari restoran atau makanan..."
+              value={query}
+              onChangeText={setQuery}
+            />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery('')}>
+                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        {isSearching ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color={GREEN} />
+          </View>
+        ) : (
+          <ScrollView contentContainerStyle={styles.storeList}>
+            <Text style={styles.sectionTitle}>
+              {query ? `Hasil pencarian "${query}"` : 'Restoran Populer'}
+            </Text>
+
+            {stores.map((store) => (
+              <Pressable
+                key={store.id}
+                style={styles.storeCard}
+                onPress={() => router.push(`/store/${store.id}`)}
+              >
+                <View style={styles.storeImagePlaceholder}>
+                  <Image
+                    source={store.image ? { uri: store.image } : require('../../assets/images/siri.png')}
+                    style={styles.storeImage}
+                  />
+                </View>
+                <View style={styles.storeInfo}>
+                  <Text style={styles.storeName}>{store.name}</Text>
+                  <Text style={styles.storeCategory}>{store.category?.name || 'Kuliner'}</Text>
+                  <View style={styles.storeMetrics}>
+                    <View style={styles.metricItem}>
+                      <Ionicons name="star" size={14} color="#F59E0B" />
+                      <Text style={styles.metricText}>{store.rating || '4.8'}</Text>
+                    </View>
+                    <Text style={styles.dot}>•</Text>
+                    <Text style={styles.metricText}>{store.distance || '1.2 km'}</Text>
+                    <Text style={styles.dot}>•</Text>
+                    <View style={styles.promoBadge}>
+                      <Text style={styles.promoText}>Promo</Text>
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            ))}
+
+            {stores.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="restaurant-outline" size={64} color="#D1D5DB" />
+                <Text style={styles.emptyText}>Tidak menemukan restoran</Text>
+              </View>
+            )}
+          </ScrollView>
+        )}
+      </View>
+    );
+  }
+
+  // TAMPILAN LAYANAN BIASA (FOOD BUKAN SLUG)
   return (
     <>
-      <Stack.Screen options={{ 
-        title: `Pesan ${service.name}`, 
-        headerStyle: { backgroundColor: GREEN }, 
+      <Stack.Screen options={{
+        title: `Pesan ${service.name}`,
+        headerStyle: { backgroundColor: GREEN },
         headerTintColor: '#fff',
       }} />
-      <KeyboardAvoidingView 
-        style={styles.container} 
+      <KeyboardAvoidingView
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={100}
       >
@@ -108,7 +221,7 @@ export default function ServiceOrderScreen() {
                 />
               </View>
             </View>
-            
+
             <View style={styles.divider} />
 
             <View style={styles.inputGroup}>
@@ -148,8 +261,8 @@ export default function ServiceOrderScreen() {
         </ScrollView>
 
         <View style={styles.bottomBar}>
-          <Pressable 
-            style={[styles.btnOrder, isSubmitting && { opacity: 0.7 }]} 
+          <Pressable
+            style={[styles.btnOrder, isSubmitting && { opacity: 0.7 }]}
             onPress={handleOrder}
             disabled={isSubmitting}
           >
@@ -167,7 +280,34 @@ export default function ServiceOrderScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: '#fff' },
+
+  // Search Styles
+  searchHeader: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff' },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 12, height: 44, gap: 10 },
+  searchInput: { flex: 1, fontSize: 14, color: '#1F2937' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+  // Store List Styles
+  storeList: { padding: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1F2937', marginBottom: 16 },
+  storeCard: { flexDirection: 'row', marginBottom: 20, gap: 12 },
+  storeImagePlaceholder: { width: 90, height: 90, borderRadius: 12, backgroundColor: '#F3F4F6', overflow: 'hidden' },
+  storeImage: { width: '100%', height: '100%' },
+  storeInfo: { flex: 1, justifyContent: 'center' },
+  storeName: { fontSize: 15, fontWeight: '700', color: '#1F2937' },
+  storeCategory: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  storeMetrics: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 6 },
+  metricItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  metricText: { fontSize: 12, color: '#4B5563', fontWeight: '600' },
+  dot: { color: '#D1D5DB' },
+  promoBadge: { backgroundColor: '#F0FDF4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  promoText: { color: GREEN, fontSize: 10, fontWeight: '800' },
+
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 60 },
+  emptyText: { color: '#9CA3AF', marginTop: 12, fontSize: 14 },
+
+  // Original Order Styles
   scrollContent: { padding: 16 },
   mapPlaceholder: { height: 180, backgroundColor: '#E5E7EB', borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
   mapText: { color: '#6B7280', marginTop: 8 },
