@@ -8,7 +8,7 @@ export default function HelpScreen() {
   const router = useRouter();
 
   const handleContact = () => {
-    Linking.openURL('mailto:support@siri.id');
+    Linking.openURL('mailto:pamudanyiptakarya@gmail.com');
   };
 
   return (
