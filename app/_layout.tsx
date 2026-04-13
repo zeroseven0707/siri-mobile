@@ -13,13 +13,15 @@ export default function RootLayout() {
   const router = useRouter();
   
   const [fontsLoaded, fontError] = useFonts({
-    // Load explicitly with both names to ensure compatibility
-    'ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
-    'Ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
-    'material': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
-    'MaterialIcons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
-    'material-community': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf'),
-    'MaterialCommunityIcons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf'),
+    // Gunakan font dari library langsung dengan berbagai alias nama
+    ...Ionicons.font,
+    ...MaterialIcons.font,
+    ...MaterialCommunityIcons.font,
+    ...FontAwesome.font,
+    'Ionicons': Ionicons.font.ionicons,
+    'MaterialIcons': MaterialIcons.font.material,
+    'Material Community Icons': MaterialCommunityIcons.font['material-community'],
+    'MaterialCommunityIcons': MaterialCommunityIcons.font['material-community'],
   });
 
   useEffect(() => {
