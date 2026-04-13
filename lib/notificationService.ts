@@ -1,4 +1,5 @@
 import { Platform, NativeModules } from 'react-native';
+import api from './api';
 
 // Fungsi bantuan untuk cek apakah modul Firebase terpasang (Native)
 const isFirebaseAvailable = () => {
@@ -39,12 +40,15 @@ export async function setupCloudMessaging() {
   const notifee = require('@notifee/react-native').default;
   const { AndroidImportance } = require('@notifee/react-native');
 
-  // Cetak token untuk didebug
+  // Ambil token dan kirim ke backend
   try {
     const token = await getToken(getMessaging());
     console.log('--- FCM DEVICE TOKEN ---');
     console.log(token);
     console.log('------------------------');
+    if (token) {
+      await syncFCMTokenToBackend(token);
+    }
   } catch (e) {
     console.log('Gagal mengambil token:', e);
   }
@@ -94,5 +98,16 @@ export async function getFCMToken() {
     return token;
   } catch (err) {
     return null;
+  }
+}
+
+export async function syncFCMTokenToBackend(token?: string) {
+  try {
+    const fcmToken = token || await getFCMToken();
+    if (!fcmToken) return;
+    await api.post('/profile/fcm-token', { fcm_token: fcmToken });
+    console.log('FCM token synced to backend');
+  } catch (err) {
+    console.log('Failed to sync FCM token:', err);
   }
 }

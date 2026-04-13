@@ -5,6 +5,7 @@ import * as Device from 'expo-device';
 import * as Application from 'expo-application';
 import api from './api';
 import { User } from '../types';
+import { syncFCMTokenToBackend } from './notificationService';
 
 interface AuthState {
   user: User | null;
@@ -56,6 +57,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     await SecureStore.setItemAsync('auth_token', token);
     await SecureStore.setItemAsync('auth_user', JSON.stringify(user));
     set({ user, token });
+    syncFCMTokenToBackend().catch(() => {});
   },
 
   register: async (data) => {
@@ -64,6 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     await SecureStore.setItemAsync('auth_token', token);
     await SecureStore.setItemAsync('auth_user', JSON.stringify(user));
     set({ user, token });
+    syncFCMTokenToBackend().catch(() => {});
   },
 
   updateUser: async (updatedData: Partial<User>) => {

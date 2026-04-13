@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { useAuthStore } from '../lib/authStore';
 import SplashScreen from '../components/SplashScreen';
 import DebugOverlay from '../components/DebugOverlay';
-import { requestUserPermission, setupCloudMessaging } from '../lib/notificationService';
+import { requestUserPermission, setupCloudMessaging, syncFCMTokenToBackend } from '../lib/notificationService';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 
 export default function RootLayout() {
@@ -34,6 +34,13 @@ export default function RootLayout() {
       setupCloudMessaging().catch(() => {});
     }
   }, [fontsLoaded, fontError]);
+
+  // Sync FCM token setelah session loaded dan user sudah login
+  useEffect(() => {
+    if (user && !isLoading) {
+      syncFCMTokenToBackend().catch(() => {});
+    }
+  }, [user, isLoading]);
 
   useEffect(() => {
     if (isLoading || (!fontsLoaded && !fontError)) return;
