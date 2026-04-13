@@ -28,12 +28,6 @@ export default function ServiceOrderScreen() {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // State for destination search
-  const [destQuery, setDestQuery] = useState('');
-  const [destResults, setDestResults] = useState<any[]>([]);
-  const [isSearchingDest, setIsSearchingDest] = useState(false);
-  const [destCoord, setDestCoord] = useState<{ lat: number; lng: number } | null>(null);
-
   useEffect(() => {
     const fetchService = async () => {
       try {
@@ -73,24 +67,6 @@ export default function ServiceOrderScreen() {
       return () => clearTimeout(delay);
     }
   }, [query]);
-
-  // Search tujuan via Nominatim (OpenStreetMap) - debounce 600ms
-  useEffect(() => {
-    if (destQuery.length < 3) { setDestResults([]); return; }
-    const delay = setTimeout(async () => {
-      setIsSearchingDest(true);
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destQuery)}&format=json&limit=5&countrycodes=id`,
-          { headers: { 'Accept-Language': 'id', 'User-Agent': 'SiriApp/1.0' } }
-        );
-        const data = await res.json();
-        setDestResults(data);
-      } catch { setDestResults([]); }
-      finally { setIsSearchingDest(false); }
-    }, 600);
-    return () => clearTimeout(delay);
-  }, [destQuery]);
 
   const handleOrder = async () => {
     if (!destination.trim()) {
@@ -318,63 +294,21 @@ export default function ServiceOrderScreen() {
               <Text style={styles.sectionCardTitle}>Tujuan</Text>
             </View>
 
-            <View style={styles.searchDestBox}>
-              <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+            <View style={styles.notesBox}>
+              <Ionicons name="location-outline" size={18} color="#EF4444" style={{ marginTop: 2 }} />
               <TextInput
-                style={styles.searchDestInput}
-                placeholder="Cari alamat tujuan..."
+                style={styles.notesInput}
+                placeholder={'Ketik alamat tujuan lengkap\nContoh: Jl. Merdeka No. 10, Kel. Sukajadi, Kec. Bandung Wetan, Kota Bandung'}
                 placeholderTextColor="#9CA3AF"
-                value={destQuery}
-                onChangeText={(t) => {
-                  setDestQuery(t);
-                  setDestination(t);
-                  setDestCoord(null);
-                  setDestResults([]);
-                }}
+                value={destination}
+                onChangeText={setDestination}
+                multiline
+                numberOfLines={3}
               />
-              {isSearchingDest
-                ? <ActivityIndicator size="small" color={GREEN} />
-                : destQuery.length > 0
-                  ? <Pressable onPress={() => { setDestQuery(''); setDestination(''); setDestCoord(null); setDestResults([]); }}>
-                      <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-                    </Pressable>
-                  : null
-              }
             </View>
-
-            {destResults.length > 0 && (
-              <View style={styles.suggestionBox}>
-                {destResults.map((r, i) => (
-                  <Pressable
-                    key={i}
-                    style={[styles.suggestionItem, i < destResults.length - 1 && styles.suggestionBorder]}
-                    onPress={() => {
-                      setDestination(r.display_name);
-                      setDestQuery(r.display_name);
-                      setDestCoord({ lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
-                      setDestResults([]);
-                    }}
-                  >
-                    <View style={styles.suggestionIconBox}>
-                      <Ionicons name="location-outline" size={14} color={GREEN} />
-                    </View>
-                    <Text style={styles.suggestionText} numberOfLines={2}>{r.display_name}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-
-            {destCoord && (
-              <View>
-                <View style={styles.selectedDestBox}>
-                  <Ionicons name="checkmark-circle" size={16} color={GREEN} />
-                  <Text style={styles.selectedDestText} numberOfLines={1}>{destination}</Text>
-                </View>
-                <View style={styles.mapPreview} pointerEvents="none">
-                  <MapViewFree latitude={destCoord.lat} longitude={destCoord.lng} />
-                </View>
-              </View>
-            )}
+            <Text style={styles.destHint}>
+              <Ionicons name="information-circle-outline" size={12} color="#9CA3AF" /> Sertakan nama jalan, nomor, kelurahan, dan kota agar driver mudah menemukan lokasi kamu.
+            </Text>
           </View>
 
           {/* Catatan */}
@@ -485,16 +419,7 @@ const styles = StyleSheet.create({
   emptyLocationSub: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
   mapPreview: { borderRadius: 14, overflow: 'hidden', height: 180 },
 
-  // Destination Search
-  searchDestBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, gap: 10 },
-  searchDestInput: { flex: 1, fontSize: 14, color: '#1F2937', padding: 0 },
-  suggestionBox: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', marginTop: 8, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8 },
-  suggestionItem: { flexDirection: 'row', alignItems: 'flex-start', padding: 12, gap: 10 },
-  suggestionBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  suggestionIconBox: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  suggestionText: { flex: 1, fontSize: 12, color: '#374151', lineHeight: 18 },
-  selectedDestBox: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F0FDF4', borderRadius: 10, padding: 10, marginTop: 8, marginBottom: 10 },
-  selectedDestText: { flex: 1, fontSize: 12, color: '#065F46', fontWeight: '600' },
+  destHint: { fontSize: 11, color: '#9CA3AF', marginTop: 8, lineHeight: 16 },
 
   // Notes
   notesBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#F9FAFB', borderRadius: 12, padding: 12, gap: 10, borderWidth: 1, borderColor: '#F3F4F6' },
