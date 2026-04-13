@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,22 +15,20 @@ export default function RootLayout() {
     ...Ionicons.font,
   });
 
+  // Fallback: paksa isLoading false setelah 5 detik
+  const [forceReady, setForceReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setForceReady(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => { loadSession(); }, []);
 
   useEffect(() => {
-    let unsub: (() => void) | undefined;
-
-    if (fontsLoaded) {
-      // Inisialisasi Notifikasi
-      requestUserPermission();
-      setupCloudMessaging().then(u => {
-        unsub = u;
-      });
-      
-      return () => {
-        if (unsub) unsub();
-      };
-    }
+    if (!fontsLoaded) return;
+    // Fire and forget — jangan block rendering
+    requestUserPermission().catch(() => {});
+    setupCloudMessaging().catch(() => {});
   }, [fontsLoaded]);
 
   useEffect(() => {
@@ -39,7 +37,9 @@ export default function RootLayout() {
     if (user && inAuth) router.replace('/(tabs)/home');
   }, [user, isLoading, fontsLoaded]);
 
-  if (isLoading || !fontsLoaded) {
+  const ready = (!isLoading && fontsLoaded) || forceReady;
+
+  if (!ready) {
     return <SplashScreen />;
   }
 
