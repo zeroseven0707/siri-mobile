@@ -41,12 +41,14 @@
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
-      "@notifee/react-native",
       [
         "expo-build-properties",
         {
           "android": {
-            "extraMavenRepo": "https://maven.google.com"
+            "extraMavenRepo": [
+              "https://maven.google.com",
+              "file://$rootDir/../node_modules/@notifee/react-native/android/libs"
+            ]
           }
         }
       ]
