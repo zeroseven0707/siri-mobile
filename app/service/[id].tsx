@@ -252,123 +252,172 @@ export default function ServiceOrderScreen() {
     <>
       <Stack.Screen options={{
         title: `Pesan ${service.name}`,
-        headerStyle: { backgroundColor: GREEN },
-        headerTintColor: '#fff',
+        headerStyle: { backgroundColor: '#fff' },
+        headerTintColor: '#1F2937',
+        headerShadowVisible: false,
       }} />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={100}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-          <View style={styles.formCard}>
-            {/* Lokasi Jemput - dari data user */}
-            <View style={styles.inputGroup}>
-              <Ionicons name="location" size={20} color={GREEN} style={styles.inputIcon} />
-              <View style={styles.inputWrapper}>
-                <Text style={styles.label}>Lokasi Jemput</Text>
-                {user?.address && user?.latitude && user?.longitude ? (
-                  <View>
-                    <Text style={styles.locationText}>{user.address}</Text>
-                    <View style={styles.mapPreview} pointerEvents="none">
-                      <MapViewFree latitude={Number(user.latitude)} longitude={Number(user.longitude)} />
-                    </View>
-                    <Pressable onPress={() => router.push('/update-location')}>
-                      <Text style={styles.editLocation}>Ubah Lokasi</Text>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <View>
-                    <Text style={styles.locationEmpty}>Lokasi belum diatur</Text>
-                    <Pressable onPress={() => router.push('/update-location')} style={styles.setLocationBtn}>
-                      <Ionicons name="add-circle-outline" size={14} color={GREEN} />
-                      <Text style={styles.setLocationText}>Atur Lokasi Sekarang</Text>
-                    </Pressable>
-                  </View>
-                )}
-              </View>
+          {/* Service Banner */}
+          <View style={styles.serviceBanner}>
+            <View style={styles.serviceIconCircle}>
+              <Ionicons name="bicycle-outline" size={32} color={GREEN} />
             </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.inputGroup}>
-              <Ionicons name="location" size={20} color="#EF4444" style={styles.inputIcon} />
-              <View style={styles.inputWrapper}>
-                <Text style={styles.label}>Tujuan</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Cari lokasi tujuan..."
-                  value={destQuery}
-                  onChangeText={(t) => {
-                    setDestQuery(t);
-                    setDestination(t);
-                    setDestCoord(null);
-                    setDestResults([]);
-                  }}
-                />
-                {isSearchingDest && <ActivityIndicator size="small" color={GREEN} style={{ marginTop: 6 }} />}
-                {destResults.length > 0 && (
-                  <View style={styles.suggestionBox}>
-                    {destResults.map((r, i) => (
-                      <Pressable
-                        key={i}
-                        style={[styles.suggestionItem, i < destResults.length - 1 && styles.suggestionBorder]}
-                        onPress={() => {
-                          setDestination(r.display_name);
-                          setDestQuery(r.display_name);
-                          setDestCoord({ lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
-                          setDestResults([]);
-                        }}
-                      >
-                        <Ionicons name="location-outline" size={14} color="#9CA3AF" style={{ marginRight: 8, marginTop: 2 }} />
-                        <Text style={styles.suggestionText} numberOfLines={2}>{r.display_name}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
-                {destCoord && (
-                  <View style={[styles.mapPreview, { marginTop: 10 }]} pointerEvents="none">
-                    <MapViewFree latitude={destCoord.lat} longitude={destCoord.lng} />
-                  </View>
-                )}
-              </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.serviceBannerTitle}>{service.name}</Text>
+              <Text style={styles.serviceBannerSub}>Cepat, aman, dan terpercaya</Text>
             </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.inputGroup}>
-              <Ionicons name="document-text-outline" size={20} color="#6B7280" style={styles.inputIcon} />
-              <View style={styles.inputWrapper}>
-                <Text style={styles.label}>Catatan untuk Driver (Opsional)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Contoh: Jemput di lobi depan"
-                  value={notes}
-                  onChangeText={setNotes}
-                />
-              </View>
+            <View style={styles.pricePill}>
+              <Text style={styles.pricePillText}>Rp {Number(service.base_price || 15000).toLocaleString('id-ID')}</Text>
             </View>
           </View>
 
-          <View style={styles.priceContainer}>
-            <Text style={styles.priceLabel}>Estimasi Harga</Text>
-            <Text style={styles.priceValue}>Rp {Number(service.base_price || 15000).toLocaleString('id-ID')}</Text>
+          {/* Lokasi Jemput */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionCardHeader}>
+              <View style={[styles.dotIndicator, { backgroundColor: GREEN }]} />
+              <Text style={styles.sectionCardTitle}>Lokasi Jemput</Text>
+            </View>
+
+            {user?.address && user?.latitude && user?.longitude ? (
+              <View>
+                <View style={styles.locationInfoBox}>
+                  <Ionicons name="location" size={18} color={GREEN} />
+                  <Text style={styles.locationInfoText} numberOfLines={2}>{user.address}</Text>
+                  <Pressable onPress={() => router.push('/update-location')} style={styles.changeBtn}>
+                    <Text style={styles.changeBtnText}>Ubah</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.mapPreview} pointerEvents="none">
+                  <MapViewFree latitude={Number(user.latitude)} longitude={Number(user.longitude)} />
+                </View>
+              </View>
+            ) : (
+              <Pressable style={styles.emptyLocationBox} onPress={() => router.push('/update-location')}>
+                <View style={styles.emptyLocationIcon}>
+                  <Ionicons name="location-outline" size={24} color="#9CA3AF" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.emptyLocationTitle}>Lokasi belum diatur</Text>
+                  <Text style={styles.emptyLocationSub}>Tap untuk mengatur lokasi kamu</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+              </Pressable>
+            )}
+          </View>
+
+          {/* Tujuan */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionCardHeader}>
+              <View style={[styles.dotIndicator, { backgroundColor: '#EF4444' }]} />
+              <Text style={styles.sectionCardTitle}>Tujuan</Text>
+            </View>
+
+            <View style={styles.searchDestBox}>
+              <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+              <TextInput
+                style={styles.searchDestInput}
+                placeholder="Cari alamat tujuan..."
+                placeholderTextColor="#9CA3AF"
+                value={destQuery}
+                onChangeText={(t) => {
+                  setDestQuery(t);
+                  setDestination(t);
+                  setDestCoord(null);
+                  setDestResults([]);
+                }}
+              />
+              {isSearchingDest
+                ? <ActivityIndicator size="small" color={GREEN} />
+                : destQuery.length > 0
+                  ? <Pressable onPress={() => { setDestQuery(''); setDestination(''); setDestCoord(null); setDestResults([]); }}>
+                      <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                    </Pressable>
+                  : null
+              }
+            </View>
+
+            {destResults.length > 0 && (
+              <View style={styles.suggestionBox}>
+                {destResults.map((r, i) => (
+                  <Pressable
+                    key={i}
+                    style={[styles.suggestionItem, i < destResults.length - 1 && styles.suggestionBorder]}
+                    onPress={() => {
+                      setDestination(r.display_name);
+                      setDestQuery(r.display_name);
+                      setDestCoord({ lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
+                      setDestResults([]);
+                    }}
+                  >
+                    <View style={styles.suggestionIconBox}>
+                      <Ionicons name="location-outline" size={14} color={GREEN} />
+                    </View>
+                    <Text style={styles.suggestionText} numberOfLines={2}>{r.display_name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            {destCoord && (
+              <View>
+                <View style={styles.selectedDestBox}>
+                  <Ionicons name="checkmark-circle" size={16} color={GREEN} />
+                  <Text style={styles.selectedDestText} numberOfLines={1}>{destination}</Text>
+                </View>
+                <View style={styles.mapPreview} pointerEvents="none">
+                  <MapViewFree latitude={destCoord.lat} longitude={destCoord.lng} />
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* Catatan */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionCardHeader}>
+              <View style={[styles.dotIndicator, { backgroundColor: '#6B7280' }]} />
+              <Text style={styles.sectionCardTitle}>Catatan untuk Driver</Text>
+              <Text style={styles.optionalTag}>Opsional</Text>
+            </View>
+            <View style={styles.notesBox}>
+              <Ionicons name="document-text-outline" size={18} color="#9CA3AF" style={{ marginTop: 2 }} />
+              <TextInput
+                style={styles.notesInput}
+                placeholder="Contoh: Jemput di lobi depan, pakai helm..."
+                placeholderTextColor="#9CA3AF"
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
           </View>
 
         </ScrollView>
 
+        {/* Bottom Bar */}
         <View style={styles.bottomBar}>
+          <View style={styles.bottomInfo}>
+            <Text style={styles.bottomLabel}>Estimasi Harga</Text>
+            <Text style={styles.bottomPrice}>Rp {Number(service.base_price || 15000).toLocaleString('id-ID')}</Text>
+          </View>
           <Pressable
             style={[styles.btnOrder, isSubmitting && { opacity: 0.7 }]}
             onPress={handleOrder}
             disabled={isSubmitting}
           >
-            {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.btnOrderText}>Pesan Sekarang</Text>
-            )}
+            {isSubmitting
+              ? <ActivityIndicator color="#fff" />
+              : <>
+                  <Ionicons name="bicycle-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.btnOrderText}>Pesan Sekarang</Text>
+                </>
+            }
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -406,9 +455,60 @@ const styles = StyleSheet.create({
   emptyText: { color: '#9CA3AF', marginTop: 12, fontSize: 14 },
 
   // Original Order Styles
-  scrollContent: { padding: 16 },
+  scrollContent: { padding: 16, paddingBottom: 100, backgroundColor: '#F8FAFB' },
   mapPlaceholder: { height: 180, backgroundColor: '#E5E7EB', borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
   mapText: { color: '#6B7280', marginTop: 8 },
+
+  // Service Banner
+  serviceBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, gap: 12, elevation: 1, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
+  serviceIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center' },
+  serviceBannerTitle: { fontSize: 16, fontWeight: '800', color: '#1F2937' },
+  serviceBannerSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  pricePill: { backgroundColor: '#F0FDF4', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#D1FAE5' },
+  pricePillText: { color: GREEN, fontWeight: '800', fontSize: 13 },
+
+  // Section Cards
+  sectionCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, elevation: 1, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
+  sectionCardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 8 },
+  sectionCardTitle: { fontSize: 13, fontWeight: '700', color: '#374151', flex: 1 },
+  dotIndicator: { width: 10, height: 10, borderRadius: 5 },
+  optionalTag: { fontSize: 10, color: '#9CA3AF', backgroundColor: '#F3F4F6', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+
+  // Location
+  locationInfoBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0FDF4', borderRadius: 12, padding: 12, gap: 10, marginBottom: 10 },
+  locationInfoText: { flex: 1, fontSize: 13, color: '#1F2937', fontWeight: '500', lineHeight: 18 },
+  changeBtn: { backgroundColor: '#fff', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: '#D1FAE5' },
+  changeBtnText: { color: GREEN, fontSize: 11, fontWeight: '700' },
+  emptyLocationBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderRadius: 12, padding: 14, gap: 12, borderWidth: 1, borderColor: '#E5E7EB', borderStyle: 'dashed' },
+  emptyLocationIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  emptyLocationTitle: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
+  emptyLocationSub: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
+  mapPreview: { borderRadius: 14, overflow: 'hidden', height: 180 },
+
+  // Destination Search
+  searchDestBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, gap: 10 },
+  searchDestInput: { flex: 1, fontSize: 14, color: '#1F2937', padding: 0 },
+  suggestionBox: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', marginTop: 8, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8 },
+  suggestionItem: { flexDirection: 'row', alignItems: 'flex-start', padding: 12, gap: 10 },
+  suggestionBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  suggestionIconBox: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  suggestionText: { flex: 1, fontSize: 12, color: '#374151', lineHeight: 18 },
+  selectedDestBox: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F0FDF4', borderRadius: 10, padding: 10, marginTop: 8, marginBottom: 10 },
+  selectedDestText: { flex: 1, fontSize: 12, color: '#065F46', fontWeight: '600' },
+
+  // Notes
+  notesBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#F9FAFB', borderRadius: 12, padding: 12, gap: 10, borderWidth: 1, borderColor: '#F3F4F6' },
+  notesInput: { flex: 1, fontSize: 14, color: '#1F2937', padding: 0, lineHeight: 20 },
+
+  // Bottom Bar
+  bottomBar: { backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12, paddingBottom: Platform.OS === 'ios' ? 28 : 12, borderTopWidth: 1, borderTopColor: '#F3F4F6', flexDirection: 'row', alignItems: 'center', gap: 12, elevation: 8 },
+  bottomInfo: { flex: 1 },
+  bottomLabel: { fontSize: 11, color: '#9CA3AF' },
+  bottomPrice: { fontSize: 18, fontWeight: '800', color: '#1F2937' },
+  btnOrder: { backgroundColor: GREEN, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  btnOrderText: { color: '#fff', fontWeight: '800', fontSize: 15 },
+
+  // Old unused
   formCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, elevation: 2, marginBottom: 20 },
   inputGroup: { flexDirection: 'row', alignItems: 'center' },
   inputIcon: { marginRight: 16 },
@@ -416,20 +516,12 @@ const styles = StyleSheet.create({
   label: { fontSize: 11, color: '#6B7280', marginBottom: 4, fontWeight: '500' },
   input: { fontSize: 15, color: '#111827', padding: 0 },
   locationText: { fontSize: 14, color: '#111827', fontWeight: '500' },
-  mapPreview: { marginTop: 10, marginBottom: 4, borderRadius: 12, overflow: 'hidden', height: 180 },
   editLocation: { color: GREEN, fontSize: 12, fontWeight: '700', marginTop: 4 },
   locationEmpty: { fontSize: 13, color: '#9CA3AF' },
   setLocationBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
   setLocationText: { color: GREEN, fontSize: 12, fontWeight: '700' },
-  suggestionBox: { backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB', marginTop: 6, overflow: 'hidden', elevation: 3 },
-  suggestionItem: { flexDirection: 'row', alignItems: 'flex-start', padding: 10 },
-  suggestionBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  suggestionText: { flex: 1, fontSize: 12, color: '#374151', lineHeight: 18 },
   divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 12, marginLeft: 36 },
   priceContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ECFDF5', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#D1FAE5' },
   priceLabel: { fontSize: 14, color: '#065F46', fontWeight: '500' },
   priceValue: { fontSize: 18, color: '#065F46', fontWeight: 'bold' },
-  bottomBar: { backgroundColor: '#fff', padding: 16, borderTopWidth: 1, borderTopColor: '#E5E7EB', elevation: 4 },
-  btnOrder: { backgroundColor: GREEN, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
-  btnOrderText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
