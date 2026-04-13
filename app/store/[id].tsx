@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Minus, Plus, ChevronRight } from 'lucide-react-native';
 import api from '../../lib/api';
 import { FoodItem, Store, Service } from '../../types';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -98,7 +99,7 @@ export default function StoreDetailScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
             {store.image ? (
-                <Image source={{ uri: store.image }} style={styles.storeHeroImage} />
+                <Image source={{ uri: storageUrl(store.image)! }} style={styles.storeHeroImage} />
             ) : (
                 <View style={styles.storeIcon}><Text style={{fontSize: 40}}>🍽️</Text></View>
             )}
@@ -121,7 +122,7 @@ export default function StoreDetailScreen() {
                   <ItemView key={food.id} style={styles.foodCard}>
                     <Pressable style={{ flex: 1 }} onPress={() => router.push(`/food/${food.id}` as any)}>
                       {food.image ? (
-                        <Image source={{ uri: food.image }} style={styles.foodImage} resizeMode="cover" />
+                        <Image source={{ uri: storageUrl(food.image)! }} style={styles.foodImage} resizeMode="cover" />
                       ) : (
                         <View style={[styles.foodImage, { backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' }]}>
                           <Text style={{ fontSize: 30 }}>🍱</Text>

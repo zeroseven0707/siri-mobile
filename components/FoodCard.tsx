@@ -1,14 +1,14 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { UtensilsCrossed } from 'lucide-react-native';
-import { FoodItem } from '../types';
+import { storageUrl } from '../lib/storage';
 
 export default function FoodCard({ item, onPress }: { item: FoodItem; onPress?: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.imageBox}>
         {item.image
-          ? <Image source={{ uri: item.image }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          ? <Image source={{ uri: storageUrl(item.image)! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
           : <UtensilsCrossed size={30} color="#D1D5DB" />}
       </View>
       <View style={styles.info}>

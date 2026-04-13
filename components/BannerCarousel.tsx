@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dimensions, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { HomeSectionItem } from '../types';
+import { storageUrl } from '../lib/storage';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width - 32;
@@ -21,7 +22,7 @@ export default function BannerCarousel({ items }: { items: HomeSectionItem[] }) 
         renderItem={({ item }) => (
           <Pressable style={[styles.slide, { width: ITEM_WIDTH }]}>
             {item.image
-              ? <Image source={{ uri: item.image }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              ? <Image source={{ uri: storageUrl(item.image)! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
               : (
                 <View style={styles.fallback}>
                   <Text style={styles.title}>{item.title}</Text>

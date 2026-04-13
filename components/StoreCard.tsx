@@ -1,14 +1,14 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Store as StoreIcon } from 'lucide-react-native';
-import { Store } from '../types';
+import { storageUrl } from '../lib/storage';
 
 export default function StoreCard({ store, onPress }: { store: Store; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.imageBox}>
         {store.image
-          ? <Image source={{ uri: store.image }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          ? <Image source={{ uri: storageUrl(store.image)! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
           : <StoreIcon size={36} color="#D1D5DB" />}
       </View>
       <View style={styles.info}>

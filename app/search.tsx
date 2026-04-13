@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, FlatList, Pressable, ActivityIndicat
 import { useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Search, X, UtensilsCrossed, Store } from 'lucide-react-native';
-import api from '../lib/api';
+import { storageUrl } from '../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -101,7 +101,7 @@ export default function SearchScreen() {
             renderItem={({ item }) => (
               <Pressable style={styles.card} onPress={() => handlePressItem(item)}>
                 {item.image ? (
-                  <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
+                  <Image source={{ uri: storageUrl(item.image)! }} style={styles.image} resizeMode="cover" />
                 ) : (
                   <View style={styles.imagePlaceholder}>
                     {item._type === 'store' ? <Store size={30} color="#9CA3AF" /> : <UtensilsCrossed size={30} color="#9CA3AF" />}

@@ -8,6 +8,7 @@ import { Service } from '../../types';
 import { useAuthStore } from '../../lib/authStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
 import MapViewFree from '../../components/MapViewFree';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 
@@ -125,7 +126,7 @@ export default function ServiceOrderScreen() {
             {stores.map((store) => (
               <Pressable key={store.id} style={styles.storeCard} onPress={() => router.push(`/store/${store.id}`)}>
                 <View style={styles.storeImagePlaceholder}>
-                  <Image source={store.image ? { uri: store.image } : require('../../assets/images/siri.png')} style={styles.storeImage} />
+                  <Image source={store.image ? { uri: storageUrl(store.image)! } : require('../../assets/images/siri.png')} style={styles.storeImage} />
                 </View>
                 <View style={styles.storeInfo}>
                   <Text style={styles.storeName}>{store.name}</Text>

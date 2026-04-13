@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Minus, Plus, ChevronRight, ArrowLeft } from 'lucide-react-native';
 import api from '../../lib/api';
 import { FoodItem, Store } from '../../types';
-import { useAuthStore } from '../../lib/authStore';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -119,7 +119,7 @@ export default function FoodDetailScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {food.image ? (
-          <Image source={{ uri: food.image }} style={styles.foodBanner} resizeMode="cover" />
+          <Image source={{ uri: storageUrl(food.image)! }} style={styles.foodBanner} resizeMode="cover" />
         ) : (
           <View style={[styles.foodBanner, { backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' }]}>
             <Text style={{ fontSize: 60 }}>🍱</Text>

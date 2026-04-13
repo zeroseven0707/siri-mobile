@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Sty
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Sliders, Utensils, Bike, Car, Package, Grid } from 'lucide-react-native';
 import api from '../../lib/api';
+import { storageUrl } from '../../lib/storage';
 import { useAuthStore } from '../../lib/authStore';
 import { HomeSection, HomeSectionItem } from '../../types';
 
@@ -54,7 +55,7 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <Pressable style={styles.bannerItem}>
               {item.image ? (
-                <Image source={{ uri: item.image }} style={styles.bannerImage} resizeMode="cover" />
+                <Image source={{ uri: storageUrl(item.image)! }} style={styles.bannerImage} resizeMode="cover" />
               ) : (
                 <View style={[styles.bannerImage, { backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' }]}>
                   <Text style={{ color: '#fff', fontWeight: 'bold' }}>{item.title}</Text>
@@ -103,7 +104,7 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <Pressable style={styles.storeCard} onPress={() => router.push(`/store/${item.action_value}` as any)}>
               {item.image ? (
-                <Image source={{ uri: item.image }} style={styles.storeImg} resizeMode="cover" />
+                <Image source={{ uri: storageUrl(item.image)! }} style={styles.storeImg} resizeMode="cover" />
               ) : (
                 <View style={styles.storeImg}><Text style={{ fontSize: 32 }}>🍽️</Text></View>
               )}
@@ -134,7 +135,7 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <Pressable style={styles.foodCard} onPress={() => router.push(`/food/${item.action_value}` as any)}>
               {item.image ? (
-                <Image source={{ uri: item.image }} style={styles.foodImg} resizeMode="cover" />
+                <Image source={{ uri: storageUrl(item.image)! }} style={styles.foodImg} resizeMode="cover" />
               ) : (
                 <View style={styles.foodImg}><Text style={{ fontSize: 28 }}>🍱</Text></View>
               )}
@@ -161,7 +162,7 @@ export default function HomeScreen() {
               <Text style={styles.promoSub}>{item.subtitle}</Text>
             </View>
             {item.image ? (
-              <Image source={{ uri: item.image }} style={{ width: 60, height: 40, borderRadius: 8 }} resizeMode="cover" />
+              <Image source={{ uri: storageUrl(item.image)! }} style={{ width: 60, height: 40, borderRadius: 8 }} resizeMode="cover" />
             ) : (
               <Text style={{ fontSize: 30 }}>✨</Text>
             )}
