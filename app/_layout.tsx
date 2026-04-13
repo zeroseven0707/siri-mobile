@@ -17,31 +17,31 @@ export default function RootLayout() {
     ...MaterialIcons.font,
     ...MaterialCommunityIcons.font,
     ...FontAwesome.font,
-    // Provide capitalized aliases just in case some components expect them
-    'Ionicons': Ionicons.font.ionicons,
-    'MaterialIcons': MaterialIcons.font.material,
-    'MaterialCommunityIcons': MaterialCommunityIcons.font['material-community'],
   });
 
   useEffect(() => {
-    if (fontError) console.error('Font load error:', fontError);
+    if (fontError) console.warn('Peringatan Font:', fontError);
   }, [fontError]);
 
   useEffect(() => { loadSession(); }, []);
 
   useEffect(() => {
-    if (!fontsLoaded) return;
-    requestUserPermission().catch(() => {});
-    setupCloudMessaging().catch(() => {});
-  }, [fontsLoaded]);
+    if (fontsLoaded || fontError) {
+      requestUserPermission().catch(() => {});
+      setupCloudMessaging().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
 
   useEffect(() => {
-    if (isLoading || !fontsLoaded) return;
+    if (isLoading || (!fontsLoaded && !fontError)) return;
     const inAuth = segments[0] === '(auth)';
     if (user && inAuth) router.replace('/(tabs)/home');
-  }, [user, isLoading, fontsLoaded]);
+  }, [user, isLoading, fontsLoaded, fontError]);
 
-  if (isLoading || !fontsLoaded) {
+  // Jika sudah tidak loading (auth) DAN (font sudah siap ATAU gagal)
+  const isReady = !isLoading && (fontsLoaded || fontError);
+
+  if (!isReady) {
     return <SplashScreen />;
   }
 
