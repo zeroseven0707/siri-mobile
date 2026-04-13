@@ -12,15 +12,10 @@ export default function RootLayout() {
   const router = useRouter();
   
   const [fontsLoaded, fontError] = useFonts({
-    // Gunakan font dari library langsung dengan berbagai alias nama
     ...Ionicons.font,
     ...MaterialIcons.font,
     ...MaterialCommunityIcons.font,
     ...FontAwesome.font,
-    'Ionicons': Ionicons.font.ionicons,
-    'MaterialIcons': MaterialIcons.font.material,
-    'Material Community Icons': MaterialCommunityIcons.font['material-community'],
-    'MaterialCommunityIcons': MaterialCommunityIcons.font['material-community'],
   });
 
   useEffect(() => {
