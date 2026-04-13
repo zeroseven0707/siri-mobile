@@ -3,7 +3,7 @@
     "name": "Siri",
     "slug": "siri-mobile",
     "version": "1.0.0",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "orientation": "portrait",
     "scheme": "siri",
     "userInterfaceStyle": "light",
@@ -47,12 +47,7 @@
       [
         "expo-build-properties",
         {
-          "android": {
-            "extraMavenRepo": [
-              "https://maven.google.com",
-              "file://$rootDir/../node_modules/@notifee/react-native/android/libs"
-            ]
-          }
+          "android": {}
         }
       ]
     ],
