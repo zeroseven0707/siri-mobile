@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { useAuthStore } from '../lib/authStore';
 import SplashScreen from '../components/SplashScreen';
 import DebugOverlay from '../components/DebugOverlay';
-import { requestUserPermission, setupCloudMessaging, syncFCMTokenToBackend } from '../lib/notificationService';
+import { requestUserPermission, setupCloudMessaging, syncFCMTokenToBackend, setNotificationRouter } from '../lib/notificationService';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 
 export default function RootLayout() {
@@ -32,6 +32,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
+      setNotificationRouter(router);
       requestUserPermission().catch(() => {});
       setupCloudMessaging().catch(() => {});
     }

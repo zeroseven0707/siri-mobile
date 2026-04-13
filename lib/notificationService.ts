@@ -66,32 +66,60 @@ export async function setupCloudMessaging() {
     importance: AndroidImportance.HIGH,
   });
 
+  // Handle tap notifikasi saat app di background/quit
+  notifee.onBackgroundEvent(async ({ type, detail }: any) => {
+    const { EventType } = require('@notifee/react-native');
+    if (type === EventType.PRESS && detail.notification?.data?.navigate === 'orders') {
+      handleNotificationNavigation(detail.notification.data);
+    }
+  });
+
   // Mendengarkan pesan saat aplikasi di FOREGROUND
   const unsubscribe = onMessage(getMessaging(), async (remoteMessage: any) => {
     console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
 
     const { title, body } = remoteMessage.notification || {};
+    const data = remoteMessage.data || {};
 
-    if (title || body || remoteMessage.data) {
+    if (title || body || data) {
       // Pemicu refresh data di UI secara otomatis
       useNotificationStore.getState().triggerRefresh();
 
       await notifee.displayNotification({
-        title: title || String(remoteMessage.data?.title || 'Notifikasi Baru'),
-        body: body || String(remoteMessage.data?.body || 'Cek aplikasi Siri kamu'),
+        title: title || String(data?.title || 'Notifikasi Baru'),
+        body: body || String(data?.body || 'Cek aplikasi Siri kamu'),
+        data,
         android: {
           channelId,
           color: '#2ECC71',
           importance: AndroidImportance.HIGH,
-          pressAction: {
-            id: 'default',
-          },
+          pressAction: { id: 'default' },
         },
       });
     }
   });
 
+  // Handle tap notifikasi saat app di foreground
+  notifee.onForegroundEvent(({ type, detail }: any) => {
+    const { EventType } = require('@notifee/react-native');
+    if (type === EventType.PRESS && detail.notification?.data?.navigate === 'orders') {
+      handleNotificationNavigation(detail.notification.data);
+    }
+  });
+
   return unsubscribe;
+}
+
+let _router: any = null;
+
+export function setNotificationRouter(router: any) {
+  _router = router;
+}
+
+export function handleNotificationNavigation(data: any) {
+  if (data?.navigate === 'orders' && _router) {
+    _router.push('/(tabs)/orders');
+  }
 }
 
 export async function getFCMToken() {
