@@ -21,12 +21,17 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    const message =
-      error.response?.data?.message ||
-      error.response?.data?.errors ||
-      error.message ||
-      'Something went wrong';
-    return Promise.reject(new Error(typeof message === 'string' ? message : JSON.stringify(message)));
+    const data = error.response?.data;
+    let message: string;
+
+    if (data?.errors && typeof data.errors === 'object') {
+      // Ambil pesan pertama dari errors object
+      message = (Object.values(data.errors).flat() as string[])[0] || data.message || 'Terjadi kesalahan';
+    } else {
+      message = data?.message || error.message || 'Something went wrong';
+    }
+
+    return Promise.reject(new Error(message));
   }
 );
 
