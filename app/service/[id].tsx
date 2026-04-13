@@ -74,6 +74,19 @@ export default function ServiceOrderScreen() {
       return;
     }
 
+    // Validasi alamat/koordinat user
+    if (!user?.latitude || !user?.longitude || !user?.address) {
+      Alert.alert(
+        'Alamat Belum Diatur',
+        'Kamu perlu mengatur alamat terlebih dahulu sebelum memesan.',
+        [
+          { text: 'Nanti', style: 'cancel' },
+          { text: 'Atur Sekarang', onPress: () => router.push('/update-location') },
+        ]
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {
@@ -89,7 +102,7 @@ export default function ServiceOrderScreen() {
         { text: 'OK', onPress: () => router.replace('/(tabs)/orders') }
       ]);
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Gagal membuat pesanan');
+      Alert.alert('Error', err?.response?.data?.message || err.message || 'Gagal membuat pesanan');
     } finally {
       setIsSubmitting(false);
     }

@@ -34,6 +34,19 @@ export default function FoodCheckoutScreen() {
   const total = subtotal + deliveryFee + serviceFee;
 
   const handleConfirmOrder = async () => {
+    // Validasi alamat sebelum submit
+    if (!user?.latitude || !user?.longitude || !user?.address) {
+      Alert.alert(
+        'Alamat Belum Diatur',
+        'Kamu perlu mengatur alamat pengiriman terlebih dahulu sebelum memesan.',
+        [
+          { text: 'Nanti', style: 'cancel' },
+          { text: 'Atur Sekarang', onPress: () => router.push('/update-location') },
+        ]
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const servicesRes = await api.get('/services');
@@ -58,7 +71,8 @@ export default function FoodCheckoutScreen() {
         { text: 'Lihat Pesanan', onPress: () => router.replace('/(tabs)/orders') }
       ]);
     } catch (err: any) {
-      Alert.alert('Gagal', err.message || 'Terjadi kesalahan saat membuat pesanan');
+      const msg = err?.response?.data?.message || err.message || 'Terjadi kesalahan saat membuat pesanan';
+      Alert.alert('Gagal Memesan', msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -100,6 +114,12 @@ export default function FoodCheckoutScreen() {
                 {user?.address || 'Alamat belum diatur. Harap atur di profil.'}
               </Text>
             </View>
+            {(!user?.latitude || !user?.longitude || !user?.address) && (
+              <View style={styles.addressWarning}>
+                <Ionicons name="warning-outline" size={14} color="#D97706" />
+                <Text style={styles.addressWarningText}>Atur alamat dulu sebelum memesan</Text>
+              </View>
+            )}
             <Pressable onPress={() => router.push('/update-location')}>
               <Text style={styles.changeAddress}>Ubah Alamat</Text>
             </Pressable>
@@ -247,6 +267,8 @@ const styles = StyleSheet.create({
   addressRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addressText: { flex: 1, fontSize: 13, color: '#374151', lineHeight: 20 },
   changeAddress: { color: GREEN, fontWeight: '700', fontSize: 13, marginTop: 10 },
+  addressWarning: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFBEB', borderRadius: 8, padding: 8, marginTop: 8, borderWidth: 1, borderColor: '#FDE68A' },
+  addressWarningText: { fontSize: 12, color: '#D97706', fontWeight: '600' },
   foodItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
   foodInfo: { flexDirection: 'row', gap: 10 },
   foodQty: { fontWeight: '700', color: GREEN },

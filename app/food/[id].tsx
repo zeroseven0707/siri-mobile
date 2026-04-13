@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../../lib/api';
 import { FoodItem, Store } from '../../types';
+import { useAuthStore } from '../../lib/authStore';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -12,6 +13,7 @@ const DARK_GREEN = '#27AE60';
 export default function FoodDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const [food, setFood] = useState<FoodItem | null>(null);
   const [store, setStore] = useState<Store | null>(null);
@@ -37,6 +39,20 @@ export default function FoodDetailScreen() {
 
   const handleOrder = async () => {
     if (!food || !store) return;
+
+    // Validasi alamat sebelum submit
+    if (!user?.latitude || !user?.longitude || !user?.address) {
+      Alert.alert(
+        'Alamat Belum Diatur',
+        'Kamu perlu mengatur alamat pengiriman terlebih dahulu sebelum memesan.',
+        [
+          { text: 'Nanti', style: 'cancel' },
+          { text: 'Atur Sekarang', onPress: () => router.push('/update-location') },
+        ]
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const servicesRes = await api.get('/services');
