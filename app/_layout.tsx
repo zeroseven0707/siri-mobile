@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../lib/authStore';
 import SplashScreen from '../components/SplashScreen';
+import DebugOverlay from '../components/DebugOverlay';
 import { requestUserPermission, setupCloudMessaging } from '../lib/notificationService';
 
 export default function RootLayout() {
@@ -44,9 +45,12 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+      <DebugOverlay />
+    </>
   );
 }
