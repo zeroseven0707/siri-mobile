@@ -3,6 +3,7 @@
     "name": "Siri",
     "slug": "siri-mobile",
     "version": "1.0.0",
+    "newArchEnabled": true,
     "orientation": "portrait",
     "scheme": "siri",
     "userInterfaceStyle": "light",
