@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert, ActivityIndicator, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Receipt } from 'lucide-react-native';
+import { Receipt, UtensilsCrossed, Bike, Car, Package, HandHelping } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import api from '../../lib/api';
 import { Order } from '../../types';
@@ -10,6 +10,20 @@ import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
+
+const SERVICE_ICON_MAP: Record<string, any> = {
+  food:     UtensilsCrossed,
+  ojek:     Bike,
+  car:      Car,
+  delivery: Package,
+  nitah:    HandHelping,
+};
+const SERVICE_COLOR_MAP: Record<string, string> = {
+  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', delivery: '#FAF5FF', nitah: '#FDF2F8',
+};
+const SERVICE_ICON_COLOR_MAP: Record<string, string> = {
+  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', delivery: '#A855F7', nitah: '#EC4899',
+};
 
 const STATUS: Record<Order['status'], { label: string; bg: string; color: string }> = {
   pending: { label: 'Menunggu', bg: '#FEF9C3', color: '#A16207' },
@@ -68,8 +82,8 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
   return (
     <Pressable style={styles.card} onPress={() => router.push(`/order/${item.id}` as any)}>
       <View style={styles.cardTop}>
-        <View style={[styles.serviceIcon, { backgroundColor: '#F0FDF4' }]}>
-          <Receipt size={20} color={DARK_GREEN} />
+        <View style={[styles.serviceIcon, { backgroundColor: SERVICE_COLOR_MAP[item.service?.slug ?? ''] ?? '#F0FDF4' }]}>
+          {(() => { const IconComp = SERVICE_ICON_MAP[item.service?.slug ?? ''] ?? Receipt; return <IconComp size={20} color={SERVICE_ICON_COLOR_MAP[item.service?.slug ?? ''] ?? DARK_GREEN} />; })()}
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.serviceName}>{item.service?.name ?? 'Layanan'}</Text>

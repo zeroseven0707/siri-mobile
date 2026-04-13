@@ -1,19 +1,20 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { UtensilsCrossed, Bike, Car, Package, LayoutGrid } from 'lucide-react-native';
+import { UtensilsCrossed, Bike, Car, Package, LayoutGrid, HandHelping } from 'lucide-react-native';
 import { Service } from '../types';
 
 const SERVICE_ICONS: Record<string, any> = {
-  food: UtensilsCrossed,
-  ojek: Bike,
-  car: Car,
+  food:     UtensilsCrossed,
+  ojek:     Bike,
+  car:      Car,
   delivery: Package,
+  nitah:    HandHelping,
 };
 const SERVICE_COLORS: Record<string, string> = {
-  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', delivery: '#FAF5FF',
+  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', delivery: '#FAF5FF', nitah: '#FDF2F8',
 };
 const ICON_COLORS: Record<string, string> = {
-  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', delivery: '#A855F7',
+  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', delivery: '#A855F7', nitah: '#EC4899',
 };
 
 export default function ServiceCard({ service, onPress }: { service: Service; onPress: () => void }) {

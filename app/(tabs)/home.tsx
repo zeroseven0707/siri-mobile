@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, Star } from 'lucide-react-native';
+import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, Star, HandHelping } from 'lucide-react-native';
 import api from '../../lib/api';
 import { storageUrl } from '../../lib/storage';
 import { useAuthStore } from '../../lib/authStore';
@@ -12,10 +12,11 @@ const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
 
 const SERVICE_ICONS: Record<string, { icon: any; color: string; bg: string }> = {
-  food: { icon: Utensils, color: '#F97316', bg: '#FFF7ED' },
-  ojek: { icon: Bike, color: '#2ECC71', bg: '#F0FDF4' },
-  car: { icon: Car, color: '#3B82F6', bg: '#EFF6FF' },
-  delivery: { icon: Package, color: '#A855F7', bg: '#FAF5FF' },
+  food:     { icon: Utensils,    color: '#F97316', bg: '#FFF7ED' },
+  ojek:     { icon: Bike,        color: '#2ECC71', bg: '#F0FDF4' },
+  car:      { icon: Car,         color: '#3B82F6', bg: '#EFF6FF' },
+  delivery: { icon: Package,     color: '#A855F7', bg: '#FAF5FF' },
+  nitah:    { icon: HandHelping, color: '#EC4899', bg: '#FDF2F8' },
 };
 
 export default function HomeScreen() {
@@ -108,7 +109,7 @@ export default function HomeScreen() {
       <View key={section.id} style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
-          <Pressable style={styles.seeAllBtn}>
+          <Pressable style={styles.seeAllBtn} onPress={() => router.push('/stores' as any)}>
             <Text style={styles.seeAll}>Lihat semua</Text>
             <ChevronRight size={14} color={DARK_GREEN} />
           </Pressable>
@@ -151,7 +152,7 @@ export default function HomeScreen() {
       <View key={section.id} style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
-          <Pressable style={styles.seeAllBtn}>
+          <Pressable style={styles.seeAllBtn} onPress={() => router.push('/foods' as any)}>
             <Text style={styles.seeAll}>Lihat semua</Text>
             <ChevronRight size={14} color={DARK_GREEN} />
           </Pressable>

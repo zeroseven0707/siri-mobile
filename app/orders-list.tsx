@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, RefreshControl, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, UtensilsCrossed, Bike, User } from 'lucide-react-native';
+import { ArrowLeft, UtensilsCrossed, Bike, Car, Package, HandHelping, User } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import api from '../lib/api';
 import { useOrderStore } from '../lib/orderStore';
 
 const GREEN = '#2ECC71';
+
+const SERVICE_ICON_MAP: Record<string, any> = {
+  food:     UtensilsCrossed,
+  ojek:     Bike,
+  car:      Car,
+  delivery: Package,
+  nitah:    HandHelping,
+};
 
 type OrderStatus = 'pending' | 'accepted' | 'on_progress' | 'completed' | 'cancelled';
 
@@ -60,9 +68,7 @@ export default function OrdersScreen() {
       <View style={styles.cardHeader}>
         <View style={styles.serviceInfo}>
           <View style={styles.serviceIcon}>
-             {item.service?.slug === 'food'
-               ? <UtensilsCrossed size={20} color={GREEN} />
-               : <Bike size={20} color={GREEN} />}
+             {(() => { const IconComp = SERVICE_ICON_MAP[item.service?.slug] ?? UtensilsCrossed; return <IconComp size={20} color={GREEN} />; })()}
           </View>
           <View>
             <Text style={styles.serviceName}>{item.service?.name}</Text>
