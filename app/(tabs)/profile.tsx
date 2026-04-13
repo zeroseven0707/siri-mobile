@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../lib/authStore';
 import { useOrderStore } from '../../lib/orderStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
-import api from '../../lib/api';
 
 const GREEN = '#2ECC71';
-const DARK_GREEN = '#27AE60';
 
 export default function ProfileScreen() {
-  const { user, logout, updateUser } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '' });
+  const { setActiveTab } = useOrderStore();
 
   if (!user) {
     return (
@@ -27,11 +23,6 @@ export default function ProfileScreen() {
     );
   }
 
-  const [editing, setEditing] = useState(false);
-  const set = (key: keyof typeof form) => (val: string) => setForm(f => ({ ...f, [key]: val }));
-
-  const { setActiveTab } = useOrderStore();
-
   const handleStatusPress = (status: any) => {
     const map: any = {
       'Menunggu': 'pending',
@@ -41,19 +32,6 @@ export default function ProfileScreen() {
     };
     setActiveTab(map[status]);
     router.push('/orders-list');
-  };
-
-  const handleSave = async () => {
-    setLoading(true);
-    try { 
-      const res = await api.put('/profile/update', form); 
-      const updatedUser = res.data?.data || form;
-      await updateUser(updatedUser);
-      setEditing(false); 
-      Alert.alert('Berhasil', 'Profil telah diperbarui');
-    }
-    catch (e: any) { Alert.alert('Gagal', e.message); }
-    finally { setLoading(false); }
   };
 
   const handleLogout = () => Alert.alert('Keluar', 'Yakin ingin keluar?', [
@@ -67,7 +45,7 @@ export default function ProfileScreen() {
       <View style={styles.topActions}>
         <Text style={styles.topTitle}>Saya</Text>
         <View style={styles.topIcons}>
-          <Pressable onPress={() => setEditing(!editing)} style={styles.iconBtn}>
+          <Pressable onPress={() => router.push('/settings')} style={styles.iconBtn}>
             <Ionicons name="settings-outline" size={22} color="#fff" />
           </Pressable>
           <Pressable onPress={() => router.push('/help')} style={styles.iconBtn}>
@@ -125,34 +103,6 @@ export default function ProfileScreen() {
                ))}
             </View>
           </View>
-
-          {editing && (
-             <View style={styles.card}>
-               <Text style={[styles.cardTitle, {marginBottom: 16}]}>Edit Profil</Text>
-               {[
-                 { label: 'Nama Lengkap', key: 'name', icon: 'person-outline', value: form.name },
-                 { label: 'Nomor WhatsApp', key: 'phone', icon: 'logo-whatsapp', value: form.phone },
-               ].map(f => {
-                 const ItemView = View as any;
-                 return (
-                   <ItemView key={f.key} style={styles.fieldWrap}>
-                     <View style={styles.inputRow}>
-                       <Ionicons name={f.icon as any} size={18} color={GREEN} style={{ marginRight: 10 }} />
-                       <TextInput 
-                          style={styles.input} 
-                          value={f.value as any} 
-                          onChangeText={set(f.key as any)} 
-                          placeholder={f.label}
-                       />
-                     </View>
-                   </ItemView>
-                 );
-               })}
-               <Pressable style={[styles.saveBtn, loading && { opacity: 0.6 }]} onPress={handleSave} disabled={loading}>
-                 <Text style={styles.saveTxt}>Update Profil</Text>
-               </Pressable>
-             </View>
-          )}
 
           {/* Menu Sections */}
           <View style={styles.menuCard}>
@@ -231,12 +181,6 @@ const styles = StyleSheet.create({
   statusLabel: { fontSize: 10, color: '#4B5563' },
 
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, elevation: 2 },
-  fieldWrap: { marginBottom: 12 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderRadius: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: '#F3F4F6' },
-  input: { flex: 1, paddingVertical: 10, fontSize: 14, color: '#1F2937' },
-  saveBtn: { backgroundColor: GREEN, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  saveTxt: { color: '#fff', fontWeight: 'bold' },
-
   menuCard: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', marginBottom: 12, elevation: 2 },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 14 },
   menuBorder: { borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
