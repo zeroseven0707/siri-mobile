@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Clock, ArrowUp, ArrowDown } from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
 import api from '../lib/api';
 import { Transaction } from '../types';
@@ -41,14 +41,16 @@ export default function HistoryScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetch(); }} tintColor="#2ECC71" />}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="time-outline" size={56} color="#D1D5DB" />
+            <Clock size={56} color="#D1D5DB" />
             <Text style={styles.emptyText}>Belum ada riwayat</Text>
           </View>
         }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={[styles.iconBox, { backgroundColor: item.type === 'payment' ? '#FEF2F2' : '#F0FDF4' }]}>
-              <Ionicons name={item.type === 'payment' ? 'arrow-up-outline' : 'arrow-down-outline'} size={20} color={item.type === 'payment' ? '#EF4444' : '#22C55E'} />
+              {item.type === 'payment'
+                ? <ArrowUp size={20} color="#EF4444" />
+                : <ArrowDown size={20} color="#22C55E" />}
             </View>
             <View style={styles.info}>
               <Text style={styles.type}>{item.type === 'payment' ? 'Pembayaran' : 'Refund'}</Text>

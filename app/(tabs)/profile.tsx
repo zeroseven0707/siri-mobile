@@ -152,7 +152,7 @@ export default function ProfileScreen() {
               const IconComp = item.icon;
               return (
                 <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
-                  <IconComp size={20} color={item.color} style={{marginRight: 12}} />
+                  <View style={{ marginRight: 12 }}><IconComp size={20} color={item.color} /></View>
                   <Text style={styles.menuLabel}>{item.label}</Text>
                   <ChevronRight size={16} color="#D1D5DB" />
                 </Pressable>
@@ -170,7 +170,7 @@ export default function ProfileScreen() {
               const IconComp = item.icon;
               return (
                 <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
-                  <IconComp size={20} color={item.color} style={{marginRight: 12}} />
+                  <View style={{ marginRight: 12 }}><IconComp size={20} color={item.color} /></View>
                   <Text style={styles.menuLabel}>{item.label}</Text>
                   <ChevronRight size={16} color="#D1D5DB" />
                 </Pressable>

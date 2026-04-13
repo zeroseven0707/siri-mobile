@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, User, Phone, Mail, Edit2 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../lib/authStore';
 import api from '../lib/api';
@@ -39,8 +39,8 @@ export default function EditProfileScreen() {
   return (
     <SafeAreaView style={styles.flex} edges={['top']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#1F2937" />
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <ArrowLeft size={22} color="#1F2937" />
         </Pressable>
         <Text style={styles.headerTitle}>Edit Profil</Text>
         <View style={{ width: 38 }} />
@@ -60,7 +60,7 @@ export default function EditProfileScreen() {
             <View key={f.key} style={[styles.fieldWrap, i < fields.length - 1 && styles.fieldBorder]}>
               <Text style={styles.label}>{f.label}</Text>
               <View style={styles.inputRow}>
-                <Ionicons name={f.icon as any} size={18} color={GREEN} style={{ marginRight: 10 }} />
+                <View style={{ marginRight: 10 }}><User size={18} color={GREEN} /></View>
                 <TextInput
                   style={styles.input}
                   value={f.value}
@@ -78,7 +78,7 @@ export default function EditProfileScreen() {
           <View style={styles.fieldWrap}>
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputRow}>
-              <Ionicons name="mail-outline" size={18} color="#9CA3AF" style={{ marginRight: 10 }} />
+              <View style={{ marginRight: 10 }}><Mail size={18} color="#9CA3AF" /></View>
               <Text style={styles.readOnly}>{user?.email}</Text>
             </View>
           </View>

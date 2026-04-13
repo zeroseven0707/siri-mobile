@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { X, Bug } from 'lucide-react-native';
 
 interface LogEntry {
   type: 'log' | 'warn' | 'error';
@@ -11,7 +11,6 @@ interface LogEntry {
 const MAX_LOGS = 100;
 let globalAddLog: ((entry: LogEntry) => void) | null = null;
 
-// Intercept console
 const originalLog = console.log;
 const originalWarn = console.warn;
 const originalError = console.error;
@@ -50,12 +49,8 @@ export default function DebugOverlay() {
 
   return (
     <>
-      {/* Floating toggle button */}
-      <Pressable
-        style={styles.fab}
-        onPress={() => setVisible(v => !v)}
-      >
-        <Ionicons name={visible ? 'close' : 'bug-outline'} size={20} color="#fff" />
+      <Pressable style={styles.fab} onPress={() => setVisible(v => !v)}>
+        {visible ? <X size={20} color="#fff" /> : <Bug size={20} color="#fff" />}
         {!visible && logs.filter(l => l.type === 'error').length > 0 && (
           <View style={styles.errorDot} />
         )}
@@ -69,20 +64,12 @@ export default function DebugOverlay() {
               <Text style={styles.clearBtn}>Clear</Text>
             </Pressable>
           </View>
-          <ScrollView
-            ref={scrollRef}
-            style={styles.logList}
-            showsVerticalScrollIndicator={false}
-          >
-            {logs.length === 0 && (
-              <Text style={styles.emptyText}>Belum ada log</Text>
-            )}
+          <ScrollView ref={scrollRef} style={styles.logList} showsVerticalScrollIndicator={false}>
+            {logs.length === 0 && <Text style={styles.emptyText}>Belum ada log</Text>}
             {logs.map((log, i) => (
               <View key={i} style={[styles.logItem, { backgroundColor: colorMap[log.type] }]}>
                 <Text style={styles.logTime}>{log.time}</Text>
-                <Text style={[styles.logMsg, { color: textColorMap[log.type] }]} numberOfLines={5}>
-                  {log.msg}
-                </Text>
+                <Text style={[styles.logMsg, { color: textColorMap[log.type] }]} numberOfLines={5}>{log.msg}</Text>
               </View>
             ))}
           </ScrollView>
@@ -93,57 +80,10 @@ export default function DebugOverlay() {
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 80,
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#1F2937',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 999,
-    zIndex: 999,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  errorDot: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#EF4444',
-    borderWidth: 1.5,
-    borderColor: '#fff',
-  },
-  panel: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 150 : 130,
-    left: 12,
-    right: 12,
-    height: 320,
-    backgroundColor: '#111827',
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 998,
-    zIndex: 998,
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-  },
-  panelHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-  },
+  fab: { position: 'absolute', bottom: Platform.OS === 'ios' ? 100 : 80, right: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: '#1F2937', alignItems: 'center', justifyContent: 'center', elevation: 999, zIndex: 999, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 6 },
+  errorDot: { position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: '#EF4444', borderWidth: 1.5, borderColor: '#fff' },
+  panel: { position: 'absolute', bottom: Platform.OS === 'ios' ? 150 : 130, left: 12, right: 12, height: 320, backgroundColor: '#111827', borderRadius: 16, overflow: 'hidden', elevation: 998, zIndex: 998 },
+  panelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#374151' },
   panelTitle: { color: '#F9FAFB', fontWeight: '700', fontSize: 13 },
   clearBtn: { color: '#EF4444', fontSize: 12, fontWeight: '600' },
   logList: { flex: 1, padding: 8 },

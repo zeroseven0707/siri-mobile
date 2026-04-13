@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Minus, Plus, ChevronRight, ArrowLeft } from 'lucide-react-native';
 import api from '../../lib/api';
 import { FoodItem, Store } from '../../types';
 import { useAuthStore } from '../../lib/authStore';
@@ -111,7 +111,7 @@ export default function FoodDetailScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <ArrowLeft size={24} color="#1F2937" />
         </Pressable>
         <Text style={styles.headerTitle}>Detail Menu</Text>
         <View style={{ width: 40 }} />
@@ -143,7 +143,7 @@ export default function FoodDetailScreen() {
                    <Text style={{ fontSize: 13, color: '#6B7280' }}>Disediakan oleh</Text>
                    <Text style={{ fontSize: 15, fontWeight: '700', color: '#1F2937' }}>{store.name}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                <ChevronRight size={20} color="#9CA3AF" />
              </Pressable>
           )}
 
@@ -151,11 +151,11 @@ export default function FoodDetailScreen() {
              <Text style={{ fontSize: 15, fontWeight: '600', color: '#374151' }}>Jumlah Pesanan</Text>
              <View style={styles.qtyControl}>
                 <Pressable onPress={() => setQuantity(Math.max(1, quantity - 1))} style={styles.qtyBtn}>
-                  <Ionicons name="remove" size={20} color={GREEN} />
+                  <Minus size={20} color={GREEN} />
                 </Pressable>
                 <Text style={styles.qtyText}>{quantity}</Text>
                 <Pressable onPress={() => setQuantity(quantity + 1)} style={styles.qtyBtn}>
-                  <Ionicons name="add" size={20} color={GREEN} />
+                  <Plus size={20} color={GREEN} />
                 </Pressable>
              </View>
           </View>

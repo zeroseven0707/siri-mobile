@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Clock, AlertTriangle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import CustomHeader from '../components/CustomHeader';
 import api from '../lib/api';
@@ -99,7 +99,7 @@ export default function DeleteAccountScreen() {
         {status ? (
           <View style={styles.statusCard}>
             <View style={styles.statusHeader}>
-              <Ionicons name="time-outline" size={40} color="#F59E0B" />
+              <Clock size={40} color="#F59E0B" />
               <Text style={styles.statusTitle}>Permintaan Sedang Ditinjau</Text>
               <Text style={styles.statusBadge}>{status.status.toUpperCase()}</Text>
             </View>
@@ -133,7 +133,7 @@ export default function DeleteAccountScreen() {
         ) : (
           <View style={styles.card}>
             <View style={styles.warningBox}>
-              <Ionicons name="warning-outline" size={24} color="#DC2626" />
+              <AlertTriangle size={24} color="#DC2626" />
               <Text style={styles.warningTitle}>Peringatan Penting</Text>
             </View>
             

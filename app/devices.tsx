@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, Pressable, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Smartphone, LogOut, Trash2, ShieldCheck } from 'lucide-react-native';
 import CustomHeader from '../components/CustomHeader';
 import api from '../lib/api';
 
@@ -76,11 +76,9 @@ export default function DevicesScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <View style={[styles.card, item.is_current && styles.currentCard]}>
       <View style={[styles.iconBox, item.is_current && { backgroundColor: '#F0FDF4' }]}>
-        <Ionicons 
-          name={item.platform === 'ios' ? 'logo-apple' : 'logo-android'} 
-          size={24} 
-          color={item.is_current ? GREEN : '#4B5563'} 
-        />
+        {item.platform === 'ios'
+          ? <Smartphone size={24} color={item.is_current ? GREEN : '#4B5563'} />
+          : <Smartphone size={24} color={item.is_current ? GREEN : '#4B5563'} />}
       </View>
       <View style={styles.content}>
         <View style={styles.nameRow}>
@@ -99,11 +97,8 @@ export default function DevicesScreen() {
         </Text>
       </View>
       {!item.is_current && (
-        <Pressable 
-          style={styles.logoutBtn} 
-          onPress={() => handleLogoutDevice(item.id, item.device)}
-        >
-          <Ionicons name="log-out-outline" size={22} color="#EF4444" />
+        <Pressable style={styles.logoutBtn} onPress={() => handleLogoutDevice(item.id, item.device)}>
+          <LogOut size={22} color="#EF4444" />
         </Pressable>
       )}
     </View>
@@ -115,13 +110,13 @@ export default function DevicesScreen() {
       
       <View style={styles.headerAction}>
         <View style={styles.infoBanner}>
-          <Ionicons name="shield-checkmark" size={18} color="#15803D" />
+          <ShieldCheck size={18} color="#15803D" />
           <Text style={styles.infoText}>Berikut adalah perangkat yang saat ini memiliki akses ke akun Siri Anda.</Text>
         </View>
         
         {devices.filter(d => !d.is_current).length > 0 && (
           <Pressable style={styles.logoutAllFull} onPress={handleLogoutAll}>
-            <Ionicons name="trash-outline" size={16} color="#EF4444" />
+            <Trash2 size={16} color="#EF4444" />
             <Text style={styles.logoutAllText}>Logout dari Semua Perangkat Lain</Text>
           </Pressable>
         )}
@@ -140,7 +135,7 @@ export default function DevicesScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchDevices(false); }} tintColor={GREEN} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="phone-portrait-outline" size={60} color="#D1D5DB" />
+              <Smartphone size={60} color="#D1D5DB" />
               <Text style={styles.emptyTitle}>Data tidak ditemukan</Text>
             </View>
           }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { UtensilsCrossed } from 'lucide-react-native';
 import { FoodItem } from '../types';
 
 export default function FoodCard({ item, onPress }: { item: FoodItem; onPress?: () => void }) {
@@ -9,7 +9,7 @@ export default function FoodCard({ item, onPress }: { item: FoodItem; onPress?: 
       <View style={styles.imageBox}>
         {item.image
           ? <Image source={{ uri: item.image }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          : <Ionicons name="fast-food-outline" size={30} color="#D1D5DB" />}
+          : <UtensilsCrossed size={30} color="#D1D5DB" />}
       </View>
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>{item.name}</Text>

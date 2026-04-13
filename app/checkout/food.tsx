@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert, TextInput, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { User, MapPin, ShoppingCart, CreditCard, Banknote, Globe, Tag, AlertTriangle, UtensilsCrossed } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Service } from '../../types';
@@ -86,7 +86,7 @@ export default function FoodCheckoutScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
         <Stack.Screen options={{ headerShown: false }} />
         <AuthPlaceholder
-          icon="cart-outline"
+          icon="ShoppingCart"
           title="Masuk untuk Checkout"
           description="Kamu perlu masuk terlebih dahulu untuk melanjutkan proses pemesanan."
         />
@@ -104,7 +104,7 @@ export default function FoodCheckoutScreen() {
         {/* Informasi Pelanggan */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="person-circle-outline" size={20} color={GREEN} />
+            <User size={20} color={GREEN} />
             <Text style={styles.sectionTitle}>Detail Pengiriman</Text>
           </View>
           <View style={styles.card}>
@@ -112,14 +112,14 @@ export default function FoodCheckoutScreen() {
             <Text style={styles.userPhone}>{user?.phone}</Text>
             <View style={styles.divider} />
             <View style={styles.addressRow}>
-              <Ionicons name="location" size={18} color="#EF4444" />
+              <MapPin size={18} color="#EF4444" />
               <Text style={styles.addressText} numberOfLines={2}>
                 {user?.address || 'Alamat belum diatur. Harap atur di profil.'}
               </Text>
             </View>
             {(!user?.latitude || !user?.longitude || !user?.address) && (
               <View style={styles.addressWarning}>
-                <Ionicons name="warning-outline" size={14} color="#D97706" />
+                <AlertTriangle size={14} color="#D97706" />
                 <Text style={styles.addressWarningText}>Atur alamat dulu sebelum memesan</Text>
               </View>
             )}
@@ -132,7 +132,7 @@ export default function FoodCheckoutScreen() {
         {/* Ringkasan Pesanan */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="fast-food-outline" size={20} color={GREEN} />
+            <UtensilsCrossed size={20} color={GREEN} />
             <Text style={styles.sectionTitle}>Pesanan di {storeName}</Text>
           </View>
           <View style={styles.card}>
@@ -154,7 +154,7 @@ export default function FoodCheckoutScreen() {
         {/* Metode Pembayaran */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="card-outline" size={20} color={GREEN} />
+            <CreditCard size={20} color={GREEN} />
             <Text style={styles.sectionTitle}>Metode Pembayaran</Text>
           </View>
           <View style={styles.card}>
@@ -163,13 +163,15 @@ export default function FoodCheckoutScreen() {
               onPress={() => setPaymentMethod('cod')}
             >
               <View style={styles.paymentLeft}>
-                <Ionicons name="cash-outline" size={24} color={paymentMethod === 'cod' ? GREEN : '#9CA3AF'} />
+                <Banknote size={24} color={paymentMethod === 'cod' ? GREEN : '#9CA3AF'} />
                 <View>
                   <Text style={[styles.paymentTitle, paymentMethod === 'cod' && { color: DARK_GREEN }]}>COD (Bayar di Tempat)</Text>
                   <Text style={styles.paymentSub}>Bayar langsung ke driver saat sampai</Text>
                 </View>
               </View>
-              <Ionicons name={paymentMethod === 'cod' ? 'radio-button-on' : 'radio-button-off'} size={20} color={paymentMethod === 'cod' ? GREEN : '#D1D5DB'} />
+              {paymentMethod === 'cod'
+                ? <ShoppingCart size={20} color={GREEN} />
+                : <ShoppingCart size={20} color="#D1D5DB" />}
             </Pressable>
 
             <View style={styles.divider} />
@@ -179,13 +181,15 @@ export default function FoodCheckoutScreen() {
               onPress={() => setPaymentMethod('xendit')}
             >
               <View style={styles.paymentLeft}>
-                <Ionicons name="globe-outline" size={24} color={paymentMethod === 'xendit' ? GREEN : '#9CA3AF'} />
+                <Globe size={24} color={paymentMethod === 'xendit' ? GREEN : '#9CA3AF'} />
                 <View>
                   <Text style={[styles.paymentTitle, paymentMethod === 'xendit' && { color: DARK_GREEN }]}>Transfer / E-Wallet</Text>
                   <Text style={styles.paymentSub}>OVO, Dana, LinkAja, VA Bank</Text>
                 </View>
               </View>
-              <Ionicons name={paymentMethod === 'xendit' ? 'radio-button-on' : 'radio-button-off'} size={20} color={paymentMethod === 'xendit' ? GREEN : '#D1D5DB'} />
+              {paymentMethod === 'xendit'
+                ? <ShoppingCart size={20} color={GREEN} />
+                : <ShoppingCart size={20} color="#D1D5DB" />}
             </Pressable>
           </View>
         </View>
@@ -193,7 +197,7 @@ export default function FoodCheckoutScreen() {
         {/* Voucher */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="pricetag-outline" size={20} color={GREEN} />
+            <Tag size={20} color={GREEN} />
             <Text style={styles.sectionTitle}>Makin Hemat Pakai Voucher</Text>
           </View>
           <View style={styles.voucherBox}>

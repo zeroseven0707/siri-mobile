@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, Edit2, ChevronRight, LogOut, User, MapPin, Shield, Receipt, Bell, Clock, HelpCircle, Info, FileText } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../lib/authStore';
 
@@ -11,25 +11,25 @@ const MENU_SECTIONS = [
   {
     title: 'Akun',
     items: [
-      { icon: 'person-outline', label: 'Edit Profil', color: GREEN, route: '/edit-profile' },
-      { icon: 'location-outline', label: 'Alamat Saya', color: '#EF4444', route: '/update-location' },
-      { icon: 'shield-checkmark-outline', label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
+      { icon: User, label: 'Edit Profil', color: GREEN, route: '/edit-profile' },
+      { icon: MapPin, label: 'Alamat Saya', color: '#EF4444', route: '/update-location' },
+      { icon: Shield, label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
     ],
   },
   {
     title: 'Aktivitas',
     items: [
-      { icon: 'receipt-outline', label: 'Pesanan Saya', color: '#8B5CF6', route: '/(tabs)/orders' },
-      { icon: 'notifications-outline', label: 'Notifikasi', color: '#F59E0B', route: '/(tabs)/notifications' },
-      { icon: 'time-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/history-transactions' },
+      { icon: Receipt, label: 'Pesanan Saya', color: '#8B5CF6', route: '/(tabs)/orders' },
+      { icon: Bell, label: 'Notifikasi', color: '#F59E0B', route: '/(tabs)/notifications' },
+      { icon: Clock, label: 'Riwayat Transaksi', color: '#3B82F6', route: '/history-transactions' },
     ],
   },
   {
     title: 'Lainnya',
     items: [
-      { icon: 'help-circle-outline', label: 'Pusat Bantuan', color: '#10B981', route: '/help' },
-      { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#6366F1', route: '/about' },
-      { icon: 'document-text-outline', label: 'Kebijakan Privasi', color: '#4B5563', route: '/terms' },
+      { icon: HelpCircle, label: 'Pusat Bantuan', color: '#10B981', route: '/help' },
+      { icon: Info, label: 'Tentang Siri', color: '#6366F1', route: '/about' },
+      { icon: FileText, label: 'Kebijakan Privasi', color: '#4B5563', route: '/terms' },
     ],
   },
 ];
@@ -47,7 +47,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.flex} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#1F2937" />
+          <ArrowLeft size={22} color="#1F2937" />
         </Pressable>
         <Text style={styles.headerTitle}>Pengaturan</Text>
         <View style={{ width: 38 }} />
@@ -65,7 +65,7 @@ export default function SettingsScreen() {
               <Text style={styles.userEmail}>{user.email}</Text>
             </View>
             <Pressable onPress={() => router.push('/edit-profile')} style={styles.editBtn}>
-              <Ionicons name="create-outline" size={18} color={GREEN} />
+              <Edit2 size={18} color={GREEN} />
             </Pressable>
           </View>
         )}
@@ -81,10 +81,10 @@ export default function SettingsScreen() {
                   onPress={() => router.push(item.route as any)}
                 >
                   <View style={[styles.iconBox, { backgroundColor: item.color + '15' }]}>
-                    <Ionicons name={item.icon as any} size={18} color={item.color} />
+                    <item.icon size={18} color={item.color} />
                   </View>
                   <Text style={styles.menuLabel}>{item.label}</Text>
-                  <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+                  <ChevronRight size={16} color="#D1D5DB" />
                 </Pressable>
               ))}
             </View>
@@ -93,7 +93,7 @@ export default function SettingsScreen() {
 
         {user && (
           <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={18} color="#EF4444" style={{ marginRight: 8 }} />
+            <LogOut size={18} color="#EF4444" style={{ marginRight: 8 }} />
             <Text style={styles.logoutTxt}>Keluar</Text>
           </Pressable>
         )}

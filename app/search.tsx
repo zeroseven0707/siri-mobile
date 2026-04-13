@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, Pressable, ActivityIndicator, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, Search, X, UtensilsCrossed, Store } from 'lucide-react-native';
 import api from '../lib/api';
 
 const GREEN = '#2ECC71';
@@ -55,10 +55,10 @@ export default function SearchScreen() {
       {/* Header Search Bar */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <ArrowLeft size={24} color="#1F2937" />
         </Pressable>
         <View style={styles.searchBox}>
-          <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+          <Search size={20} color="#9CA3AF" />
           <TextInput 
             style={styles.searchInput}
             placeholder="Cari Nasi, Ayam, atau Toko..."
@@ -69,7 +69,7 @@ export default function SearchScreen() {
           />
           {query.length > 0 && (
              <Pressable onPress={() => setQuery('')}>
-                <Ionicons name="close-circle" size={20} color="#D1D5DB" />
+                <X size={20} color="#D1D5DB" />
              </Pressable>
           )}
         </View>
@@ -90,7 +90,7 @@ export default function SearchScreen() {
           </View>
         ) : query.length <= 1 ? (
           <View style={styles.center}>
-            <Ionicons name="fast-food-outline" size={60} color="#E5E7EB" />
+            <UtensilsCrossed size={60} color="#E5E7EB" />
             <Text style={styles.helpText}>Ketik nama makanan atau nama warung</Text>
           </View>
         ) : (
@@ -104,7 +104,7 @@ export default function SearchScreen() {
                   <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
                 ) : (
                   <View style={styles.imagePlaceholder}>
-                    <Ionicons name={item._type === 'store' ? "storefront-outline" : "fast-food-outline"} size={30} color="#9CA3AF" />
+                    {item._type === 'store' ? <Store size={30} color="#9CA3AF" /> : <UtensilsCrossed size={30} color="#9CA3AF" />}
                   </View>
                 )}
                 <View style={styles.info}>

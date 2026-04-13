@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Receipt } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import api from '../../lib/api';
 import { Order } from '../../types';
@@ -70,7 +70,7 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
     <Pressable style={styles.card} onPress={() => router.push(`/order/${item.id}` as any)}>
       <View style={styles.cardTop}>
         <View style={[styles.serviceIcon, { backgroundColor: '#F0FDF4' }]}>
-          <Ionicons name="receipt-outline" size={20} color={DARK_GREEN} />
+          <Receipt size={20} color={DARK_GREEN} />
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.serviceName}>{item.service?.name ?? 'Layanan'}</Text>
@@ -133,7 +133,7 @@ export default function OrdersScreen() {
           <Text style={styles.title}>Pesanan Saya</Text>
         </View>
         <AuthPlaceholder
-          icon="receipt-outline"
+          icon="Receipt"
           title="Lihat Pesanan Kamu"
           description="Masuk untuk melihat status pesanan, riwayat transaksi, dan melacak pengiriman kamu."
         />

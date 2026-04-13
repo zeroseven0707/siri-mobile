@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator, Pressable, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { RefreshCw } from 'lucide-react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapViewFree from '../components/MapViewFree';
 
@@ -65,7 +65,7 @@ export default function TestLocationScreen() {
           )}
 
           <Pressable style={styles.btn} onPress={getLocation} disabled={loading}>
-            <Ionicons name="refresh" size={18} color="#fff" />
+            <RefreshCw size={18} color="#fff" />
             <Text style={styles.btnText}>Perbarui Lokasi</Text>
           </Pressable>
         </View>

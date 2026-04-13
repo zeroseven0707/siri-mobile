@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, Mail } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 export default function HelpScreen() {
@@ -15,7 +15,7 @@ export default function HelpScreen() {
     <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <ArrowLeft size={24} color="#1F2937" />
         </Pressable>
         <Text style={styles.headerTitle}>Pusat Bantuan</Text>
         <View style={{ width: 40 }} />
@@ -39,7 +39,7 @@ export default function HelpScreen() {
 
         <Text style={styles.subtitle}>Masih butuh bantuan lain?</Text>
         <Pressable style={styles.btn} onPress={handleContact}>
-           <Ionicons name="mail-outline" size={20} color="#fff" />
+           <Mail size={20} color="#fff" />
            <Text style={styles.btnText}>Hubungi Customer Service</Text>
         </Pressable>
       </ScrollView>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,7 +18,7 @@ export default function CustomHeader({ title, showBack = true }: CustomHeaderPro
       <View style={styles.content}>
         {showBack ? (
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+            <ArrowLeft size={24} color="#1F2937" />
           </Pressable>
         ) : (
           <View style={{ width: 40 }} />
@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
-    // Memberikan shadow halus agar tetap terasa premium
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

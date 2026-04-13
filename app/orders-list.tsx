@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, RefreshControl, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, UtensilsCrossed, Bike, User } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import api from '../lib/api';
 import { useOrderStore } from '../lib/orderStore';
@@ -60,11 +60,9 @@ export default function OrdersScreen() {
       <View style={styles.cardHeader}>
         <View style={styles.serviceInfo}>
           <View style={styles.serviceIcon}>
-             <Ionicons 
-                name={item.service?.slug === 'food' ? 'fast-food' : 'bicycle'} 
-                size={20} 
-                color={GREEN} 
-             />
+             {item.service?.slug === 'food'
+               ? <UtensilsCrossed size={20} color={GREEN} />
+               : <Bike size={20} color={GREEN} />}
           </View>
           <View>
             <Text style={styles.serviceName}>{item.service?.name}</Text>
@@ -107,7 +105,7 @@ export default function OrdersScreen() {
         {item.driver ? (
           <View style={styles.driverInfo}>
             <View style={styles.driverAvatar}>
-              <Ionicons name="person" size={14} color="#9CA3AF" />
+              <User size={14} color="#9CA3AF" />
             </View>
             <Text style={styles.driverName}>{item.driver.name}</Text>
           </View>
@@ -122,7 +120,7 @@ export default function OrdersScreen() {
     <SafeAreaView style={styles.flex} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <ArrowLeft size={24} color="#1F2937" />
         </Pressable>
         <Text style={styles.headerTitle}>Status Pesanan</Text>
       </View>

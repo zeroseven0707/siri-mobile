@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Lock, Key, Shield, Info } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import CustomHeader from '../components/CustomHeader';
 import api from '../lib/api';
@@ -45,49 +45,26 @@ export default function ChangePasswordScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll}>
           <View style={styles.infoBox}>
-            <Ionicons name="information-circle-outline" size={20} color={GREEN} />
-            <Text style={styles.infoText}>
-              Gunakan password yang kuat dan unik untuk melindungi akun Siri Anda.
-            </Text>
+            <Info size={20} color={GREEN} />
+            <Text style={styles.infoText}>Gunakan password yang kuat dan unik untuk melindungi akun Siri Anda.</Text>
           </View>
 
           <View style={styles.card}>
             <Text style={styles.label}>Password Saat Ini</Text>
             <View style={styles.inputRow}>
-              <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.icon} />
-              <TextInput 
-                style={styles.input}
-                secureTextEntry
-                placeholder="Masukkan password lama"
-                value={form.current_password}
-                onChangeText={(v) => setForm({...form, current_password: v})}
-              />
+              <View style={styles.icon}><Lock size={18} color="#9CA3AF" /></View>
+              <TextInput style={styles.input} secureTextEntry placeholder="Masukkan password lama" value={form.current_password} onChangeText={(v) => setForm({...form, current_password: v})} />
             </View>
-
             <View style={styles.divider} />
-
             <Text style={styles.label}>Password Baru</Text>
             <View style={styles.inputRow}>
-              <Ionicons name="key-outline" size={18} color="#9CA3AF" style={styles.icon} />
-              <TextInput 
-                style={styles.input}
-                secureTextEntry
-                placeholder="Masukkan password baru"
-                value={form.password}
-                onChangeText={(v) => setForm({...form, password: v})}
-              />
+              <View style={styles.icon}><Key size={18} color="#9CA3AF" /></View>
+              <TextInput style={styles.input} secureTextEntry placeholder="Masukkan password baru" value={form.password} onChangeText={(v) => setForm({...form, password: v})} />
             </View>
-
             <Text style={styles.label}>Konfirmasi Password Baru</Text>
             <View style={styles.inputRow}>
-              <Ionicons name="shield-checkmark-outline" size={18} color="#9CA3AF" style={styles.icon} />
-              <TextInput 
-                style={styles.input}
-                secureTextEntry
-                placeholder="Ulangi password baru"
-                value={form.password_confirmation}
-                onChangeText={(v) => setForm({...form, password_confirmation: v})}
-              />
+              <View style={styles.icon}><Shield size={18} color="#9CA3AF" /></View>
+              <TextInput style={styles.input} secureTextEntry placeholder="Ulangi password baru" value={form.password_confirmation} onChangeText={(v) => setForm({...form, password_confirmation: v})} />
             </View>
           </View>
 

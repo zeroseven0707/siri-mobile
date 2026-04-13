@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { User, Lock, Eye, EyeOff, Fingerprint } from 'lucide-react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 import { useAuthStore } from '../../lib/authStore';
@@ -85,18 +85,18 @@ export default function LoginScreen() {
 
           <Text style={styles.label}>Email atau No. HP</Text>
           <View style={styles.inputRow}>
-            <Ionicons name="person-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
+            <View style={styles.inputIcon}><User size={18} color="#9CA3AF" /></View>
             <TextInput style={styles.input} placeholder="email@contoh.com" placeholderTextColor="#9CA3AF"
               value={identifier} onChangeText={setIdentifier} keyboardType="email-address" autoCapitalize="none" />
           </View>
 
           <Text style={styles.label}>Password</Text>
           <View style={styles.inputRow}>
-            <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
+            <View style={styles.inputIcon}><Lock size={18} color="#9CA3AF" /></View>
             <TextInput style={styles.input} placeholder="••••••••" placeholderTextColor="#9CA3AF"
               value={password} onChangeText={setPassword} secureTextEntry={!showPass} />
             <Pressable onPress={() => setShowPass(!showPass)}>
-              <Ionicons name={showPass ? 'eye-off-outline' : 'eye-outline'} size={18} color="#9CA3AF" />
+              {showPass ? <EyeOff size={18} color="#9CA3AF" /> : <Eye size={18} color="#9CA3AF" />}
             </Pressable>
           </View>
 
@@ -106,7 +106,7 @@ export default function LoginScreen() {
             </Pressable>
             
             <Pressable style={styles.bioBtn} onPress={handleBiometricLogin}>
-              <Ionicons name="finger-print" size={28} color={GREEN} />
+              <Fingerprint size={28} color={GREEN} />
             </Pressable>
           </View>
 

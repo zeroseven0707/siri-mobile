@@ -1,21 +1,28 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { User, Mail, Phone, Lock, ArrowLeft } from 'lucide-react-native';
 import { useAuthStore } from '../../lib/authStore';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
-const Field = ({ label, icon, ...props }: any) => (
-  <View style={styles.fieldWrap}>
-    <Text style={styles.label}>{label}</Text>
-    <View style={styles.inputRow}>
-      <Ionicons name={icon} size={18} color="#9CA3AF" style={styles.inputIcon} />
-      <TextInput style={styles.input} placeholderTextColor="#9CA3AF" {...props} />
+const FIELD_ICONS: Record<string, any> = {
+  'person-outline': User, 'mail-outline': Mail, 'call-outline': Phone, 'lock-closed-outline': Lock,
+};
+
+const Field = ({ label, icon, ...props }: any) => {
+  const IconComp = FIELD_ICONS[icon] || User;
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputRow}>
+        <View style={styles.inputIcon}><IconComp size={18} color="#9CA3AF" /></View>
+        <TextInput style={styles.input} placeholderTextColor="#9CA3AF" {...props} />
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -39,7 +46,7 @@ export default function RegisterScreen() {
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color="#fff" />
+            <ArrowLeft size={22} color="#fff" />
           </Pressable>
           <View style={styles.owlCircle}>
             <Image source={require('../../assets/images/siri.png')} style={{ width: 100, height: 100 }} resizeMode="contain" />

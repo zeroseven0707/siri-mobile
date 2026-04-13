@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator, Pressable, Alert, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MapPin, Locate, Save } from 'lucide-react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapViewFree from '../components/MapViewFree';
 import api from '../lib/api';
@@ -128,7 +128,7 @@ export default function UpdateLocationScreen() {
               </View>
             ) : (
               <View style={styles.emptyMap}>
-                <Ionicons name="map-outline" size={40} color="#9CA3AF" />
+                <MapPin size={40} color="#9CA3AF" />
                 <Text style={styles.emptyText}>Lokasi GPS belum terdeteksi</Text>
               </View>
             )}
@@ -140,7 +140,7 @@ export default function UpdateLocationScreen() {
             >
               {loading ? <ActivityIndicator color="#2ECC71" /> : (
                 <>
-                  <Ionicons name="locate" size={18} color="#2ECC71" />
+                  <Locate size={18} color="#2ECC71" />
                   <Text style={styles.btnLocationText}>Gunakan Lokasi Saat Ini</Text>
                 </>
               )}
@@ -171,7 +171,7 @@ export default function UpdateLocationScreen() {
           >
             {saving ? <ActivityIndicator color="#fff" /> : (
               <>
-                <Ionicons name="save-outline" size={20} color="#fff" />
+                <Save size={20} color="#fff" />
                 <Text style={styles.btnSaveText}>Simpan Lokasi & Alamat</Text>
               </>
             )}

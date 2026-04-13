@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Receipt, User, Info, FileText, ArrowLeft } from 'lucide-react-native';
 import api from '../../lib/api';
 
 const GREEN = '#2ECC71';
@@ -67,7 +67,7 @@ export default function OrderDetailScreen() {
           {/* Status Header */}
           <View style={[styles.statusBox, { backgroundColor: st.bg }]}>
             <View style={styles.statusRow}>
-               <Ionicons name="information-circle" size={24} color={st.color} />
+               <Info size={24} color={st.color} />
                <View style={{ marginLeft: 12, flex: 1 }}>
                  <Text style={[styles.statusLabel, { color: st.color }]}>{st.label}</Text>
                  <Text style={[styles.statusDesc, { color: st.color }]}>{st.desc}</Text>
@@ -80,7 +80,7 @@ export default function OrderDetailScreen() {
             <View style={styles.card}>
               <View style={styles.rowCenter}>
                 <View style={styles.serviceIcon}>
-                  <Ionicons name="receipt-outline" size={24} color={DARK_GREEN} />
+                  <Receipt size={24} color={DARK_GREEN} />
                 </View>
                 <View style={{ marginLeft: 12 }}>
                   <Text style={styles.sectionTitle}>{order.service.name}</Text>
@@ -118,7 +118,7 @@ export default function OrderDetailScreen() {
               <Text style={styles.cardTitle}>Informasi Driver</Text>
               <View style={styles.rowCenter}>
                  <View style={styles.driverAvatar}>
-                   <Ionicons name="person" size={28} color="#D1D5DB" />
+                   <User size={28} color="#D1D5DB" />
                  </View>
                  <View style={{ marginLeft: 16 }}>
                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#1F2937' }}>{order.driver.name}</Text>
@@ -158,7 +158,7 @@ export default function OrderDetailScreen() {
             
             {order.notes ? (
               <View style={styles.notesBox}>
-                <Ionicons name="document-text-outline" size={16} color="#6B7280" />
+                <FileText size={16} color="#6B7280" />
                 <Text style={styles.notesText}>Catatan: "{order.notes}"</Text>
               </View>
             ) : null}

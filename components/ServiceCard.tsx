@@ -1,10 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { UtensilsCrossed, Bike, Car, Package, LayoutGrid } from 'lucide-react-native';
 import { Service } from '../types';
 
-const SERVICE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  food: 'fast-food-outline', ojek: 'bicycle-outline', car: 'car-outline', delivery: 'cube-outline',
+const SERVICE_ICONS: Record<string, any> = {
+  food: UtensilsCrossed,
+  ojek: Bike,
+  car: Car,
+  delivery: Package,
 };
 const SERVICE_COLORS: Record<string, string> = {
   food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', delivery: '#FAF5FF',
@@ -14,10 +17,11 @@ const ICON_COLORS: Record<string, string> = {
 };
 
 export default function ServiceCard({ service, onPress }: { service: Service; onPress: () => void }) {
+  const IconComp = SERVICE_ICONS[service.slug] ?? LayoutGrid;
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <View style={[styles.icon, { backgroundColor: SERVICE_COLORS[service.slug] ?? '#F3F4F6' }]}>
-        <Ionicons name={SERVICE_ICONS[service.slug] ?? 'apps-outline'} size={26} color={ICON_COLORS[service.slug] ?? '#6C63FF'} />
+        <IconComp size={26} color={ICON_COLORS[service.slug] ?? '#6C63FF'} />
       </View>
       <Text style={styles.label} numberOfLines={2}>{service.name}</Text>
     </Pressable>

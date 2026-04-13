@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Minus, Plus, ChevronRight } from 'lucide-react-native';
 import api from '../../lib/api';
 import { FoodItem, Store, Service } from '../../types';
 
@@ -136,12 +136,12 @@ export default function StoreDetailScreen() {
                       {food.is_available ? (
                         qty > 0 ? (
                           <View style={styles.qtyControls}>
-                            <Pressable style={styles.btnSm} onPress={() => updateCart(food, -1)}>
-                              <Ionicons name="remove" size={16} color="#fff" />
+            <Pressable style={styles.btnSm} onPress={() => updateCart(food, -1)}>
+                              <Minus size={16} color="#fff" />
                             </Pressable>
                             <Text style={styles.qtyText}>{qty}</Text>
                             <Pressable style={styles.btnSm} onPress={() => updateCart(food, 1)}>
-                              <Ionicons name="add" size={16} color="#fff" />
+                              <Plus size={16} color="#fff" />
                             </Pressable>
                           </View>
                         ) : (

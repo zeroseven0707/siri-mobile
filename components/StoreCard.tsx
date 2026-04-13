@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Store as StoreIcon } from 'lucide-react-native';
 import { Store } from '../types';
 
 export default function StoreCard({ store, onPress }: { store: Store; onPress: () => void }) {
@@ -9,7 +9,7 @@ export default function StoreCard({ store, onPress }: { store: Store; onPress: (
       <View style={styles.imageBox}>
         {store.image
           ? <Image source={{ uri: store.image }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          : <Ionicons name="storefront-outline" size={36} color="#D1D5DB" />}
+          : <StoreIcon size={36} color="#D1D5DB" />}
       </View>
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>{store.name}</Text>

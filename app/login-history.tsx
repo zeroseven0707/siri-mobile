@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Clock, Smartphone } from 'lucide-react-native';
 import CustomHeader from '../components/CustomHeader';
 import api from '../lib/api';
 
@@ -31,11 +31,7 @@ export default function LoginHistoryScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.card}>
       <View style={styles.iconBox}>
-        <Ionicons 
-          name={item.platform === 'ios' ? 'logo-apple' : 'logo-android'} 
-          size={24} 
-          color="#4B5563" 
-        />
+        <Clock size={24} color="#4B5563" />
       </View>
       <View style={styles.content}>
         <Text style={styles.deviceName}>{item.device || 'Perangkat Tidak Dikenal'}</Text>
@@ -71,7 +67,7 @@ export default function LoginHistoryScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchHistory(false); }} tintColor={GREEN} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="time-outline" size={60} color="#D1D5DB" />
+              <Clock size={60} color="#D1D5DB" />
               <Text style={styles.emptyTitle}>Belum ada riwayat</Text>
               <Text style={styles.emptySubtitle}>Aktivitas login Anda akan muncul di sini.</Text>
             </View>
