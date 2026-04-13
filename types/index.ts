@@ -24,6 +24,7 @@ export interface Service {
   slug: string;
   icon: string;
   base_price: number;
+  description?: string;
 }
 
 export interface Store {

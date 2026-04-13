@@ -17,7 +17,7 @@ export default function ServiceOrderScreen() {
   const { user } = useAuthStore();
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // State for Food Service
   const [query, setQuery] = useState('');
   const [stores, setStores] = useState<any[]>([]);
@@ -70,7 +70,10 @@ export default function ServiceOrderScreen() {
 
   const handleOrder = async () => {
     if (!destination.trim()) {
-      Alert.alert('Peringatan', 'Lokasi tujuan harus diisi');
+      const errorMsg = service?.name.toLowerCase() === 'nitah'
+        ? 'Kamu mau nitah apa? Mohon diisi dulu ya.'
+        : 'Lokasi tujuan harus diisi';
+      Alert.alert('Peringatan', errorMsg);
       return;
     }
 
@@ -214,8 +217,8 @@ export default function ServiceOrderScreen() {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: service.name, headerStyle: { backgroundColor: '#fff' }, headerTintColor: '#000' }} />
-        <AuthPlaceholder 
-          icon="bicycle-outline"
+        <AuthPlaceholder
+          icon="Bike"
           title={`Pesan ${service.name}`}
           description={`Silakan masuk untuk melakukan pemesanan ${service.name} dan menikmati seluruh fitur Siri.`}
         />
@@ -246,7 +249,9 @@ export default function ServiceOrderScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.serviceBannerTitle}>{service.name}</Text>
-              <Text style={styles.serviceBannerSub}>Cepat, aman, dan terpercaya</Text>
+              <Text style={styles.serviceBannerSub}>
+                {service.description || 'Cepat, aman, dan terpercaya'}
+              </Text>
             </View>
             <View style={styles.pricePill}>
               <Text style={styles.pricePillText}>Rp {Number(service.base_price || 15000).toLocaleString('id-ID')}</Text>
@@ -287,18 +292,24 @@ export default function ServiceOrderScreen() {
             )}
           </View>
 
-          {/* Tujuan */}
+          {/* Tujuan / Form Utama */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionCardHeader}>
               <View style={[styles.dotIndicator, { backgroundColor: '#EF4444' }]} />
-              <Text style={styles.sectionCardTitle}>Tujuan</Text>
+              <Text style={styles.sectionCardTitle}>
+                {service.name.toLowerCase() === 'nitah' ? 'Mau nitah apa?' : 'Tujuan'}
+              </Text>
             </View>
 
             <View style={styles.notesBox}>
               <Ionicons name="location-outline" size={18} color="#EF4444" style={{ marginTop: 2 }} />
               <TextInput
                 style={styles.notesInput}
-                placeholder={'Ketik alamat tujuan lengkap\nContoh: Jl. Merdeka No. 10, Kel. Sukajadi, Kec. Bandung Wetan, Kota Bandung'}
+                placeholder={
+                  service.name.toLowerCase() === 'nitah'
+                    ? 'Temenin ke dokter, Bantuin push rank, apa aja bisaa'
+                    : 'Ketik alamat tujuan lengkap\nContoh: Jl. Merdeka No. 10, Kel. Sukajadi, Kec. Bandung Wetan, Kota Bandung'
+                }
                 placeholderTextColor="#9CA3AF"
                 value={destination}
                 onChangeText={setDestination}
@@ -307,7 +318,11 @@ export default function ServiceOrderScreen() {
               />
             </View>
             <Text style={styles.destHint}>
-              <Ionicons name="information-circle-outline" size={12} color="#9CA3AF" /> Sertakan nama jalan, nomor, kelurahan, dan kota agar driver mudah menemukan lokasi kamu.
+              <Ionicons name="information-circle-outline" size={12} color="#9CA3AF" />
+              {service.name.toLowerCase() === 'nitah'
+                ? ' Jelaskan apa yang kamu butuhkan agar kami bisa membantu dengan tepat.'
+                : ' Sertakan nama jalan, nomor, kelurahan, dan kota agar driver mudah menemukan lokasi kamu.'
+              }
             </Text>
           </View>
 
@@ -348,9 +363,9 @@ export default function ServiceOrderScreen() {
             {isSubmitting
               ? <ActivityIndicator color="#fff" />
               : <>
-                  <Ionicons name="bicycle-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
-                  <Text style={styles.btnOrderText}>Pesan Sekarang</Text>
-                </>
+                <Ionicons name="bicycle-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.btnOrderText}>Pesan Sekarang</Text>
+              </>
             }
           </Pressable>
         </View>
@@ -362,7 +377,7 @@ export default function ServiceOrderScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   container: { flex: 1, backgroundColor: '#fff' },
-  
+
   // Search Styles
   searchHeader: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff' },
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 12, height: 44, gap: 10 },
