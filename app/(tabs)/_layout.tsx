@@ -60,9 +60,7 @@ export default function TabsLayout() {
         options={{
           title: 'Notifikasi',
           tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeTab : undefined}>
-              <Bell size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-            </View>
+            <Bell size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
           ),
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#EF4444', fontSize: 9, minWidth: 16, height: 16 },
