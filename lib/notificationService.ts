@@ -69,8 +69,8 @@ export async function setupCloudMessaging() {
   // Handle tap notifikasi saat app di background/quit
   notifee.onBackgroundEvent(async ({ type, detail }: any) => {
     const { EventType } = require('@notifee/react-native');
-    if (type === EventType.PRESS && detail.notification?.data?.navigate === 'orders') {
-      handleNotificationNavigation(detail.notification.data);
+    if (type === EventType.PRESS) {
+      handleNotificationNavigation(detail.notification?.data);
     }
   });
 
@@ -104,8 +104,8 @@ export async function setupCloudMessaging() {
   // Handle tap notifikasi saat app di foreground
   notifee.onForegroundEvent(({ type, detail }: any) => {
     const { EventType } = require('@notifee/react-native');
-    if (type === EventType.PRESS && detail.notification?.data?.navigate === 'orders') {
-      handleNotificationNavigation(detail.notification.data);
+    if (type === EventType.PRESS) {
+      handleNotificationNavigation(detail.notification?.data);
     }
   });
 
@@ -119,8 +119,13 @@ export function setNotificationRouter(router: any) {
 }
 
 export function handleNotificationNavigation(data: any) {
-  if (data?.navigate === 'orders' && _router) {
+  if (!_router) return;
+
+  if (data?.navigate === 'orders') {
     _router.push('/(tabs)/orders');
+  } else {
+    // Default navigasi ke halaman notifikasi
+    _router.push('/(tabs)/notifications');
   }
 }
 
