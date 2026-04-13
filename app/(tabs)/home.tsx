@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Search, Sliders, Utensils, Bike, Car, Package, Grid } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { HomeSection, HomeSectionItem } from '../../types';
@@ -10,11 +10,11 @@ import { HomeSection, HomeSectionItem } from '../../types';
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
-const SERVICE_ICONS: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }> = {
-  food: { icon: 'fast-food-outline', color: '#F97316', bg: '#FFF7ED' },
-  ojek: { icon: 'bicycle-outline', color: '#2ECC71', bg: '#F0FDF4' },
-  car: { icon: 'car-outline', color: '#3B82F6', bg: '#EFF6FF' },
-  delivery: { icon: 'cube-outline', color: '#A855F7', bg: '#FAF5FF' },
+const SERVICE_ICONS: Record<string, { icon: any; color: string; bg: string }> = {
+  food: { icon: Utensils, color: '#F97316', bg: '#FFF7ED' },
+  ojek: { icon: Bike, color: '#2ECC71', bg: '#F0FDF4' },
+  car: { icon: Car, color: '#3B82F6', bg: '#EFF6FF' },
+  delivery: { icon: Package, color: '#A855F7', bg: '#FAF5FF' },
 };
 
 export default function HomeScreen() {
@@ -42,9 +42,8 @@ export default function HomeScreen() {
 
   const renderBanner = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
-    const ItemView = View as any;
     return (
-      <ItemView key={section.id} style={styles.section}>
+      <View key={section.id} style={styles.section}>
         <FlatList
           data={section.items}
           horizontal
@@ -64,39 +63,38 @@ export default function HomeScreen() {
             </Pressable>
           )}
         />
-      </ItemView>
+      </View>
     );
   };
 
   const renderServices = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
-    const ItemView = View as any;
     return (
-      <ItemView key={section.id} style={styles.section}>
+      <View key={section.id} style={styles.section}>
         {section.title && <Text style={styles.sectionTitle}>{section.title}</Text>}
         <View style={styles.servicesGrid}>
           {section.items.map(item => {
             const slug = item.action_value || '';
-            const cfg = SERVICE_ICONS[slug] ?? { icon: 'apps-outline', color: GREEN, bg: '#F0FDF4' };
+            const cfg = SERVICE_ICONS[slug] ?? { icon: Grid, color: GREEN, bg: '#F0FDF4' };
+            const IconComp = cfg.icon;
             return (
               <Pressable key={item.id} style={styles.serviceItem} onPress={() => router.push(`/service/${slug}` as any)}>
                 <View style={[styles.serviceIcon, { backgroundColor: cfg.bg }]}>
-                  <Ionicons name={cfg.icon} size={28} color={cfg.color} />
+                  <IconComp size={28} color={cfg.color} />
                 </View>
                 <Text style={styles.serviceLabel} numberOfLines={2}>{item.title}</Text>
               </Pressable>
             );
           })}
         </View>
-      </ItemView>
+      </View>
     );
   };
 
   const renderStores = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
-    const ItemView = View as any;
     return (
-      <ItemView key={section.id} style={styles.section}>
+      <View key={section.id} style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <Text style={styles.seeAll}>Lihat semua</Text>
@@ -120,15 +118,14 @@ export default function HomeScreen() {
             </Pressable>
           )}
         />
-      </ItemView>
+      </View>
     );
   };
 
   const renderFoods = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
-    const ItemView = View as any;
     return (
-      <ItemView key={section.id} style={[styles.section, { paddingBottom: 10 }]}>
+      <View key={section.id} style={[styles.section, { paddingBottom: 10 }]}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{section.title}</Text>
           <Text style={styles.seeAll}>Lihat semua</Text>
@@ -148,15 +145,14 @@ export default function HomeScreen() {
             </Pressable>
           )}
         />
-      </ItemView>
+      </View>
     );
   };
 
   const renderPromo = (section: HomeSection) => {
     if (!section.items || section.items.length === 0) return null;
-    const ItemView = View as any;
     return (
-      <ItemView key={section.id} style={styles.section}>
+      <View key={section.id} style={styles.section}>
         <Text style={styles.sectionTitle}>{section.title}</Text>
         {section.items.map((item: HomeSectionItem) => (
           <Pressable key={item.id} style={styles.promoBanner}>
@@ -171,7 +167,7 @@ export default function HomeScreen() {
             )}
           </Pressable>
         ))}
-      </ItemView>
+      </View>
     );
   };
 
@@ -198,9 +194,9 @@ export default function HomeScreen() {
 
           {/* Search bar */}
           <Pressable style={styles.searchBar} onPress={() => router.push('/search')}>
-            <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+            <Search size={18} color="#9CA3AF" />
             <Text style={styles.searchPlaceholder}>Cari layanan, toko, atau makanan...</Text>
-            <Ionicons name="options-outline" size={18} color="#9CA3AF" />
+            <Sliders size={18} color="#9CA3AF" />
           </Pressable>
         </View>
 

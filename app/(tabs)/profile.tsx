@@ -1,6 +1,20 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { 
+  Settings, 
+  MessageSquare, 
+  ChevronRight, 
+  Clock, 
+  RefreshCw, 
+  Bike, 
+  CheckCircle, 
+  Receipt, 
+  MapPin, 
+  ShieldCheck, 
+  HelpCircle, 
+  Info, 
+  FileText 
+} from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
 import { useAuthStore } from '../../lib/authStore';
@@ -29,7 +43,7 @@ export default function ProfileScreen() {
   if (!user) {
     return (
       <AuthPlaceholder 
-        icon="person-outline"
+        icon="User"
         title="Atur Profil & Keamanan"
         description="Masuk untuk mengelola detail akun, melihat riwayat transaksi, dan mengatur metode pembayaran Anda."
       />
@@ -59,16 +73,15 @@ export default function ProfileScreen() {
         <Text style={styles.topTitle}>Saya</Text>
         <View style={styles.topIcons}>
           <Pressable onPress={() => router.push('/settings')} style={styles.iconBtn}>
-            <Ionicons name="settings-outline" size={22} color="#fff" />
+            <Settings size={22} color="#fff" />
           </Pressable>
           <Pressable onPress={() => router.push('/help')} style={styles.iconBtn}>
-            <Ionicons name="chatbubble-ellipses-outline" size={22} color="#fff" />
+            <MessageSquare size={22} color="#fff" />
           </Pressable>
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}
-        >
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Profile Card Header */}
         <View style={styles.header}>
           <View style={styles.userInfoRow}>
@@ -82,7 +95,7 @@ export default function ProfileScreen() {
                 <Text style={styles.userName}>{user?.name}</Text>
                 <View style={styles.memberBadge}>
                    <Text style={styles.memberText}>{user?.role === 'user' ? 'Member Siri' : 'Mitra Siri'}</Text>
-                   <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.7)" />
+                   <ChevronRight size={12} color="rgba(255,255,255,0.7)" />
                 </View>
                 <Text style={styles.userEmail}>{user?.email}</Text>
              </View>
@@ -96,17 +109,18 @@ export default function ProfileScreen() {
                <Text style={styles.cardTitle}>Pesanan Saya</Text>
                <Pressable onPress={() => router.push('/(tabs)/orders')} style={styles.seeAll}>
                   <Text style={styles.seeAllText}>Lihat Riwayat</Text>
-                  <Ionicons name="chevron-forward" size={14} color="#9CA3AF" />
+                  <ChevronRight size={14} color="#9CA3AF" />
                </Pressable>
             </View>
             <View style={styles.statusRow}>
                {[
-                 { icon: 'time-outline', label: 'Menunggu', countKey: 'pending' },
-                 { icon: 'sync-outline', label: 'Diproses', countKey: 'accepted' },
-                 { icon: 'bicycle-outline', label: 'Dikirim', countKey: 'on_progress' },
-                 { icon: 'checkmark-done-circle-outline', label: 'Diterima', countKey: null },
+                 { icon: Clock, label: 'Menunggu', countKey: 'pending' },
+                 { icon: RefreshCw, label: 'Diproses', countKey: 'accepted' },
+                 { icon: Bike, label: 'Dikirim', countKey: 'on_progress' },
+                 { icon: CheckCircle, label: 'Diterima', countKey: null },
                ].map((item, i) => {
                  const count = item.countKey ? counts[item.countKey as keyof typeof counts] : 0;
+                 const IconComp = item.icon;
                  return (
                    <Pressable
                      key={i}
@@ -114,7 +128,7 @@ export default function ProfileScreen() {
                      onPress={() => handleStatusPress(item.label)}
                    >
                      <View style={styles.iconWrap}>
-                       <Ionicons name={item.icon as any} size={24} color="#4B5563" />
+                       <IconComp size={24} color="#4B5563" />
                        {count > 0 && (
                          <View style={styles.badge}>
                            <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
@@ -131,31 +145,37 @@ export default function ProfileScreen() {
           {/* Menu Sections */}
           <View style={styles.menuCard}>
             {[
-              { icon: 'receipt-outline', label: 'Riwayat Transaksi', color: '#3B82F6', route: '/history-transactions' },
-              { icon: 'location-outline', label: 'Alamat Saya', color: '#EF4444', route: '/update-location' },
-              { icon: 'shield-checkmark-outline', label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
-            ].map((item, i, arr) => (
-              <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
-                <Ionicons name={item.icon as any} size={20} color={item.color} style={{marginRight: 12}} />
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
-              </Pressable>
-            ))}
+              { icon: Receipt, label: 'Riwayat Transaksi', color: '#3B82F6', route: '/history-transactions' },
+              { icon: MapPin, label: 'Alamat Saya', color: '#EF4444', route: '/update-location' },
+              { icon: ShieldCheck, label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
+            ].map((item, i, arr) => {
+              const IconComp = item.icon;
+              return (
+                <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
+                  <IconComp size={20} color={item.color} style={{marginRight: 12}} />
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <ChevronRight size={16} color="#D1D5DB" />
+                </Pressable>
+              );
+            })}
           </View>
 
           <View style={styles.menuCard}>
             {[
-              { icon: 'help-circle-outline', label: 'Pusat Bantuan', color: '#10B981', route: '/help' },
-              { icon: 'shield-checkmark-outline', label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
-              { icon: 'information-circle-outline', label: 'Tentang Siri', color: '#6366F1', route: '/about' },
-              { icon: 'document-text-outline', label: 'Kebijakan Privasi', color: '#4B5563', route: '/terms' },
-            ].map((item, i, arr) => (
-              <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
-                <Ionicons name={item.icon as any} size={20} color={item.color} style={{marginRight: 12}} />
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
-              </Pressable>
-            ))}
+              { icon: HelpCircle, label: 'Pusat Bantuan', color: '#10B981', route: '/help' },
+              { icon: ShieldCheck, label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
+              { icon: Info, label: 'Tentang Siri', color: '#6366F1', route: '/about' },
+              { icon: FileText, label: 'Kebijakan Privasi', color: '#4B5563', route: '/terms' },
+            ].map((item, i, arr) => {
+              const IconComp = item.icon;
+              return (
+                <Pressable key={i} style={[styles.menuItem, i < arr.length - 1 && styles.menuBorder]} onPress={() => router.push(item.route as any)}>
+                  <IconComp size={20} color={item.color} style={{marginRight: 12}} />
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <ChevronRight size={16} color="#D1D5DB" />
+                </Pressable>
+              );
+            })}
           </View>
 
           <Pressable style={styles.logoutBtn} onPress={handleLogout}>

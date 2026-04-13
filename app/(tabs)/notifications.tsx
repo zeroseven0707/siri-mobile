@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, RefreshControl, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Bell, MailOpen, Tag, Bike, ShieldCheck, BellOff } from 'lucide-react-native';
 import CustomHeader from '../../components/CustomHeader';
 import api from '../../lib/api';
 import { useNotificationStore } from '../../lib/notificationStore';
@@ -86,10 +86,10 @@ export default function NotificationsScreen() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'promo': return { icon: 'pricetag-outline', color: '#F59E0B' };
-      case 'order_status': return { icon: 'bicycle-outline', color: GREEN };
-      case 'system': return { icon: 'shield-checkmark-outline', color: '#3B82F6' };
-      default: return { icon: 'notifications-outline', color: '#9CA3AF' };
+      case 'promo': return { icon: Tag, color: '#F59E0B' };
+      case 'order_status': return { icon: Bike, color: GREEN };
+      case 'system': return { icon: ShieldCheck, color: '#3B82F6' };
+      default: return { icon: Bell, color: '#9CA3AF' };
     }
   };
 
@@ -114,13 +114,13 @@ export default function NotificationsScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifikasi</Text>
         <Pressable onPress={handleReadAll} style={styles.readAllBox}>
-          <Ionicons name="mail-open-outline" size={22} color={GREEN} />
+          <MailOpen size={22} color={GREEN} />
         </Pressable>
       </View>
       
       {!user ? (
         <AuthPlaceholder 
-          icon="notifications-outline"
+          icon="Bell"
           title="Jangan Ketinggalan Kabar"
           description="Masuk untuk mendapatkan notifikasi promo eksklusif, status pesanan, dan pembaruan penting lainnya dari Siri."
         />
@@ -136,13 +136,13 @@ export default function NotificationsScreen() {
         >
           {notifications.length === 0 ? (
             <View style={styles.empty}>
-              <Ionicons name="notifications-off-outline" size={80} color="#D1D5DB" />
+              <BellOff size={80} color="#D1D5DB" />
               <Text style={styles.emptyTitle}>Belum ada notifikasi</Text>
               <Text style={styles.emptyDesc}>Notifikasi seputar pesanan dan promo akan muncul di sini.</Text>
             </View>
           ) : (
             notifications.map((notif) => {
-              const { icon, color } = getIcon(notif.type);
+              const { icon: IconComp, color } = getIcon(notif.type);
               return (
                 <Pressable 
                   key={notif.id} 
@@ -150,7 +150,7 @@ export default function NotificationsScreen() {
                   onPress={() => handleMarkAsRead(notif.id, notif.is_read)}
                 >
                   <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
-                    <Ionicons name={icon as any} size={22} color={color} />
+                    <IconComp size={22} color={color} />
                   </View>
                   <View style={styles.content}>
                     <View style={styles.row}>
@@ -214,3 +214,4 @@ const styles = StyleSheet.create({
   desc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN, marginLeft: 8 },
 });
+

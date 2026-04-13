@@ -1,24 +1,25 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import * as LucideIcons from 'lucide-react-native';
 
 const GREEN = '#2ECC71';
 
 interface AuthPlaceholderProps {
   title: string;
   description: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: keyof typeof LucideIcons;
 }
 
 export default function AuthPlaceholder({ title, description, icon }: AuthPlaceholderProps) {
   const router = useRouter();
+  const IconComp = (LucideIcons[icon] as any) || LucideIcons.Info;
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconCircle}>
-          <Ionicons name={icon} size={60} color={GREEN} />
+          <IconComp size={60} color={GREEN} />
         </View>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
