@@ -13,10 +13,13 @@ export default function RootLayout() {
   const router = useRouter();
   
   const [fontsLoaded, fontError] = useFonts({
-    ...Ionicons.font,
-    ...MaterialIcons.font,
-    ...MaterialCommunityIcons.font,
-    ...FontAwesome.font,
+    // Load explicitly with both names to ensure compatibility
+    'ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
+    'Ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
+    'material': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
+    'MaterialIcons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
+    'material-community': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf'),
+    'MaterialCommunityIcons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf'),
   });
 
   useEffect(() => {
