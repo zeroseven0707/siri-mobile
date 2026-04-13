@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   listItem: { fontSize: 13, color: '#6B7280', marginBottom: 6 },
   
   label: { fontSize: 13, fontWeight: '700', color: '#374151', marginBottom: 8 },
-  input: { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 14, fontSize: 14, borderSize: 1, borderColor: '#E5E7EB', borderWidth: 1, minHeight: 100 },
+  input: { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 14, fontSize: 14, borderColor: '#E5E7EB', borderWidth: 1, minHeight: 100 },
   
   requestBtn: { backgroundColor: '#DC2626', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   requestBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
