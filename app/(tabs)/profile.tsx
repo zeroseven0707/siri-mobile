@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useAuthStore } from '../../lib/authStore';
 import { useOrderStore } from '../../lib/orderStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
+import api from '../../lib/api';
 
 const GREEN = '#2ECC71';
 
@@ -12,6 +14,17 @@ export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const { setActiveTab } = useOrderStore();
+  const [counts, setCounts] = useState({ pending: 0, accepted: 0, on_progress: 0 });
+
+  useFocusEffect(useCallback(() => {
+    if (!user) return;
+    api.get('/orders/counts')
+      .then(res => {
+        const d = res.data.data;
+        setCounts({ pending: d.pending, accepted: d.accepted, on_progress: d.on_progress });
+      })
+      .catch(() => {});
+  }, [user]));
 
   if (!user) {
     return (
@@ -54,7 +67,8 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}
+        >
         {/* Profile Card Header */}
         <View style={styles.header}>
           <View style={styles.userInfoRow}>
@@ -87,20 +101,30 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.statusRow}>
                {[
-                 { icon: 'time-outline', label: 'Menunggu' },
-                 { icon: 'sync-outline', label: 'Diproses' },
-                 { icon: 'bicycle-outline', label: 'Dikirim' },
-                 { icon: 'checkmark-done-circle-outline', label: 'Diterima' },
-               ].map((item, i) => (
-                 <Pressable 
-                    key={i} 
-                    style={styles.statusItem}
-                    onPress={() => handleStatusPress(item.label)}
-                 >
-                    <Ionicons name={item.icon as any} size={24} color="#4B5563" />
-                    <Text style={styles.statusLabel}>{item.label}</Text>
-                 </Pressable>
-               ))}
+                 { icon: 'time-outline', label: 'Menunggu', countKey: 'pending' },
+                 { icon: 'sync-outline', label: 'Diproses', countKey: 'accepted' },
+                 { icon: 'bicycle-outline', label: 'Dikirim', countKey: 'on_progress' },
+                 { icon: 'checkmark-done-circle-outline', label: 'Diterima', countKey: null },
+               ].map((item, i) => {
+                 const count = item.countKey ? counts[item.countKey as keyof typeof counts] : 0;
+                 return (
+                   <Pressable
+                     key={i}
+                     style={styles.statusItem}
+                     onPress={() => handleStatusPress(item.label)}
+                   >
+                     <View style={styles.iconWrap}>
+                       <Ionicons name={item.icon as any} size={24} color="#4B5563" />
+                       {count > 0 && (
+                         <View style={styles.badge}>
+                           <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
+                         </View>
+                       )}
+                     </View>
+                     <Text style={styles.statusLabel}>{item.label}</Text>
+                   </Pressable>
+                 );
+               })}
             </View>
           </View>
 
@@ -179,6 +203,9 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
   statusItem: { alignItems: 'center', gap: 6 },
   statusLabel: { fontSize: 10, color: '#4B5563' },
+  iconWrap: { position: 'relative' },
+  badge: { position: 'absolute', top: -6, right: -8, backgroundColor: '#EF4444', borderRadius: 10, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: '#fff' },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, elevation: 2 },
   menuCard: { backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden', marginBottom: 12, elevation: 2 },
