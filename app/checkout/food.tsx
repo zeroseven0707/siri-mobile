@@ -71,7 +71,10 @@ export default function FoodCheckoutScreen() {
         { text: 'Lihat Pesanan', onPress: () => router.replace('/(tabs)/orders') }
       ]);
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err.message || 'Terjadi kesalahan saat membuat pesanan';
+      const data = err?.response?.data;
+      const msg = data?.errors
+        ? Object.values(data.errors).flat().join('\n')
+        : data?.message || err.message || 'Terjadi kesalahan saat membuat pesanan';
       Alert.alert('Gagal Memesan', msg);
     } finally {
       setIsSubmitting(false);

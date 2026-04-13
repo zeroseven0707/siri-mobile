@@ -102,7 +102,11 @@ export default function ServiceOrderScreen() {
         { text: 'OK', onPress: () => router.replace('/(tabs)/orders') }
       ]);
     } catch (err: any) {
-      Alert.alert('Error', err?.response?.data?.message || err.message || 'Gagal membuat pesanan');
+      const data = err?.response?.data;
+      const msg = data?.errors
+        ? Object.values(data.errors).flat().join('\n')
+        : data?.message || err.message || 'Gagal membuat pesanan';
+      Alert.alert('Gagal Memesan', msg);
     } finally {
       setIsSubmitting(false);
     }

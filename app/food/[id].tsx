@@ -77,7 +77,11 @@ export default function FoodDetailScreen() {
         { text: 'OK', onPress: () => router.push('/(tabs)/orders' as any) }
       ]);
     } catch (err: any) {
-      Alert.alert('Error', err?.response?.data?.message || err.message || 'Gagal memproses pesanan.');
+      const data = err?.response?.data;
+      const msg = data?.errors
+        ? Object.values(data.errors).flat().join('\n')
+        : data?.message || err.message || 'Gagal memproses pesanan.';
+      Alert.alert('Gagal Memesan', msg);
     } finally {
       setIsSubmitting(false);
     }
