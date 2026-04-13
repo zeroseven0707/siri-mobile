@@ -35,9 +35,24 @@ export async function setupCloudMessaging() {
   }
 
   // Import modular API
-  const { getMessaging, onMessage } = require('@react-native-firebase/messaging');
+  const { getMessaging, onMessage, setBackgroundMessageHandler, getToken } = require('@react-native-firebase/messaging');
   const notifee = require('@notifee/react-native').default;
   const { AndroidImportance } = require('@notifee/react-native');
+
+  // Cetak token untuk didebug
+  try {
+    const token = await getToken(getMessaging());
+    console.log('--- FCM DEVICE TOKEN ---');
+    console.log(token);
+    console.log('------------------------');
+  } catch (e) {
+    console.log('Gagal mengambil token:', e);
+  }
+
+  // Registrasi background handler (Wajib untuk notifikasi saat aplikasi tertutup)
+  setBackgroundMessageHandler(async (remoteMessage: any) => {
+    console.log('Message handled in the background!', remoteMessage);
+  });
 
   // Buat channel notifikasi (Wajib untuk Android)
   const channelId = await notifee.createChannel({
