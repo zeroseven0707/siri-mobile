@@ -84,6 +84,7 @@ export async function setupCloudMessaging() {
     if (title || body || data) {
       // Pemicu refresh data di UI secara otomatis
       useNotificationStore.getState().triggerRefresh();
+      useNotificationStore.getState().incrementCount();
 
       await notifee.displayNotification({
         title: title || String(data?.title || 'Notifikasi Baru'),
@@ -91,6 +92,7 @@ export async function setupCloudMessaging() {
         data,
         android: {
           channelId,
+          smallIcon: 'ic_launcher',
           color: '#2ECC71',
           importance: AndroidImportance.HIGH,
           pressAction: { id: 'default' },
@@ -140,8 +142,20 @@ export async function syncFCMTokenToBackend(token?: string) {
     
     const response = await api.post('/profile/fcm-token', { fcm_token: fcmToken });
     console.log('FCM token synced to backend. Status:', response.status);
-    console.log('Server Message:', response.data?.message || 'No message');
+    
+    // Sekaligus ambil jumlah notifikasi belum dibaca saat sinkronisasi token
+    fetchUnreadCount();
   } catch (err: any) {
     console.log('Failed to sync FCM token:', err.response?.data?.message || err.message);
+  }
+}
+
+export async function fetchUnreadCount() {
+  try {
+    const res = await api.get('/notifications');
+    const count = res.data.data.unread_count || 0;
+    useNotificationStore.getState().setUnreadCount(count);
+  } catch (err) {
+    console.log('Gagal ambil jumlah notifikasi:', err);
   }
 }
