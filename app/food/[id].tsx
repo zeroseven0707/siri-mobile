@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Minus, Plus, ChevronRight, ArrowLeft } from 'lucide-react-native';
 import api from '../../lib/api';
 import { FoodItem, Store } from '../../types';
+import { useAuthStore } from '../../lib/authStore';
 import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
