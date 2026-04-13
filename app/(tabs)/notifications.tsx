@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, RefreshControl, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable, ActivityIndicator, Alert, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, MailOpen, Tag, Bike, ShieldCheck, BellOff } from 'lucide-react-native';
-import CustomHeader from '../../components/CustomHeader';
 import api from '../../lib/api';
 import { useNotificationStore } from '../../lib/notificationStore';
 import { useAuthStore } from '../../lib/authStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 const GREEN = '#2ECC71';
+const DARK_GREEN = '#22A85A';
 
 interface SiriNotification {
   id: string;
@@ -111,10 +111,14 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={styles.flex} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notifikasi</Text>
+        <View>
+          <Text style={styles.headerTitle}>Notifikasi</Text>
+          <Text style={styles.headerSub}>Update terbaru untuk kamu</Text>
+        </View>
         <Pressable onPress={handleReadAll} style={styles.readAllBox}>
-          <MailOpen size={22} color={GREEN} />
+          <MailOpen size={20} color={GREEN} />
         </Pressable>
       </View>
       
@@ -171,47 +175,47 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#F9FAFB' },
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    paddingHorizontal: 20, 
-    paddingVertical: 16, 
-    backgroundColor: '#fff', 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#F3F4F6' 
+  flex: { flex: 1, backgroundColor: '#F7F8FA' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
-  readAllBox: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: '#111827', letterSpacing: -0.3 },
+  headerSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  readAllBox: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 16 },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 120 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#374151', marginTop: 16 },
-  emptyDesc: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', marginTop: 8, paddingHorizontal: 40 },
-  
-  item: { 
-    flexDirection: 'row', 
-    backgroundColor: '#fff', 
-    padding: 16, 
-    borderRadius: 20, 
-    marginBottom: 12, 
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 100 },
+  emptyTitle: { fontSize: 18, fontWeight: '800', color: '#374151', marginTop: 16 },
+  emptyDesc: { fontSize: 14, color: '#9CA3AF', textAlign: 'center', marginTop: 8, paddingHorizontal: 40, lineHeight: 20 },
+  item: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 18,
+    marginBottom: 10,
     alignItems: 'center',
-    elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
     borderWidth: 1,
     borderColor: '#F3F4F6',
   },
-  unread: { backgroundColor: '#F0FDF4', borderColor: '#DCFCE7' },
-  iconBox: { width: 50, height: 50, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  unread: { backgroundColor: '#F0FDF4', borderColor: '#D1FAE5' },
+  iconBox: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   content: { flex: 1 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-  title: { fontSize: 14, color: '#1F2937' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 },
+  title: { fontSize: 14, color: '#1F2937', flex: 1, marginRight: 8 },
   bold: { fontWeight: '800' },
-  time: { fontSize: 11, color: '#9CA3AF' },
-  desc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN, marginLeft: 8 },
+  time: { fontSize: 10, color: '#9CA3AF', fontWeight: '600' },
+  desc: { fontSize: 12, color: '#6B7280', lineHeight: 17 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN, marginLeft: 8, flexShrink: 0 },
 });
 

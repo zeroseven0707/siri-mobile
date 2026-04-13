@@ -1,16 +1,15 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert, ActivityIndicator } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, Alert, ActivityIndicator, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Receipt } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import api from '../../lib/api';
 import { Order } from '../../types';
-
 import { useAuthStore } from '../../lib/authStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 const GREEN = '#2ECC71';
-const DARK_GREEN = '#27AE60';
+const DARK_GREEN = '#22A85A';
 
 const STATUS: Record<Order['status'], { label: string; bg: string; color: string }> = {
   pending: { label: 'Menunggu', bg: '#FEF9C3', color: '#A16207' },
@@ -131,6 +130,7 @@ export default function OrdersScreen() {
       <SafeAreaView style={styles.flex}>
         <View style={styles.header}>
           <Text style={styles.title}>Pesanan Saya</Text>
+          <Text style={styles.subtitle}>Pantau status pesanan kamu</Text>
         </View>
         <AuthPlaceholder
           icon="Receipt"
@@ -145,6 +145,7 @@ export default function OrdersScreen() {
     <SafeAreaView style={styles.flex}>
       <View style={styles.header}>
         <Text style={styles.title}>Pesanan Saya</Text>
+        <Text style={styles.subtitle}>Pantau status pesanan kamu</Text>
       </View>
       <FlatList
         data={orders}
@@ -165,25 +166,26 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#F8FFF8' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FFF8' },
-  header: { paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
-  list: { padding: 16, gap: 12 },
+  flex: { flex: 1, backgroundColor: '#F7F8FA' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F8FA' },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  title: { fontSize: 22, fontWeight: '800', color: '#111827', letterSpacing: -0.3 },
+  subtitle: { fontSize: 13, color: '#9CA3AF', marginTop: 2 },
+  list: { padding: 16, gap: 10 },
   empty: { alignItems: 'center', paddingVertical: 80 },
-  emptyTitle: { color: '#374151', fontSize: 18, fontWeight: '700', marginTop: 12 },
+  emptyTitle: { color: '#374151', fontSize: 18, fontWeight: '800', marginTop: 12 },
   emptySubtitle: { color: '#9CA3AF', fontSize: 14, marginTop: 4 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F3F4F6', elevation: 1 },
+  card: { backgroundColor: '#fff', borderRadius: 20, padding: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  serviceIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  serviceIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1 },
-  serviceName: { fontWeight: '700', color: '#1F2937', fontSize: 14 },
+  serviceName: { fontWeight: '800', color: '#111827', fontSize: 14 },
   location: { color: '#6B7280', fontSize: 12, marginTop: 3 },
   destination: { color: '#9CA3AF', fontSize: 12, marginTop: 2 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  price: { color: DARK_GREEN, fontWeight: '700', fontSize: 15 },
-  cancelBtn: { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10 },
-  cancelText: { color: '#DC2626', fontSize: 12, fontWeight: '600' },
+  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  badgeText: { fontSize: 10, fontWeight: '800' },
+  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F7F8FA' },
+  price: { color: DARK_GREEN, fontWeight: '800', fontSize: 15 },
+  cancelBtn: { backgroundColor: '#FEF2F2', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10 },
+  cancelText: { color: '#DC2626', fontSize: 12, fontWeight: '700' },
 });
