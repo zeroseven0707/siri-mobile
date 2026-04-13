@@ -35,21 +35,21 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
   // 10 second countdown for local 'pending'
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
+    let cancelled = false;
+
     if (localStatus === 'pending' && timeLeft > 0) {
       timer = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
     } else if (localStatus === 'pending' && timeLeft === 0) {
-      // Auto-accept after 10s via API
-      api.put(`/orders/${item.id}/confirm`).then(() => {
-        setLocalStatus('accepted');
-      }).catch((e) => {
-        console.error('Failed to auto-confirm order', e);
-        // fallback to accepted in UI anyway since it's demo simulating driver acceptance
-        setLocalStatus('accepted');
-      });
+      api.put(`/orders/${item.id}/confirm`)
+        .then(() => { if (!cancelled) setLocalStatus('accepted'); })
+        .catch(() => { if (!cancelled) setLocalStatus('accepted'); });
     }
-    return () => clearInterval(timer);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, [localStatus, timeLeft]);
 
   const confirmCancel = () => {
