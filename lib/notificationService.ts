@@ -1,5 +1,6 @@
 import { Platform, NativeModules } from 'react-native';
 import api from './api';
+import { useNotificationStore } from './notificationStore';
 
 // Fungsi bantuan untuk cek apakah modul Firebase terpasang (Native)
 const isFirebaseAvailable = () => {
@@ -70,8 +71,11 @@ export async function setupCloudMessaging() {
     console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
 
     const { title, body } = remoteMessage.notification || {};
-    
+
     if (title || body || remoteMessage.data) {
+      // Pemicu refresh data di UI secara otomatis
+      useNotificationStore.getState().triggerRefresh();
+
       await notifee.displayNotification({
         title: title || String(remoteMessage.data?.title || 'Notifikasi Baru'),
         body: body || String(remoteMessage.data?.body || 'Cek aplikasi Siri kamu'),

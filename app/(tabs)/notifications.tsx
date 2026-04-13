@@ -24,7 +24,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<SiriNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { setUnreadCount, decrementCount, clearCount } = useNotificationStore();
+  const { setUnreadCount, decrementCount, clearCount, refreshKey } = useNotificationStore();
 
   const fetchNotifications = async (showLoading = true) => {
     if (!user) return;
@@ -43,7 +43,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     fetchNotifications();
-  }, [user]);
+  }, [user, refreshKey]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
