@@ -7,6 +7,7 @@ import api from '../../lib/api';
 import { Service } from '../../types';
 import { useAuthStore } from '../../lib/authStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
+import MapViewFree from '../../components/MapViewFree';
 
 const GREEN = '#2ECC71';
 
@@ -23,10 +24,15 @@ export default function ServiceOrderScreen() {
   const [isSearching, setIsSearching] = useState(false);
 
   // State for Other Services
-  const [pickup, setPickup] = useState('');
   const [destination, setDestination] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for destination search
+  const [destQuery, setDestQuery] = useState('');
+  const [destResults, setDestResults] = useState<any[]>([]);
+  const [isSearchingDest, setIsSearchingDest] = useState(false);
+  const [destCoord, setDestCoord] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -68,9 +74,27 @@ export default function ServiceOrderScreen() {
     }
   }, [query]);
 
+  // Search tujuan via Nominatim (OpenStreetMap) - debounce 600ms
+  useEffect(() => {
+    if (destQuery.length < 3) { setDestResults([]); return; }
+    const delay = setTimeout(async () => {
+      setIsSearchingDest(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destQuery)}&format=json&limit=5&countrycodes=id`,
+          { headers: { 'Accept-Language': 'id', 'User-Agent': 'SiriApp/1.0' } }
+        );
+        const data = await res.json();
+        setDestResults(data);
+      } catch { setDestResults([]); }
+      finally { setIsSearchingDest(false); }
+    }, 600);
+    return () => clearTimeout(delay);
+  }, [destQuery]);
+
   const handleOrder = async () => {
-    if (!pickup.trim() || !destination.trim()) {
-      Alert.alert('Peringatan', 'Lokasi jemput dan tujuan harus diisi');
+    if (!destination.trim()) {
+      Alert.alert('Peringatan', 'Lokasi tujuan harus diisi');
       return;
     }
 
@@ -91,7 +115,7 @@ export default function ServiceOrderScreen() {
     try {
       const payload = {
         service_id: service?.id || id,
-        pickup_location: pickup,
+        pickup_location: user.address,
         destination_location: destination,
         price: service?.base_price || 15000,
         notes,
@@ -237,22 +261,32 @@ export default function ServiceOrderScreen() {
         keyboardVerticalOffset={100}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.mapPlaceholder}>
-            <Ionicons name="map-outline" size={64} color="#9CA3AF" />
-            <Text style={styles.mapText}>Peta Lokasi (Ilustrasi)</Text>
-          </View>
 
           <View style={styles.formCard}>
+            {/* Lokasi Jemput - dari data user */}
             <View style={styles.inputGroup}>
               <Ionicons name="location" size={20} color={GREEN} style={styles.inputIcon} />
               <View style={styles.inputWrapper}>
                 <Text style={styles.label}>Lokasi Jemput</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Cari lokasi jemput..."
-                  value={pickup}
-                  onChangeText={setPickup}
-                />
+                {user?.address && user?.latitude && user?.longitude ? (
+                  <View>
+                    <Text style={styles.locationText}>{user.address}</Text>
+                    <View style={styles.mapPreview} pointerEvents="none">
+                      <MapViewFree latitude={Number(user.latitude)} longitude={Number(user.longitude)} />
+                    </View>
+                    <Pressable onPress={() => router.push('/update-location')}>
+                      <Text style={styles.editLocation}>Ubah Lokasi</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View>
+                    <Text style={styles.locationEmpty}>Lokasi belum diatur</Text>
+                    <Pressable onPress={() => router.push('/update-location')} style={styles.setLocationBtn}>
+                      <Ionicons name="add-circle-outline" size={14} color={GREEN} />
+                      <Text style={styles.setLocationText}>Atur Lokasi Sekarang</Text>
+                    </Pressable>
+                  </View>
+                )}
               </View>
             </View>
 
@@ -265,9 +299,39 @@ export default function ServiceOrderScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Cari lokasi tujuan..."
-                  value={destination}
-                  onChangeText={setDestination}
+                  value={destQuery}
+                  onChangeText={(t) => {
+                    setDestQuery(t);
+                    setDestination(t);
+                    setDestCoord(null);
+                    setDestResults([]);
+                  }}
                 />
+                {isSearchingDest && <ActivityIndicator size="small" color={GREEN} style={{ marginTop: 6 }} />}
+                {destResults.length > 0 && (
+                  <View style={styles.suggestionBox}>
+                    {destResults.map((r, i) => (
+                      <Pressable
+                        key={i}
+                        style={[styles.suggestionItem, i < destResults.length - 1 && styles.suggestionBorder]}
+                        onPress={() => {
+                          setDestination(r.display_name);
+                          setDestQuery(r.display_name);
+                          setDestCoord({ lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
+                          setDestResults([]);
+                        }}
+                      >
+                        <Ionicons name="location-outline" size={14} color="#9CA3AF" style={{ marginRight: 8, marginTop: 2 }} />
+                        <Text style={styles.suggestionText} numberOfLines={2}>{r.display_name}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+                {destCoord && (
+                  <View style={[styles.mapPreview, { marginTop: 10 }]} pointerEvents="none">
+                    <MapViewFree latitude={destCoord.lat} longitude={destCoord.lng} />
+                  </View>
+                )}
               </View>
             </View>
 
@@ -351,6 +415,16 @@ const styles = StyleSheet.create({
   inputWrapper: { flex: 1 },
   label: { fontSize: 11, color: '#6B7280', marginBottom: 4, fontWeight: '500' },
   input: { fontSize: 15, color: '#111827', padding: 0 },
+  locationText: { fontSize: 14, color: '#111827', fontWeight: '500' },
+  mapPreview: { marginTop: 10, marginBottom: 4, borderRadius: 12, overflow: 'hidden', height: 180 },
+  editLocation: { color: GREEN, fontSize: 12, fontWeight: '700', marginTop: 4 },
+  locationEmpty: { fontSize: 13, color: '#9CA3AF' },
+  setLocationBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
+  setLocationText: { color: GREEN, fontSize: 12, fontWeight: '700' },
+  suggestionBox: { backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB', marginTop: 6, overflow: 'hidden', elevation: 3 },
+  suggestionItem: { flexDirection: 'row', alignItems: 'flex-start', padding: 10 },
+  suggestionBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  suggestionText: { flex: 1, fontSize: 12, color: '#374151', lineHeight: 18 },
   divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 12, marginLeft: 36 },
   priceContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ECFDF5', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#D1FAE5' },
   priceLabel: { fontSize: 14, color: '#065F46', fontWeight: '500' },
