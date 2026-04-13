@@ -5,6 +5,7 @@ import { useAuthStore } from '../lib/authStore';
 import SplashScreen from '../components/SplashScreen';
 import DebugOverlay from '../components/DebugOverlay';
 import { requestUserPermission, setupCloudMessaging } from '../lib/notificationService';
+import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function RootLayout() {
   const { user, isLoading, loadSession } = useAuthStore();
@@ -14,9 +15,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     Font.loadAsync({
-      'Ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
-      'MaterialIcons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf'),
-      'MaterialCommunityIcons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf'),
+      ...Ionicons.font,
+      ...MaterialIcons.font,
+      ...MaterialCommunityIcons.font,
     }).then(() => setFontsLoaded(true)).catch((e) => {
       console.error('Font load error:', e);
       setFontsLoaded(true); // tetap lanjut meski gagal

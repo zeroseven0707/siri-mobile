@@ -11,12 +11,12 @@ export async function requestUserPermission() {
     return false;
   }
 
-  // Import dinamis agar tidak crash di Expo Go saat booting
-  const messaging = require('@react-native-firebase/messaging').default;
+  // Import modular API agar tidak crash di Expo Go saat booting
+  const { getMessaging, requestPermission } = require('@react-native-firebase/messaging');
   const notifee = require('@notifee/react-native').default;
 
   if (Platform.OS === 'ios') {
-    const authStatus = await messaging().requestPermission();
+    const authStatus = await requestPermission(getMessaging());
     const enabled =
       authStatus === 1 || // messaging.AuthorizationStatus.AUTHORIZED
       authStatus === 2;   // messaging.AuthorizationStatus.PROVISIONAL
@@ -34,8 +34,8 @@ export async function setupCloudMessaging() {
     return () => {};
   }
 
-  // Import dinamis
-  const messaging = require('@react-native-firebase/messaging').default;
+  // Import modular API
+  const { getMessaging, onMessage } = require('@react-native-firebase/messaging');
   const notifee = require('@notifee/react-native').default;
   const { AndroidImportance } = require('@notifee/react-native');
 
@@ -47,7 +47,7 @@ export async function setupCloudMessaging() {
   });
 
   // Mendengarkan pesan saat aplikasi di FOREGROUND
-  const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
+  const unsubscribe = onMessage(getMessaging(), async (remoteMessage: any) => {
     console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
 
     const { title, body } = remoteMessage.notification || {};
@@ -74,8 +74,8 @@ export async function setupCloudMessaging() {
 export async function getFCMToken() {
   if (!isFirebaseAvailable()) return null;
   try {
-    const messaging = require('@react-native-firebase/messaging').default;
-    const token = await messaging().getToken();
+    const { getMessaging, getToken } = require('@react-native-firebase/messaging');
+    const token = await getToken(getMessaging());
     return token;
   } catch (err) {
     return null;

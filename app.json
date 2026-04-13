@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "fonts": [
-      "./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf"
-    ],
+
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "id.siri.mobile"
