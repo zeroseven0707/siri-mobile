@@ -11,6 +11,7 @@ const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
 
 import CustomHeader from '../../components/CustomHeader';
+import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 export default function FoodCheckoutScreen() {
   const { storeId, cartItems: cartItemsStr, storeName, storeAddress } = useLocalSearchParams<{
@@ -62,6 +63,19 @@ export default function FoodCheckoutScreen() {
       setIsSubmitting(false);
     }
   };
+
+  if (!user) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <AuthPlaceholder
+          icon="cart-outline"
+          title="Masuk untuk Checkout"
+          description="Kamu perlu masuk terlebih dahulu untuk melanjutkan proses pemesanan."
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={styles.container}>
