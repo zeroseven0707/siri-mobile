@@ -105,9 +105,11 @@ export async function syncFCMTokenToBackend(token?: string) {
   try {
     const fcmToken = token || await getFCMToken();
     if (!fcmToken) return;
-    await api.post('/profile/fcm-token', { fcm_token: fcmToken });
-    console.log('FCM token synced to backend');
-  } catch (err) {
-    console.log('Failed to sync FCM token:', err);
+    
+    const response = await api.post('/profile/fcm-token', { fcm_token: fcmToken });
+    console.log('FCM token synced to backend. Status:', response.status);
+    console.log('Server Message:', response.data?.message || 'No message');
+  } catch (err: any) {
+    console.log('Failed to sync FCM token:', err.response?.data?.message || err.message);
   }
 }
