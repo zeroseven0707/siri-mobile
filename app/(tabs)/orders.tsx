@@ -96,6 +96,7 @@ function OrderCard({ item, onCancel }: { item: Order, onCancel: (id: string) => 
 }
 
 export default function OrdersScreen() {
+  const { user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -124,6 +125,21 @@ export default function OrdersScreen() {
   };
 
   if (loading) return <SafeAreaView style={styles.center}><ActivityIndicator size="large" color={GREEN} /></SafeAreaView>;
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.flex}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Pesanan Saya</Text>
+        </View>
+        <AuthPlaceholder
+          icon="receipt-outline"
+          title="Lihat Pesanan Kamu"
+          description="Masuk untuk melihat status pesanan, riwayat transaksi, dan melacak pengiriman kamu."
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.flex}>
