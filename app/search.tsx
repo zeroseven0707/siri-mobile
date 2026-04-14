@@ -4,6 +4,7 @@ import { useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Search, X, UtensilsCrossed, Store } from 'lucide-react-native';
 import { storageUrl } from '../lib/storage';
+import api from '../lib/api';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
