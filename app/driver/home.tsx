@@ -69,6 +69,7 @@ export default function DriverHomeScreen() {
     if (!silent) setLoading(true);
     try {
       const ordersRes = await api.get('/driver/orders');
+      console.log('driver/orders raw:', JSON.stringify(ordersRes.data));
       const allOrders: Order[] = ordersRes.data.data?.orders ?? ordersRes.data.data ?? [];
 
       // Order aktif: accepted atau on_progress (assign ke driver ini)
