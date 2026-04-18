@@ -26,8 +26,8 @@ const STATUS_CFG: Record<OrderStatus, { label: string; bg: string; color: string
 
 // Next action for each status
 const NEXT_ACTION: Partial<Record<OrderStatus, { label: string; endpoint: string; color: string }>> = {
-  accepted:    { label: 'Mulai Perjalanan',   endpoint: 'pickup',   color: '#3B82F6' },
-  on_progress: { label: 'Selesaikan Pesanan', endpoint: 'complete', color: GREEN },
+  accepted:    { label: 'Mulai Perjalanan',          endpoint: 'process',  color: '#3B82F6' },
+  on_progress: { label: 'Telah Diterima Customer', endpoint: 'complete', color: GREEN },
 };
 
 export default function DriverOrderDetailScreen() {
@@ -55,8 +55,8 @@ export default function DriverOrderDetailScreen() {
 
   const handleUpdateStatus = async (endpoint: string) => {
     const labels: Record<string, string> = {
-      pickup: 'Mulai perjalanan menuju pelanggan?',
-      complete: 'Tandai pesanan selesai?',
+      process: 'Proses pesanan ini sekarang?',
+      complete: 'Konfirmasi pesanan telah diterima customer?',
     };
     Alert.alert('Konfirmasi', labels[endpoint] ?? 'Update status?', [
       { text: 'Batal', style: 'cancel' },
@@ -251,7 +251,7 @@ export default function DriverOrderDetailScreen() {
                 <>
                   {nextAction.endpoint === 'complete'
                     ? <CheckCircle2 size={20} color="#fff" />
-                    : <Navigation size={20} color="#fff" />}
+                    : <Package size={20} color="#fff" />}
                   <Text style={styles.actionBtnText}>{nextAction.label}</Text>
                 </>
               )}
