@@ -52,7 +52,7 @@ export default function UploadPhotoScreen() {
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('photo', {
+      formData.append('profile_picture', {
         uri: photo,
         type: 'image/jpeg',
         name: 'profile.jpg',

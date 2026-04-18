@@ -50,7 +50,7 @@ export default function EditProfileScreen() {
       formData.append('name', form.name);
       formData.append('phone', form.phone);
       if (photo && photo !== user?.photo_url) {
-        formData.append('photo', { uri: photo, type: 'image/jpeg', name: 'profile.jpg' } as any);
+        formData.append('profile_picture', { uri: photo, type: 'image/jpeg', name: 'profile.jpg' } as any);
       }
       const res = await api.put('/profile/update', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
