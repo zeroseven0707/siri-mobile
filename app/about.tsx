@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
@@ -18,7 +18,7 @@ export default function AboutScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.center}>
-          <Image source={require('../assets/images/Push.png')} style={{ width: 120, height: 120, marginBottom: 16 }} resizeMode="contain" />
+          <Image source={require('../assets/images/push.png')} style={{ width: 120, height: 120, marginBottom: 16 }} resizeMode="contain" />
           <Text style={styles.appName}>Push</Text>
           <Text style={styles.version}>Versi 1.0.0</Text>
         </View>

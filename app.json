@@ -1,4 +1,4 @@
-﻿{
+{
   "expo": {
     "name": "Push",
     "slug": "Push-mobile",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./assets/images/Push.png",
+      "image": "./assets/images/push.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

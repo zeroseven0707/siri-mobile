@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -235,7 +235,7 @@ export default function HomeScreen() {
               </View>
             </View>
             <View style={styles.logoWrap}>
-              <Image source={require('../../assets/images/Push.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
+              <Image source={require('../../assets/images/push.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
             </View>
           </View>
 

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User, Mail, Phone, Lock, ArrowLeft } from 'lucide-react-native';
@@ -49,7 +49,7 @@ export default function RegisterScreen() {
             <ArrowLeft size={22} color="#fff" />
           </Pressable>
           <View style={styles.owlCircle}>
-            <Image source={require('../../assets/images/Push.png')} style={{ width: 100, height: 100 }} resizeMode="contain" />
+            <Image source={require('../../assets/images/push.png')} style={{ width: 100, height: 100 }} resizeMode="contain" />
           </View>
           <Text style={styles.appName}>Daftar Akun</Text>
           <Text style={styles.tagline}>Bergabung dengan Push sekarang</Text>
