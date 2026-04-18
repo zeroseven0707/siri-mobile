@@ -36,7 +36,10 @@ export default function RegisterScreen() {
     if (!form.name || !form.email || !form.phone || !form.password) { setError('Isi semua field'); return; }
     if (form.password !== form.password_confirmation) { setError('Password tidak cocok'); return; }
     setLoading(true); setError('');
-    try { await register(form); }
+    try {
+      await register(form);
+      router.replace('/(auth)/upload-photo');
+    }
     catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   };

@@ -7,6 +7,7 @@ export interface User {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  photo_url?: string | null;
   driver_profile?: DriverProfile;
   created_at: string;
 }
