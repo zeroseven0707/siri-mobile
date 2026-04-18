@@ -1,7 +1,7 @@
 ﻿import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
-  Alert, Platform, StatusBar,
+  Alert, Platform, StatusBar, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#16a34a';
 const DARK_GREEN = '#15803d';
@@ -96,9 +97,13 @@ export default function DriverProfileScreen() {
 
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase()}</Text>
-          </View>
+          {user?.photo_url ? (
+            <Image source={{ uri: storageUrl(user.photo_url)! }} style={styles.avatarImg} />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase()}</Text>
+            </View>
+          )}
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{user?.name}</Text>
             <Text style={styles.profileEmail}>{user?.email}</Text>
@@ -228,6 +233,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  avatarImg: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.5)',
   },

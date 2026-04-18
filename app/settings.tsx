@@ -1,9 +1,10 @@
 ﻿import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Edit2, ChevronRight, LogOut, User, MapPin, Shield, Receipt, Bell, Clock, HelpCircle, Info, FileText } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../lib/authStore';
+import { storageUrl } from '../lib/storage';
 
 const GREEN = '#2ECC71';
 
@@ -57,9 +58,13 @@ export default function SettingsScreen() {
         {/* User info */}
         {user && (
           <View style={styles.userCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{user.name?.charAt(0).toUpperCase()}</Text>
-            </View>
+            {user.photo_url ? (
+              <Image source={{ uri: storageUrl(user.photo_url)! }} style={styles.avatarImg} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{user.name?.charAt(0).toUpperCase()}</Text>
+              </View>
+            )}
             <View style={{ flex: 1 }}>
               <Text style={styles.userName}>{user.name}</Text>
               <Text style={styles.userEmail}>{user.email}</Text>
@@ -112,6 +117,7 @@ const styles = StyleSheet.create({
   scroll: { padding: 16 },
   userCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 20, gap: 12, elevation: 1 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
+  avatarImg: { width: 48, height: 48, borderRadius: 24 },
   avatarText: { color: '#fff', fontSize: 20, fontWeight: '800' },
   userName: { fontSize: 15, fontWeight: '700', color: '#1F2937' },
   userEmail: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },

@@ -1,5 +1,5 @@
 ﻿import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform, StatusBar } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform, StatusBar, Image } from 'react-native';
 import {
   Settings, MessageSquare, ChevronRight, Clock, RefreshCw,
   Bike, CheckCircle, Receipt, MapPin, ShieldCheck, HelpCircle,
@@ -11,6 +11,7 @@ import { useAuthStore } from '../../lib/authStore';
 import { useOrderStore } from '../../lib/orderStore';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
 import api from '../../lib/api';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
@@ -97,9 +98,13 @@ export default function ProfileScreen() {
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarWrap}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase()}</Text>
-            </View>
+            {user?.photo_url ? (
+              <Image source={{ uri: storageUrl(user.photo_url)! }} style={styles.avatarImg} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase()}</Text>
+              </View>
+            )}
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{user?.name}</Text>
@@ -201,6 +206,7 @@ const styles = StyleSheet.create({
   profileCard: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatarWrap: {},
   avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)' },
+  avatarImg: { width: 60, height: 60, borderRadius: 30, borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)' },
   avatarText: { color: '#fff', fontSize: 26, fontWeight: '800' },
   profileInfo: { flex: 1 },
   profileName: { color: '#fff', fontSize: 17, fontWeight: '800' },

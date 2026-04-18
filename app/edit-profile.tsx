@@ -10,6 +10,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '../lib/authStore';
 import api from '../lib/api';
+import { storageUrl } from '../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -88,7 +89,7 @@ export default function EditProfileScreen() {
         <LinearGradient colors={[GREEN + '18', GREEN + '05']} style={styles.avatarSection}>
           <Pressable style={styles.avatarWrap} onPress={showPickerOptions}>
             {photo ? (
-              <Image source={{ uri: photo }} style={styles.avatarImg} />
+              <Image source={{ uri: storageUrl(photo) ?? photo }} style={styles.avatarImg} />
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>{user?.name?.charAt(0).toUpperCase() ?? '?'}</Text>

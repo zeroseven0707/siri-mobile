@@ -103,6 +103,32 @@ export interface HomeSectionItem {
   order: number;
 }
 
+export interface PostUser {
+  id: string;
+  name: string;
+  profile_picture: string | null;
+}
+
+export interface Post {
+  id: string;
+  caption: string | null;
+  images: string[];
+  likes_count: number;
+  comments_count: number;
+  saves_count: number;
+  is_liked: boolean;
+  is_saved: boolean;
+  created_at: string;
+  user: PostUser;
+}
+
+export interface PostComment {
+  id: string;
+  body: string;
+  created_at: string;
+  user: PostUser;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;

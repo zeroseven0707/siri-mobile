@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, ClipboardList, Bell, UserCircle2 } from 'lucide-react-native';
+import { Home, ClipboardList, Bell, UserCircle2, LayoutGrid } from 'lucide-react-native';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotificationStore } from '../../lib/notificationStore';
@@ -40,6 +40,17 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <View style={focused ? styles.activeTab : undefined}>
               <Home size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="feed"
+        options={{
+          title: 'Feed',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={focused ? styles.activeTab : undefined}>
+              <LayoutGrid size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
             </View>
           ),
         }}
