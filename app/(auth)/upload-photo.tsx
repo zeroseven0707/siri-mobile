@@ -32,7 +32,7 @@ export default function UploadPhotoScreen() {
 
     const result = fromCamera
       ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 })
-      : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8, mediaTypes: ImagePicker.MediaTypeOptions.Images });
+      : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8, mediaTypes: 'images' });
 
     if (!result.canceled && result.assets[0]) {
       setPhoto(result.assets[0].uri);
