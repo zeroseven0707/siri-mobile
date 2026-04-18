@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -225,7 +225,7 @@ export default function HomeScreen() {
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.greeting}>
-                {user ? `Halo, ${user.name?.split(' ')[0]} 👋` : 'Halo, Teman Siri 👋'}
+                {user ? `Halo, ${user.name?.split(' ')[0]} 👋` : 'Halo, Teman Push 👋'}
               </Text>
               <View style={styles.locationRow}>
                 <MapPin size={12} color="rgba(255,255,255,0.8)" />
@@ -235,7 +235,7 @@ export default function HomeScreen() {
               </View>
             </View>
             <View style={styles.logoWrap}>
-              <Image source={require('../../assets/images/siri.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
+              <Image source={require('../../assets/images/Push.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
             </View>
           </View>
 

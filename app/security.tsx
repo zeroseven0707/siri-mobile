@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { Key, Fingerprint, Smartphone, LogOut, Trash2, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,7 @@ export default function SecurityScreen() {
       if (!hasHardware) return Alert.alert('Error', 'HP Anda tidak mendukung sensor biometrik.');
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
       if (!isEnrolled) return Alert.alert('Info', 'Belum ada sidik jari/wajah yang terdaftar di HP ini.');
-      const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Autentikasi Keamanan Siri', fallbackLabel: 'Gunakan Password' });
+      const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Autentikasi Keamanan Push', fallbackLabel: 'Gunakan Password' });
       if (result.success) {
         await SecureStore.setItemAsync('biometric_enabled', 'true');
         Alert.alert('Sukses', 'Biometrik berhasil diaktifkan!');
@@ -58,9 +58,9 @@ export default function SecurityScreen() {
         </View>
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: '#EF4444' }]}>Zona Bahaya</Text>
-          <SecurityItem IconComp={Trash2} title="Hapus Akun" desc="Hapus data secara permanen dari Siri" dangerous />
+          <SecurityItem IconComp={Trash2} title="Hapus Akun" desc="Hapus data secara permanen dari Push" dangerous />
         </View>
-        <Text style={styles.footerNote}>Siri melindungi data Anda dengan enkripsi end-to-end standar industri.</Text>
+        <Text style={styles.footerNote}>Push melindungi data Anda dengan enkripsi end-to-end standar industri.</Text>
       </ScrollView>
     </View>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
@@ -17,27 +17,27 @@ export default function TermsScreen() {
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Syarat & Ketentuan Penggunaan Siri</Text>
+        <Text style={styles.title}>Syarat & Ketentuan Penggunaan Push</Text>
         <Text style={styles.date}>Terakhir diperbarui: 12 April 2026</Text>
 
         <Text style={styles.sectionTitle}>1. Pendahuluan</Text>
         <Text style={styles.paragraph}>
-          Selamat datang di aplikasi Siri. Dengan mengunduh, menginstal, dan/atau menggunakan Aplikasi Siri, Anda setuju bahwa Anda telah membaca, memahami, menerima, dan menyetujui Ketentuan Penggunaan ini. Jika Anda tidak menyetujui Ketentuan Penggunaan ini, mohon untuk tidak menggunakan Aplikasi Siri.
+          Selamat datang di aplikasi Push. Dengan mengunduh, menginstal, dan/atau menggunakan Aplikasi Push, Anda setuju bahwa Anda telah membaca, memahami, menerima, dan menyetujui Ketentuan Penggunaan ini. Jika Anda tidak menyetujui Ketentuan Penggunaan ini, mohon untuk tidak menggunakan Aplikasi Push.
         </Text>
 
         <Text style={styles.sectionTitle}>2. Akun Pelanggan</Text>
         <Text style={styles.paragraph}>
-          Anda wajib memberikan informasi yang akurat dan lengkap saat mendaftar serta memperbarui informasi tersebut dari waktu ke waktu. Anda bertanggung jawab penuh atas keamanan akun dan kata sandi Anda. Siri tidak bertanggung jawab atas kerugian yang diakibatkan oleh penyalahgunaan sandi oleh pihak ketiga.
+          Anda wajib memberikan informasi yang akurat dan lengkap saat mendaftar serta memperbarui informasi tersebut dari waktu ke waktu. Anda bertanggung jawab penuh atas keamanan akun dan kata sandi Anda. Push tidak bertanggung jawab atas kerugian yang diakibatkan oleh penyalahgunaan sandi oleh pihak ketiga.
         </Text>
 
         <Text style={styles.sectionTitle}>3. Layanan & Pemesanan</Text>
         <Text style={styles.paragraph}>
-          Aplikasi Siri berfungsi sebagai perantara antara pengguna, mitra toko, dan pengemudi. Waktu pengantaran dan ketersediaan barang sepenuhnya bergantung pada kondisi di lapangan, cuaca, dan ketersediaan mitra. 
+          Aplikasi Push berfungsi sebagai perantara antara pengguna, mitra toko, dan pengemudi. Waktu pengantaran dan ketersediaan barang sepenuhnya bergantung pada kondisi di lapangan, cuaca, dan ketersediaan mitra. 
         </Text>
 
         <Text style={styles.sectionTitle}>4. Kebijakan Pembayaran</Text>
         <Text style={styles.paragraph}>
-          Pembayaran wajib diselesaikan sebagaimana disepakati saat pemesanan. Siri menyediakan metode pembayaran langsung kepada mitra layanan di lapangan. Pengguna tidak diperkenankan melakukan tindakan penipuan atau pembayaran fiktif kepada Mitra Siri.
+          Pembayaran wajib diselesaikan sebagaimana disepakati saat pemesanan. Push menyediakan metode pembayaran langsung kepada mitra layanan di lapangan. Pengguna tidak diperkenankan melakukan tindakan penipuan atau pembayaran fiktif kepada Mitra Push.
         </Text>
 
         <Text style={styles.sectionTitle}>5. Pembatalan (Cancellation)</Text>
@@ -47,7 +47,7 @@ export default function TermsScreen() {
 
         <Text style={styles.sectionTitle}>6. Privasi Pengguna</Text>
         <Text style={styles.paragraph}>
-          Data pribadi Anda seperti lokasi, nomor telepon, dan email hanya akan digunakan untuk keperluan pemrosesan layanan di dalam ekosistem aplikasi Siri, dan kami berkomitmen menjaga ketat kerahasiaan data tersebut.
+          Data pribadi Anda seperti lokasi, nomor telepon, dan email hanya akan digunakan untuk keperluan pemrosesan layanan di dalam ekosistem aplikasi Push, dan kami berkomitmen menjaga ketat kerahasiaan data tersebut.
         </Text>
       </ScrollView>
     </SafeAreaView>

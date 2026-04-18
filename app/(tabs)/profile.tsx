@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+﻿import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform, StatusBar } from 'react-native';
 import {
   Settings, MessageSquare, ChevronRight, Clock, RefreshCw,
@@ -63,7 +63,7 @@ export default function ProfileScreen() {
     {
       items: [
         { icon: HelpCircle, label: 'Pusat Bantuan', color: '#F59E0B', route: '/help' },
-        { icon: Info, label: 'Tentang Siri', color: '#6366F1', route: '/about' },
+        { icon: Info, label: 'Tentang Push', color: '#6366F1', route: '/about' },
         { icon: FileText, label: 'Kebijakan Privasi', color: '#6B7280', route: '/terms' },
       ]
     }
@@ -105,7 +105,7 @@ export default function ProfileScreen() {
             <Text style={styles.profileName}>{user?.name}</Text>
             <Text style={styles.profileEmail}>{user?.email}</Text>
             <View style={styles.memberBadge}>
-              <Text style={styles.memberText}>✦ Member Siri</Text>
+              <Text style={styles.memberText}>✦ Member Push</Text>
             </View>
           </View>
           <Pressable style={styles.editBtn} onPress={() => router.push('/edit-profile')}>
@@ -176,7 +176,7 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Keluar dari Akun</Text>
         </Pressable>
 
-        <Text style={styles.version}>Siri App v1.2.0</Text>
+        <Text style={styles.version}>Push App v1.2.0</Text>
       </ScrollView>
     </View>
   );

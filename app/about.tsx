@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
@@ -13,18 +13,18 @@ export default function AboutScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <ArrowLeft size={24} color="#1F2937" />
         </Pressable>
-        <Text style={styles.headerTitle}>Tentang Siri</Text>
+        <Text style={styles.headerTitle}>Tentang Push</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.center}>
-          <Image source={require('../assets/images/siri.png')} style={{ width: 120, height: 120, marginBottom: 16 }} resizeMode="contain" />
-          <Text style={styles.appName}>Siri</Text>
+          <Image source={require('../assets/images/Push.png')} style={{ width: 120, height: 120, marginBottom: 16 }} resizeMode="contain" />
+          <Text style={styles.appName}>Push</Text>
           <Text style={styles.version}>Versi 1.0.0</Text>
         </View>
 
         <Text style={styles.desc}>
-          Siri (Sistem Interaksi dan Respons Integratif) adalah platform digital yang akan memudahkan hari-hari kita semua. Melayani segala kebutuhan sehari-hari dengan "Mudah, Cepat, dan Nyaman".
+          Push (Sistem Interaksi dan Respons Integratif) adalah platform digital yang akan memudahkan hari-hari kita semua. Melayani segala kebutuhan sehari-hari dengan "Mudah, Cepat, dan Nyaman".
         </Text>
 
         <View style={styles.card}>

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Edit2, ChevronRight, LogOut, User, MapPin, Shield, Receipt, Bell, Clock, HelpCircle, Info, FileText } from 'lucide-react-native';
@@ -28,7 +28,7 @@ const MENU_SECTIONS = [
     title: 'Lainnya',
     items: [
       { icon: HelpCircle, label: 'Pusat Bantuan', color: '#10B981', route: '/help' },
-      { icon: Info, label: 'Tentang Siri', color: '#6366F1', route: '/about' },
+      { icon: Info, label: 'Tentang Push', color: '#6366F1', route: '/about' },
       { icon: FileText, label: 'Kebijakan Privasi', color: '#4B5563', route: '/terms' },
     ],
   },
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
           </Pressable>
         )}
 
-        <Text style={styles.version}>Siri App v1.2.0</Text>
+        <Text style={styles.version}>Push App v1.2.0</Text>
       </ScrollView>
     </SafeAreaView>
   );

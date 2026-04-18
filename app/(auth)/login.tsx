@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User, Lock, Eye, EyeOff, Fingerprint } from 'lucide-react-native';
@@ -29,7 +29,7 @@ export default function LoginScreen() {
 
   const handleBiometricLogin = async () => {
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Masuk ke Siri',
+      promptMessage: 'Masuk ke Push',
       fallbackLabel: 'Gunakan Password',
     });
 
@@ -71,9 +71,9 @@ export default function LoginScreen() {
         {/* Header green */}
         <View style={styles.header}>
           <View style={styles.owlCircle}>
-            <Image source={require('../../assets/images/siri.png')} style={{ width: 120, height: 120 }} resizeMode="contain" />
+            <Image source={require('../../assets/images/Push.png')} style={{ width: 120, height: 120 }} resizeMode="contain" />
           </View>
-          <Text style={styles.appName}>Siri</Text>
+          <Text style={styles.appName}>Push</Text>
           <Text style={styles.tagline}>Mudah, Cepat, Nyaman</Text>
         </View>
 

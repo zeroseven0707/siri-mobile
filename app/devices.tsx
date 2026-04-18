@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, Pressable, Alert } from 'react-native';
 import { Smartphone, LogOut, Trash2, ShieldCheck } from 'lucide-react-native';
 import CustomHeader from '../components/CustomHeader';
@@ -111,7 +111,7 @@ export default function DevicesScreen() {
       <View style={styles.headerAction}>
         <View style={styles.infoBanner}>
           <ShieldCheck size={18} color="#15803D" />
-          <Text style={styles.infoText}>Berikut adalah perangkat yang saat ini memiliki akses ke akun Siri Anda.</Text>
+          <Text style={styles.infoText}>Berikut adalah perangkat yang saat ini memiliki akses ke akun Push Anda.</Text>
         </View>
         
         {devices.filter(d => !d.is_current).length > 0 && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable, ActivityIndicator, Alert, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, MailOpen, Tag, Bike, ShieldCheck, BellOff } from 'lucide-react-native';
@@ -10,7 +10,7 @@ import AuthPlaceholder from '../../components/AuthPlaceholder';
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
 
-interface SiriNotification {
+interface PushNotification {
   id: string;
   title: string;
   body: string;
@@ -21,7 +21,7 @@ interface SiriNotification {
 
 export default function NotificationsScreen() {
   const { user } = useAuthStore();
-  const [notifications, setNotifications] = useState<SiriNotification[]>([]);
+  const [notifications, setNotifications] = useState<PushNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { setUnreadCount, decrementCount, clearCount, refreshKey } = useNotificationStore();
@@ -126,7 +126,7 @@ export default function NotificationsScreen() {
         <AuthPlaceholder 
           icon="Bell"
           title="Jangan Ketinggalan Kabar"
-          description="Masuk untuk mendapatkan notifikasi promo eksklusif, status pesanan, dan pembaruan penting lainnya dari Siri."
+          description="Masuk untuk mendapatkan notifikasi promo eksklusif, status pesanan, dan pembaruan penting lainnya dari Push."
         />
       ) : loading && !refreshing ? (
         <View style={styles.center}>

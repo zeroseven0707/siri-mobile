@@ -1,21 +1,21 @@
-{
+﻿{
   "expo": {
-    "name": "Siri",
-    "slug": "siri-mobile",
+    "name": "Push",
+    "slug": "Push-mobile",
     "version": "1.0.0",
     "newArchEnabled": false,
     "orientation": "portrait",
-    "scheme": "siri",
+    "scheme": "Push",
     "userInterfaceStyle": "light",
     "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./assets/images/siri.png",
+      "image": "./assets/images/Push.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "id.siri.mobile"
+      "bundleIdentifier": "id.Push.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -39,7 +39,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Izinkan Siri mengakses lokasi Anda agar driver dapat menjemput Anda dengan tepat."
+          "locationAlwaysAndWhenInUsePermission": "Izinkan Push mengakses lokasi Anda agar driver dapat menjemput Anda dengan tepat."
         }
       ],
       "@react-native-firebase/app",

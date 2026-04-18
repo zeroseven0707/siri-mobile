@@ -1,4 +1,4 @@
-import { Platform, NativeModules } from 'react-native';
+﻿import { Platform, NativeModules } from 'react-native';
 import api from './api';
 import { useNotificationStore } from './notificationStore';
 
@@ -61,8 +61,8 @@ export async function setupCloudMessaging() {
 
   // Buat channel notifikasi (Wajib untuk Android)
   const channelId = await notifee.createChannel({
-    id: 'siri-orders',
-    name: 'Pesanan Siri',
+    id: 'Push-orders',
+    name: 'Pesanan Push',
     importance: AndroidImportance.HIGH,
   });
 
@@ -88,7 +88,7 @@ export async function setupCloudMessaging() {
 
       await notifee.displayNotification({
         title: title || String(data?.title || 'Notifikasi Baru'),
-        body: body || String(data?.body || 'Cek aplikasi Siri kamu'),
+        body: body || String(data?.body || 'Cek aplikasi Push kamu'),
         data,
         android: {
           channelId,

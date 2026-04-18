@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -11,10 +11,10 @@ export default function SplashScreen() {
       <View style={styles.topSpace} />
       
       <View style={styles.logoContainer}>
-        <Image source={require('../assets/images/siri.png')} style={{ width: 160, height: 160 }} resizeMode="contain" />
+        <Image source={require('../assets/images/Push.png')} style={{ width: 160, height: 160 }} resizeMode="contain" />
       </View>
 
-      <Text style={styles.title}>Siri</Text>
+      <Text style={styles.title}>Push</Text>
       <Text style={styles.subtitle}>Mudah, Cepat, Nyaman</Text>
 
       <View style={styles.bottomSpace}>

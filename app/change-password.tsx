@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Lock, Key, Shield, Info } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -46,7 +46,7 @@ export default function ChangePasswordScreen() {
         <ScrollView contentContainerStyle={styles.scroll}>
           <View style={styles.infoBox}>
             <Info size={20} color={GREEN} />
-            <Text style={styles.infoText}>Gunakan password yang kuat dan unik untuk melindungi akun Siri Anda.</Text>
+            <Text style={styles.infoText}>Gunakan password yang kuat dan unik untuk melindungi akun Push Anda.</Text>
           </View>
 
           <View style={styles.card}>
