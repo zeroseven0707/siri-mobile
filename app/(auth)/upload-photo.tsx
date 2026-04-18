@@ -52,6 +52,7 @@ export default function UploadPhotoScreen() {
     setUploading(true);
     try {
       const formData = new FormData();
+      formData.append('_method', 'PUT');
       formData.append('profile_picture', {
         uri: photo,
         type: 'image/jpeg',
@@ -60,10 +61,11 @@ export default function UploadPhotoScreen() {
       formData.append('name', user?.name ?? '');
       formData.append('phone', user?.phone ?? '');
 
-      const res = await api.put('/profile/update', formData, {
+      const res = await api.post('/profile/update', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      await updateUser(res.data?.data || { photo_url: photo });
+      const userData = res.data?.data;
+      await updateUser({ photo_url: userData?.profile_picture ?? photo });
       router.replace('/(tabs)/home');
     } catch (e: any) {
       Alert.alert('Gagal Upload', e.message || 'Coba lagi nanti');

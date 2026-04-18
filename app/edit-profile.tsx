@@ -47,15 +47,21 @@ export default function EditProfileScreen() {
     setLoading(true);
     try {
       const formData = new FormData();
+      formData.append('_method', 'PUT');
       formData.append('name', form.name);
       formData.append('phone', form.phone);
       if (photo && photo !== user?.photo_url) {
         formData.append('profile_picture', { uri: photo, type: 'image/jpeg', name: 'profile.jpg' } as any);
       }
-      const res = await api.put('/profile/update', formData, {
+      const res = await api.post('/profile/update', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      await updateUser(res.data?.data || { ...form, photo_url: photo });
+      const userData = res.data?.data;
+      await updateUser({
+        name: userData?.name ?? form.name,
+        phone: userData?.phone ?? form.phone,
+        photo_url: userData?.profile_picture ?? photo,
+      });
       Alert.alert('Berhasil', 'Profil telah diperbarui', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (e: any) {
       Alert.alert('Gagal', e.message);
