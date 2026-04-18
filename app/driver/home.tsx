@@ -68,20 +68,21 @@ export default function DriverHomeScreen() {
   const fetchData = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      // GET /driver/orders — returns available (pending) orders
       const ordersRes = await api.get('/driver/orders');
-      const allOrders: Order[] = ordersRes.data.data.orders ?? [];
+      const allOrders: Order[] = ordersRes.data.data?.orders ?? ordersRes.data.data ?? [];
 
-      // Pisahkan: order aktif (accepted/on_progress) vs tersedia (pending)
+      // Order aktif: accepted atau on_progress (assign ke driver ini)
       const active = allOrders.find(
         (o) => o.status === 'accepted' || o.status === 'on_progress'
       ) ?? null;
+
+      // Tersedia: pending saja
       const available = allOrders.filter((o) => o.status === 'pending');
 
       setActiveOrder(active);
       setPendingOrders(available);
 
-      // Hitung stats dari data yang ada
+      // Stats
       const completed = allOrders.filter((o) => o.status === 'completed');
       const todayStr = new Date().toDateString();
       const todayCompleted = completed.filter(
@@ -93,8 +94,9 @@ export default function DriverHomeScreen() {
         total_completed: completed.length,
         rating: 5.0,
       });
-    } catch {}
-    finally {
+    } catch (e) {
+      console.log('fetchData error:', e);
+    } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -245,7 +247,7 @@ export default function DriverHomeScreen() {
             </View>
           </View>
 
-          {/* Active Order */}
+          {/* Active Order — selalu tampil jika ada, terlepas status online */}
           {activeOrder && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Pesanan Aktif</Text>
