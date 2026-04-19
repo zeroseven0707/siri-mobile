@@ -204,15 +204,6 @@ export default function DriverMapScreen() {
   const isFood = !!order?.store;
 
   const markers: MarkerData[] = [
-    { 
-      id: 'driver', 
-      latitude: driverLocation.latitude, 
-      longitude: driverLocation.longitude, 
-      color: GREEN, 
-      label: 'Posisi Kamu', 
-      pulse: true, 
-      icon: order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike' 
-    },
     ...(dest ? [{
       id: 'dest',
       latitude: dest.latitude,
@@ -229,6 +220,16 @@ export default function DriverMapScreen() {
       label: sec.label,
       icon: (sec.label === 'Tujuan Akhir' ? 'pin' : sec.label.includes('Toko') || sec.label.includes('store') ? 'home' : 'person') as any,
     }] : []),
+    // Driver - always on top
+    { 
+      id: 'driver', 
+      latitude: driverLocation.latitude, 
+      longitude: driverLocation.longitude, 
+      color: GREEN, 
+      label: 'Posisi Kamu', 
+      pulse: true, 
+      icon: order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike' 
+    },
   ];
 
   return (

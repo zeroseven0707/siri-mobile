@@ -163,15 +163,6 @@ export default function OrderTrackingScreen() {
   const initialLng = driverLocation?.longitude ?? userLocation?.longitude ?? 106.8;
 
   const markers: MarkerData[] = [
-    ...(driverLocation ? [{
-      id: 'driver',
-      latitude: driverLocation.latitude,
-      longitude: driverLocation.longitude,
-      color: GREEN,
-      label: `Driver: ${driverInfo?.name ?? ''}`,
-      pulse: true,
-      icon: (driverInfo?.vehicle_type === 'mobil' ? 'car' : 'bike') as any,
-    }] : []),
     // Store (food orders, fixed)
     ...(storeLocation ? [{
       id: 'store',
@@ -198,6 +189,16 @@ export default function OrderTrackingScreen() {
       color: '#F97316',
       label: 'Lokasi Kamu',
       icon: 'person' as any,
+    }] : []),
+    // Driver - always on top
+    ...(driverLocation ? [{
+      id: 'driver',
+      latitude: driverLocation.latitude,
+      longitude: driverLocation.longitude,
+      color: GREEN,
+      label: `Driver: ${driverInfo?.name ?? ''}`,
+      pulse: true,
+      icon: (driverInfo?.vehicle_type === 'mobil' ? 'car' : 'bike') as any,
     }] : []),
   ];
 

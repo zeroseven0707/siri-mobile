@@ -237,10 +237,47 @@ export default function DriverOrderDetailScreen() {
                   initialLng={driverLocation.longitude}
                   initialZoom={14}
                   markers={[
-                    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true, icon: (order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any },
-                    ...(order.status === 'on_progress' && order.user?.latitude && order.user?.longitude ? [{
-                      id: 'dest', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Pelanggan', icon: 'person' as any,
+                    ...(order.status === 'accepted' && order.store?.latitude && order.store?.longitude ? [{
+                      id: 'store',
+                      latitude: Number(order.store.latitude),
+                      longitude: Number(order.store.longitude),
+                      color: '#3B82F6',
+                      label: order.store.name,
+                      icon: 'home' as any,
                     }] : []),
+                    ...(order.status === 'accepted' && order.pickup_lat && order.pickup_lng && !order.store ? [{
+                      id: 'pickup',
+                      latitude: Number(order.pickup_lat),
+                      longitude: Number(order.pickup_lng),
+                      color: '#F97316',
+                      label: 'Titik Jemput',
+                      icon: 'person' as any,
+                    }] : []),
+                    ...(order.status === 'on_progress' && order.destination_lat && order.destination_lng ? [{
+                      id: 'dest',
+                      latitude: Number(order.destination_lat),
+                      longitude: Number(order.destination_lng),
+                      color: '#EF4444',
+                      label: 'Tujuan',
+                      icon: 'pin' as any,
+                    }] : []),
+                    ...(order.status === 'on_progress' && order.user?.latitude && order.user?.longitude && !order.destination_lat ? [{
+                      id: 'user',
+                      latitude: Number(order.user.latitude),
+                      longitude: Number(order.user.longitude),
+                      color: '#EF4444',
+                      label: 'Pelanggan',
+                      icon: 'person' as any,
+                    }] : []),
+                    { 
+                      id: 'driver', 
+                      latitude: driverLocation.latitude, 
+                      longitude: driverLocation.longitude, 
+                      color: GREEN, 
+                      label: 'Posisi Kamu', 
+                      pulse: true, 
+                      icon: (order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any 
+                    },
                   ]}
                 />
                 <View style={styles.mapOverlayHint}>

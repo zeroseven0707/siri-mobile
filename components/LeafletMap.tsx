@@ -117,8 +117,9 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
     },
   }));
 
-  const markersJs = markers.map(m => {
+  const markersJs = markers.map((m, index) => {
     const html = buildMarkerHtml(m).replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const zIndex = m.pulse ? 1000 : 100 + index; // Driver dengan pulse selalu di atas
     return `
       (function(){
         var icon = L.divIcon({
@@ -128,7 +129,7 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
           iconAnchor:[18,18],
           popupAnchor:[0,-18],
         });
-        var marker = L.marker([${m.latitude},${m.longitude}],{icon:icon})
+        var marker = L.marker([${m.latitude},${m.longitude}],{icon:icon,zIndexOffset:${zIndex}})
           .addTo(map)
           ${m.label ? `.bindPopup('${m.label.replace(/'/g, "\\'")}')` : ''};
         if(!window._markers) window._markers = {};

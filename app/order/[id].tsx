@@ -117,8 +117,39 @@ export default function OrderDetailScreen() {
                   initialLng={driverLocation?.longitude ?? (order.user?.longitude ? Number(order.user.longitude) : 106.8)}
                   initialZoom={14}
                   markers={[
-                    ...(driverLocation ? [{ id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Driver', pulse: true, icon: (order.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any }] : []),
-                    ...(order.user?.latitude && order.user?.longitude ? [{ id: 'user', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Lokasi Kamu', icon: 'person' as any }] : []),
+                    ...(order.store?.latitude && order.store?.longitude ? [{
+                      id: 'store',
+                      latitude: Number(order.store.latitude),
+                      longitude: Number(order.store.longitude),
+                      color: '#3B82F6',
+                      label: order.store.name,
+                      icon: 'home' as any,
+                    }] : []),
+                    ...(order.destination_lat && order.destination_lng ? [{
+                      id: 'destination',
+                      latitude: Number(order.destination_lat),
+                      longitude: Number(order.destination_lng),
+                      color: '#EF4444',
+                      label: 'Tujuan',
+                      icon: 'pin' as any,
+                    }] : []),
+                    ...(order.user?.latitude && order.user?.longitude && !order.destination_lat ? [{ 
+                      id: 'user', 
+                      latitude: Number(order.user.latitude), 
+                      longitude: Number(order.user.longitude), 
+                      color: '#F97316', 
+                      label: 'Lokasi Kamu', 
+                      icon: 'person' as any 
+                    }] : []),
+                    ...(driverLocation ? [{ 
+                      id: 'driver', 
+                      latitude: driverLocation.latitude, 
+                      longitude: driverLocation.longitude, 
+                      color: GREEN, 
+                      label: 'Driver', 
+                      pulse: true, 
+                      icon: (order.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any 
+                    }] : []),
                   ]}
                 />
                 <View style={styles.mapOverlayHint}>
