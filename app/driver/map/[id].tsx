@@ -145,8 +145,8 @@ export default function DriverMapScreen() {
 
   const dest = getDestination();
   const markers: MarkerData[] = [
-    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true },
-    ...(dest ? [{ id: 'dest', latitude: dest.latitude, longitude: dest.longitude, color: '#EF4444', label: order?.status === 'on_progress' ? 'Lokasi Pelanggan' : 'Pickup' }] : []),
+    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true, icon: order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike' },
+    ...(dest ? [{ id: 'dest', latitude: dest.latitude, longitude: dest.longitude, color: '#EF4444', label: order?.status === 'on_progress' ? 'Lokasi Pelanggan' : 'Pickup', icon: 'person' as any }] : []),
   ];
 
   return (

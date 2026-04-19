@@ -55,7 +55,12 @@ export default function OrderTrackingScreen() {
       setDriverInfo(data.driver);
       if (data.location) {
         const loc: LatLng = { latitude: data.location.latitude, longitude: data.location.longitude };
+        const isFirst = !driverLocation;
         setDriverLocation(loc);
+        if (!isFirst) {
+          // Smooth move marker tanpa reload peta
+          mapRef.current?.updateMarker('driver', loc.latitude, loc.longitude);
+        }
         if (data.location.updated_at) {
           const d = new Date(data.location.updated_at);
           setLastUpdated(d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
@@ -95,7 +100,8 @@ export default function OrderTrackingScreen() {
   useEffect(() => {
     fetchOrder();
     fetchDriverLocation();
-    pollTimer.current = setInterval(() => fetchDriverLocation(true), 30000);
+    // Poll tiap 5 detik untuk realtime
+    pollTimer.current = setInterval(() => fetchDriverLocation(true), 5000);
     return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
   }, [id]);
 
@@ -132,6 +138,7 @@ export default function OrderTrackingScreen() {
       color: GREEN,
       label: `Driver: ${driverInfo?.name ?? ''}`,
       pulse: true,
+      icon: (driverInfo?.vehicle_type === 'mobil' ? 'car' : 'bike') as any,
     }] : []),
     ...(userLocation ? [{
       id: 'user',
@@ -139,6 +146,7 @@ export default function OrderTrackingScreen() {
       longitude: userLocation.longitude,
       color: '#EF4444',
       label: 'Lokasi Kamu',
+      icon: 'person' as any,
     }] : []),
   ];
 
