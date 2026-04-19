@@ -329,8 +329,16 @@ export default function FeedScreen() {
   };
 
   const handleShare = async (post: Post) => {
+    const baseUrl = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') ?? 'http://192.168.100.144:8000';
+    const postUrl = `${baseUrl}/post/${post.id}`;
     try {
-      await Share.share({ message: post.caption ? `${post.caption}\n\nDibagikan dari Push App` : 'Lihat postingan ini di Push App' });
+      await Share.share({
+        title: `${post.user.name} di Push App`,
+        message: post.caption
+          ? `${post.caption}\n\n${postUrl}`
+          : postUrl,
+        url: postUrl, // iOS
+      });
     } catch { }
   };
 
@@ -379,28 +387,6 @@ export default function FeedScreen() {
       setReplyTo(null);
     } catch (e: any) { Alert.alert('Error', e.message); }
     finally { setSendingComment(false); }
-  };
-
-  const likeComment = async (commentId: string, parentId?: string) => {
-    if (!commentPost) return;
-    // Optimistic update
-    const toggle = (c: PostComment) =>
-      c.id === commentId
-        ? { ...c, is_liked: !c.is_liked, likes_count: c.is_liked ? c.likes_count - 1 : c.likes_count + 1 }
-        : c;
-
-    setComments(prev => prev.map(c => {
-      if (parentId) {
-        return c.id === parentId
-          ? { ...c, replies: (c.replies ?? []).map(toggle) }
-          : c;
-      }
-      return toggle(c);
-    }));
-
-    try {
-      await api.post(`/posts/${commentPost.id}/comments/${commentId}/like`);
-    } catch { }
   };
 
   const deleteComment = async (commentId: string) => {
@@ -656,21 +642,12 @@ export default function FeedScreen() {
                                     </View>
                                     <Text style={[s.cmBody, { fontSize: 13 }]}>{r.body}</Text>
                                   </View>
-                                  <TouchableOpacity onPress={() => likeComment(r.id, c.id)} hitSlop={8} style={s.cmRight}>
-                                    <Heart size={13} color={r.is_liked ? '#EF4444' : '#9CA3AF'} fill={r.is_liked ? '#EF4444' : 'none'} strokeWidth={1.8} />
-                                    {r.likes_count > 0 && <Text style={[s.cmLikeCount, r.is_liked && { color: '#EF4444' }]}>{r.likes_count}</Text>}
-                                  </TouchableOpacity>
                                 </View>
                               ))}
                             </View>
                           )}
                         </View>
 
-                        {/* Like */}
-                        <TouchableOpacity onPress={() => likeComment(c.id)} hitSlop={8} style={s.cmRight}>
-                          <Heart size={16} color={c.is_liked ? '#EF4444' : '#9CA3AF'} fill={c.is_liked ? '#EF4444' : 'none'} strokeWidth={1.8} />
-                          {c.likes_count > 0 && <Text style={[s.cmLikeCount, c.is_liked && { color: '#EF4444' }]}>{c.likes_count}</Text>}
-                        </TouchableOpacity>
                       </View>
                     </TouchableOpacity>
                   )}

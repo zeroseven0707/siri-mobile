@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
-  ActivityIndicator, Alert, Linking,
+  ActivityIndicator, Alert, Linking, Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  Phone, Navigation, User, MapPin, Package,
-  CheckCircle2, XCircle, ArrowLeft, ChevronRight,
+  Phone, Navigation, User, Package,
+  ArrowLeft, QrCode, X,
 } from 'lucide-react-native';
+import QRCode from 'react-native-qrcode-svg';
 import api from '../../../lib/api';
 
 const GREEN = '#16a34a';
@@ -24,10 +25,9 @@ const STATUS_CFG: Record<OrderStatus, { label: string; bg: string; color: string
   cancelled:   { label: 'Dibatalkan',       bg: '#FEE2E2', color: '#B91C1C', desc: 'Pesanan telah dibatalkan' },
 };
 
-// Next action for each status
+// Next action for each status — complete dihapus, sekarang via QR scan user
 const NEXT_ACTION: Partial<Record<OrderStatus, { label: string; endpoint: string; color: string }>> = {
-  accepted:    { label: 'Mulai Perjalanan',          endpoint: 'process',  color: '#3B82F6' },
-  on_progress: { label: 'Telah Diterima Customer', endpoint: 'complete', color: GREEN },
+  accepted: { label: 'Mulai Perjalanan', endpoint: 'process', color: '#3B82F6' },
 };
 
 export default function DriverOrderDetailScreen() {
@@ -36,6 +36,7 @@ export default function DriverOrderDetailScreen() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     fetchOrder();
@@ -56,7 +57,6 @@ export default function DriverOrderDetailScreen() {
   const handleUpdateStatus = async (endpoint: string) => {
     const labels: Record<string, string> = {
       process: 'Proses pesanan ini sekarang?',
-      complete: 'Konfirmasi pesanan telah diterima customer?',
     };
     Alert.alert('Konfirmasi', labels[endpoint] ?? 'Update status?', [
       { text: 'Batal', style: 'cancel' },
@@ -66,11 +66,7 @@ export default function DriverOrderDetailScreen() {
           setUpdating(true);
           try {
             await api.put(`/driver/orders/${id}/${endpoint}`);
-            if (endpoint === 'complete') {
-              router.replace('/driver/home' as any);
-            } else {
-              await fetchOrder();
-            }
+            await fetchOrder();
           } catch (e: any) {
             Alert.alert('Gagal', e.message || 'Tidak dapat update status');
           } finally {
@@ -239,6 +235,21 @@ export default function DriverOrderDetailScreen() {
             </View>
           </View>
 
+          {/* QR Code card — tampil saat on_progress */}
+          {order.status === 'on_progress' && order.completion_token && (
+            <View style={styles.qrCard}>
+              <Text style={styles.qrTitle}>QR Code Penyelesaian</Text>
+              <Text style={styles.qrDesc}>Tunjukkan QR ini ke pelanggan untuk scan dan menyelesaikan pesanan</Text>
+              <Pressable style={styles.qrBox} onPress={() => setShowQR(true)}>
+                <QRCode value={order.completion_token} size={160} />
+              </Pressable>
+              <Pressable style={styles.qrExpandBtn} onPress={() => setShowQR(true)}>
+                <QrCode size={16} color={GREEN} />
+                <Text style={styles.qrExpandText}>Perbesar QR Code</Text>
+              </Pressable>
+            </View>
+          )}
+
         </ScrollView>
 
         {/* Action Button */}
@@ -253,15 +264,27 @@ export default function DriverOrderDetailScreen() {
                 <ActivityIndicator color="#fff" />
               ) : (
                 <>
-                  {nextAction.endpoint === 'complete'
-                    ? <CheckCircle2 size={20} color="#fff" />
-                    : <Package size={20} color="#fff" />}
+                  <Package size={20} color="#fff" />
                   <Text style={styles.actionBtnText}>{nextAction.label}</Text>
                 </>
               )}
             </Pressable>
           </View>
         )}
+
+        {/* QR Fullscreen Modal */}
+        <Modal visible={showQR} transparent animationType="fade" onRequestClose={() => setShowQR(false)}>
+          <Pressable style={styles.qrOverlay} onPress={() => setShowQR(false)}>
+            <View style={styles.qrFullCard}>
+              <Text style={styles.qrFullTitle}>Scan untuk Selesaikan Pesanan</Text>
+              {order?.completion_token && <QRCode value={order.completion_token} size={240} />}
+              <Text style={styles.qrFullHint}>Minta pelanggan scan QR ini</Text>
+              <Pressable style={styles.qrCloseBtn} onPress={() => setShowQR(false)}>
+                <X size={20} color="#374151" />
+              </Pressable>
+            </View>
+          </Pressable>
+        </Modal>
       </SafeAreaView>
     </>
   );
@@ -400,4 +423,28 @@ const styles = StyleSheet.create({
   },
   actionBtnDisabled: { opacity: 0.6 },
   actionBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+
+  // QR
+  qrCard: {
+    backgroundColor: '#fff', borderRadius: 16, padding: 20, marginBottom: 14,
+    alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
+    borderWidth: 2, borderColor: '#BBF7D0',
+  },
+  qrTitle: { fontSize: 15, fontWeight: '800', color: '#111827', marginBottom: 6 },
+  qrDesc: { fontSize: 12, color: '#6B7280', textAlign: 'center', marginBottom: 16, lineHeight: 18 },
+  qrBox: { padding: 12, backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB' },
+  qrExpandBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14 },
+  qrExpandText: { color: GREEN, fontWeight: '700', fontSize: 13 },
+  qrOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', alignItems: 'center', justifyContent: 'center' },
+  qrFullCard: {
+    backgroundColor: '#fff', borderRadius: 24, padding: 32,
+    alignItems: 'center', gap: 16, width: 300,
+  },
+  qrFullTitle: { fontSize: 16, fontWeight: '800', color: '#111827', textAlign: 'center' },
+  qrFullHint: { fontSize: 13, color: '#6B7280', textAlign: 'center' },
+  qrCloseBtn: {
+    position: 'absolute', top: 12, right: 12,
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center',
+  },
 });

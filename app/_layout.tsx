@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
+import { Linking } from 'react-native';
 import { useAuthStore } from '../lib/authStore';
 import SplashScreen from '../components/SplashScreen';
 import { requestUserPermission, setupCloudMessaging, syncFCMTokenToBackend, setNotificationRouter } from '../lib/notificationService';
@@ -38,6 +39,26 @@ export default function RootLayout() {
       syncFCMTokenToBackend().catch(() => {});
     }
   }, [user, isLoading]);
+
+  // Handle deep link — pushapp://post/{id} atau Push://post/{id}
+  useEffect(() => {
+    const handleUrl = ({ url }: { url: string }) => {
+      const match = url.match(/\/post\/([a-zA-Z0-9-]+)/);
+      if (match?.[1]) {
+        router.push(`/post/${match[1]}` as any);
+      }
+    };
+
+    // App sudah buka, dapat link baru
+    const sub = Linking.addEventListener('url', handleUrl);
+
+    // App dibuka dari link (cold start)
+    Linking.getInitialURL().then(url => {
+      if (url) handleUrl({ url });
+    });
+
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     if (isLoading || (!fontsLoaded && !fontError)) return;
@@ -90,6 +111,8 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="driver" />
+        <Stack.Screen name="post/[id]" />
+        <Stack.Screen name="user-profile/[id]" />
       </Stack>
     </>
   );

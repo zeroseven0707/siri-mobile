@@ -60,6 +60,7 @@ export interface Order {
   destination_location: string;
   price: number;
   notes: string | null;
+  completion_token?: string | null;
   service?: Service;
   user?: User;
   driver?: User;
@@ -126,8 +127,6 @@ export interface Post {
 export interface PostComment {
   id: string;
   body: string;
-  likes_count: number;
-  is_liked: boolean;
   created_at: string;
   user: PostUser;
   replies: PostComment[];

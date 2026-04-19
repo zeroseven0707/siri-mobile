@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator,
-  RefreshControl, Alert, Switch, StatusBar, Animated,
+  RefreshControl, Alert, Switch, StatusBar, Animated, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
   Navigation, Package, CheckCircle2, Clock,
-  TrendingUp, Bike, Car, ChevronRight, Zap, History, Bell,
+  TrendingUp, Bike, Car, ChevronRight, Zap, History, Bell, QrCode, X,
 } from 'lucide-react-native';
+import QRCode from 'react-native-qrcode-svg';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { useNotificationStore } from '../../lib/notificationStore';
@@ -42,6 +43,7 @@ export default function DriverHomeScreen() {
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [allActiveOrders, setAllActiveOrders] = useState<Order[]>([]);
+  const [qrOrder, setQrOrder] = useState<Order | null>(null);
   const [stats, setStats] = useState<DriverStats>({
     today_orders: 0,
     today_earnings: 0,
@@ -171,23 +173,6 @@ export default function DriverHomeScreen() {
         onPress: async () => {
           try {
             await api.put(`/driver/orders/${orderId}/process`);
-            fetchData(true);
-          } catch (e: any) {
-            Alert.alert('Gagal', e.message || 'Tidak dapat update status');
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleCompleteOrder = async (orderId: string) => {
-    Alert.alert('Pesanan Diterima', 'Konfirmasi pesanan telah diterima customer?', [
-      { text: 'Batal', style: 'cancel' },
-      {
-        text: 'Ya',
-        onPress: async () => {
-          try {
-            await api.put(`/driver/orders/${orderId}/complete`);
             fetchData(true);
           } catch (e: any) {
             Alert.alert('Gagal', e.message || 'Tidak dapat update status');
@@ -378,9 +363,9 @@ export default function DriverHomeScreen() {
                     )}
                     {order.status === 'on_progress' && (
                       <View style={styles.orderListActions}>
-                        <Pressable style={styles.completeBtn} onPress={() => handleCompleteOrder(order.id)}>
-                          <CheckCircle2 size={14} color="#fff" />
-                          <Text style={styles.completeBtnText}>Pesanan Diterima</Text>
+                        <Pressable style={styles.showQrBtn} onPress={() => setQrOrder(order)}>
+                          <QrCode size={14} color="#fff" />
+                          <Text style={styles.showQrBtnText}>Tampilkan QR Code</Text>
                         </Pressable>
                       </View>
                     )}
@@ -438,6 +423,40 @@ export default function DriverHomeScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* QR Code Modal */}
+      <Modal visible={!!qrOrder} transparent animationType="fade" onRequestClose={() => setQrOrder(null)}>
+        <Pressable style={styles.qrOverlay} onPress={() => setQrOrder(null)}>
+          <Pressable onPress={e => e.stopPropagation()} style={styles.qrCard}>
+            <Pressable style={styles.qrCloseBtn} onPress={() => setQrOrder(null)}>
+              <X size={18} color="#374151" />
+            </Pressable>
+            <Text style={styles.qrTitle}>QR Code Penyelesaian</Text>
+            <Text style={styles.qrDesc}>
+              Tunjukkan QR ini ke pelanggan untuk di-scan dan menyelesaikan pesanan
+            </Text>
+            {(qrOrder as any)?.completion_token ? (
+              <View style={styles.qrBox}>
+                <QRCode value={(qrOrder as any).completion_token} size={220} />
+              </View>
+            ) : (
+              <View style={styles.qrBox}>
+                <Text style={{ color: '#9CA3AF', textAlign: 'center' }}>
+                  QR belum tersedia.{'\n'}Pastikan pesanan sudah dalam status "Dalam Perjalanan"
+                </Text>
+              </View>
+            )}
+            <View style={styles.qrOrderInfo}>
+              <Text style={styles.qrOrderDest} numberOfLines={1}>
+                📍 {qrOrder?.destination_location}
+              </Text>
+              <Text style={styles.qrOrderPrice}>
+                Rp {Number(qrOrder?.price ?? 0).toLocaleString('id-ID')}
+              </Text>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -746,7 +765,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   startTripBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  completeBtn: {
+  showQrBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -760,7 +779,35 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  completeBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  showQrBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+
+  // QR Modal
+  qrOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  qrCard: {
+    backgroundColor: '#fff', borderRadius: 24, padding: 24,
+    alignItems: 'center', width: 300, gap: 12,
+  },
+  qrCloseBtn: {
+    position: 'absolute', top: 12, right: 12,
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center',
+  },
+  qrTitle: { fontSize: 16, fontWeight: '800', color: '#111827', textAlign: 'center' },
+  qrDesc: { fontSize: 12, color: '#6B7280', textAlign: 'center', lineHeight: 17 },
+  qrBox: {
+    padding: 16, backgroundColor: '#fff',
+    borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB',
+    alignItems: 'center', justifyContent: 'center', minHeight: 120,
+  },
+  qrOrderInfo: {
+    width: '100%', backgroundColor: '#F9FAFB', borderRadius: 12,
+    padding: 12, gap: 4,
+  },
+  qrOrderDest: { fontSize: 12, color: '#374151', fontWeight: '600' },
+  qrOrderPrice: { fontSize: 14, fontWeight: '800', color: DARK_GREEN },
 
   // Route
   routeRow: { flexDirection: 'row', gap: 12 },

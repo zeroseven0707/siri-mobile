@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Receipt, User, Info, FileText, ArrowLeft } from 'lucide-react-native';
@@ -208,5 +208,5 @@ const styles = StyleSheet.create({
   summaryLabel: { fontSize: 15, fontWeight: '600', color: '#374151' },
   summaryValue: { fontSize: 18, fontWeight: '800', color: DARK_GREEN },
   notesBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#E5E7EB' },
-  notesText: { marginLeft: 8, fontSize: 13, color: '#4B5563', fontStyle: 'italic', flex: 1 }
+  notesText: { marginLeft: 8, fontSize: 13, color: '#4B5563', fontStyle: 'italic', flex: 1 },
 });
