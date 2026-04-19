@@ -117,7 +117,7 @@ export default function OrderDetailScreen() {
                   initialLng={driverLocation?.longitude ?? (order.user?.longitude ? Number(order.user.longitude) : 106.8)}
                   initialZoom={14}
                   markers={[
-                    ...(driverLocation ? [{ id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Driver', pulse: true, icon: 'bike' as any }] : []),
+                    ...(driverLocation ? [{ id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Driver', pulse: true, icon: (order.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any }] : []),
                     ...(order.user?.latitude && order.user?.longitude ? [{ id: 'user', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Lokasi Kamu', icon: 'person' as any }] : []),
                   ]}
                 />

@@ -135,16 +135,20 @@ export default function OrderTrackingScreen() {
     }
   }, [driverLocation, order?.status]);
 
-  // Fit map setelah marker tersedia
+  // Fit map hanya sekali saat pertama kali marker tersedia
+  const hasInitialFit = useRef(false);
   useEffect(() => {
-    if (!driverLocation) return;
+    if (!driverLocation || hasInitialFit.current) return;
     const points = [
       driverLocation,
       ...(storeLocation ? [storeLocation] : []),
       ...(destinationLocation ? [destinationLocation] : []),
       ...(userLocation && !destinationLocation ? [userLocation] : []),
     ];
-    setTimeout(() => mapRef.current?.fitBounds(points), 800);
+    setTimeout(() => {
+      mapRef.current?.fitBounds(points);
+      hasInitialFit.current = true;
+    }, 800);
   }, [driverLocation, storeLocation, destinationLocation]);
 
   if (loading) return (
@@ -175,7 +179,7 @@ export default function OrderTrackingScreen() {
       longitude: storeLocation.longitude,
       color: '#3B82F6',
       label: order?.store?.name ?? 'Toko',
-      icon: 'pin' as any,
+      icon: 'home' as any,
     }] : []),
     // Destination (tujuan akhir)
     ...(destinationLocation ? [{

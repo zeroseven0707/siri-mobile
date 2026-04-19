@@ -30,6 +30,7 @@ export default function DriverMapScreen() {
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const routeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevLatRef = useRef('');
+  const isFirstLocationUpdate = useRef(true);
 
   useEffect(() => {
     api.get(`/orders/${id}`)
@@ -38,7 +39,7 @@ export default function DriverMapScreen() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Tracking lokasi driver tiap 30 detik
+  // Tracking lokasi driver tiap 5 detik
   useEffect(() => {
     let active = true;
 
@@ -61,7 +62,16 @@ export default function DriverMapScreen() {
         (loc) => {
           if (!active) return;
           const pos = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
-          setDriverLocation(pos);
+          
+          if (isFirstLocationUpdate.current) {
+            isFirstLocationUpdate.current = false;
+            setDriverLocation(pos);
+          } else {
+            // Smooth move marker tanpa reload peta
+            setDriverLocation(pos);
+            mapRef.current?.updateMarker('driver', pos.latitude, pos.longitude);
+          }
+          
           api.post('/driver/location', pos).catch(() => {});
         }
       );
@@ -107,13 +117,17 @@ export default function DriverMapScreen() {
     return () => { if (routeTimer.current) clearInterval(routeTimer.current); };
   }, [order, driverLocation?.latitude?.toFixed(3)]);
 
-  // Fit map setelah semua marker tersedia
+  // Fit map hanya sekali saat pertama kali semua marker tersedia
+  const hasInitialFit = useRef(false);
   useEffect(() => {
-    if (!driverLocation) return;
+    if (!driverLocation || !order || hasInitialFit.current) return;
     const dest = getDestination();
     const sec = getSecondaryPoint();
     const points = [driverLocation, ...(dest ? [dest] : []), ...(sec ? [sec.loc] : [])];
-    setTimeout(() => mapRef.current?.fitBounds(points), 800);
+    setTimeout(() => {
+      mapRef.current?.fitBounds(points);
+      hasInitialFit.current = true;
+    }, 800);
   }, [driverLocation, order]);
 
   const getDestination = (): LatLng | null => {
@@ -190,14 +204,22 @@ export default function DriverMapScreen() {
   const isFood = !!order?.store;
 
   const markers: MarkerData[] = [
-    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true, icon: order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike' },
+    { 
+      id: 'driver', 
+      latitude: driverLocation.latitude, 
+      longitude: driverLocation.longitude, 
+      color: GREEN, 
+      label: 'Posisi Kamu', 
+      pulse: true, 
+      icon: order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike' 
+    },
     ...(dest ? [{
       id: 'dest',
       latitude: dest.latitude,
       longitude: dest.longitude,
       color: order?.status === 'on_progress' ? '#EF4444' : (isFood ? '#3B82F6' : '#F97316'),
       label: order?.status === 'on_progress' ? 'Tujuan Pelanggan' : (isFood ? order.store.name : 'Titik Jemput'),
-      icon: (order?.status === 'on_progress' ? 'pin' : isFood ? 'pin' : 'person') as any,
+      icon: (order?.status === 'on_progress' ? 'pin' : isFood ? 'home' : 'person') as any,
     }] : []),
     ...(sec ? [{
       id: 'secondary',
@@ -205,7 +227,7 @@ export default function DriverMapScreen() {
       longitude: sec.loc.longitude,
       color: sec.color,
       label: sec.label,
-      icon: 'pin' as any,
+      icon: (sec.label === 'Tujuan Akhir' ? 'pin' : sec.label.includes('Toko') || sec.label.includes('store') ? 'home' : 'person') as any,
     }] : []),
   ];
 

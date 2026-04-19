@@ -237,7 +237,7 @@ export default function DriverOrderDetailScreen() {
                   initialLng={driverLocation.longitude}
                   initialZoom={14}
                   markers={[
-                    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true, icon: 'bike' as any },
+                    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true, icon: (order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any },
                     ...(order.status === 'on_progress' && order.user?.latitude && order.user?.longitude ? [{
                       id: 'dest', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Pelanggan', icon: 'person' as any,
                     }] : []),

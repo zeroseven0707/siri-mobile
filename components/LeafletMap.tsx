@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-export type MarkerIcon = 'circle' | 'bike' | 'car' | 'person' | 'pin';
+export type MarkerIcon = 'circle' | 'bike' | 'car' | 'person' | 'pin' | 'home';
 
 export interface MarkerData {
   id: string;
@@ -32,11 +32,12 @@ interface Props {
 
 // SVG icons sebagai string (inline di HTML)
 const ICONS: Record<MarkerIcon, (color: string) => string> = {
-  circle: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="${c}"/></svg>`,
-  bike: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-5 8h7l1-4"/><path d="m9 17 3-8"/></svg>`,
-  car: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 9h14l-1.5-4H6.5L5 9z"/></svg>`,
-  person: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-  pin: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="28" viewBox="0 0 24 28"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 20 8 20s8-14.6 8-20c0-4.4-3.6-8-8-8z" fill="${c}"/><circle cx="12" cy="8" r="3" fill="white"/></svg>`,
+  circle: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="${c}"/></svg>`,
+  bike: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-5 8h7l1-4"/><path d="m9 17 3-8"/></svg>`,
+  car: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 9h14l-1.5-4H6.5L5 9z"/></svg>`,
+  person: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  pin: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" viewBox="0 0 24 28"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 20 8 20s8-14.6 8-20c0-4.4-3.6-8-8-8z" fill="${c}"/><circle cx="12" cy="8" r="3" fill="white"/></svg>`,
+  home: (c) => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
 };
 
 function buildMarkerHtml(m: MarkerData): string {
@@ -45,12 +46,12 @@ function buildMarkerHtml(m: MarkerData): string {
     .replace(/"/g, '\\"')
     .replace(/\n/g, '');
 
-  const size = iconType === 'circle' ? 36 : 44;
+  const size = iconType === 'circle' ? 32 : 36;
   const pulseHtml = m.pulse ? `
     <div style="
       position:absolute;top:50%;left:50%;
       transform:translate(-50%,-50%);
-      width:${size + 16}px;height:${size + 16}px;border-radius:50%;
+      width:${size + 12}px;height:${size + 12}px;border-radius:50%;
       background:${m.color}33;
       animation:pulse 1.8s ease-in-out infinite;
     "></div>` : '';
@@ -63,11 +64,11 @@ function buildMarkerHtml(m: MarkerData): string {
         width:${size}px;height:${size}px;border-radius:50%;
         background:white;
         border:2.5px solid ${m.color};
-        box-shadow:0 3px 10px rgba(0,0,0,0.25);
+        box-shadow:0 2px 8px rgba(0,0,0,0.2);
         display:flex;align-items:center;justify-content:center;
         overflow:hidden;
       ">
-        <img src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(ICONS[iconType](m.color))}" width="${size - 10}" height="${size - 10}" style="display:block;" />
+        <img src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(ICONS[iconType](m.color))}" width="${size - 12}" height="${size - 12}" style="display:block;" />
       </div>
     </div>
   `.replace(/\n\s*/g, '');
@@ -123,9 +124,9 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
         var icon = L.divIcon({
           className:'',
           html:'${buildMarkerHtml(m).replace(/'/g, "\\'").replace(/\n/g, '').replace(/\r/g, '')}',
-          iconSize:[44,44],
-          iconAnchor:[22,22],
-          popupAnchor:[0,-22],
+          iconSize:[36,36],
+          iconAnchor:[18,18],
+          popupAnchor:[0,-18],
         });
         var marker = L.marker([${m.latitude},${m.longitude}],{icon:icon})
           .addTo(map)
