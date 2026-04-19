@@ -54,7 +54,7 @@ export default function DriverMapScreen() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Start tracking lokasi driver tiap 1 detik
+  // Start tracking lokasi driver tiap 30 detik
   useEffect(() => {
     let active = true;
 
@@ -68,13 +68,12 @@ export default function DriverMapScreen() {
       // Ambil lokasi awal
       const initial = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       if (active) {
-        setDriverLocation({
-          latitude: initial.coords.latitude,
-          longitude: initial.coords.longitude,
-        });
+        const pos = { latitude: initial.coords.latitude, longitude: initial.coords.longitude };
+        setDriverLocation(pos);
+        api.post('/driver/location', pos).catch(() => {});
       }
 
-      // Subscribe update tiap 1 detik
+      // Subscribe update tiap 30 detik
       locationSub.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -85,6 +84,7 @@ export default function DriverMapScreen() {
           if (!active) return;
           const pos = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
           setDriverLocation(pos);
+          api.post('/driver/location', pos).catch(() => {});
         }
       );
     };

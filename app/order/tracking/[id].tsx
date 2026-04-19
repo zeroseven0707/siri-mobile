@@ -1,0 +1,356 @@
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator, Animated, Image, Linking,
+  Pressable, StyleSheet, Text, View,
+} from 'react-native';
+import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArrowLeft, MapPin, Navigation, Phone, RefreshCw } from 'lucide-react-native';
+import api from '../../../lib/api';
+
+const GREEN = '#2ECC71';
+const DARK_GREEN = '#16a34a';
+
+interface LatLng { latitude: number; longitude: number; }
+
+interface DriverInfo {
+  name: string;
+  phone: string;
+  profile_picture: string | null;
+  vehicle_type: string;
+  license_plate: string;
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  accepted:    'Driver sedang menuju ke toko',
+  on_progress: 'Driver sedang menuju ke kamu',
+};
+
+export default function OrderTrackingScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const mapRef = useRef<MapView>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const [order, setOrder] = useState<any>(null);
+  const [driverInfo, setDriverInfo] = useState<DriverInfo | null>(null);
+  const [driverLocation, setDriverLocation] = useState<LatLng | null>(null);
+  const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+  const [routeCoords, setRouteCoords] = useState<LatLng[]>([]);
+  const [distanceText, setDistanceText] = useState('');
+  const [durationText, setDurationText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Pulse animation untuk driver marker
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.4, duration: 800, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  const fetchDriverLocation = async (silent = false) => {
+    if (!silent) setRefreshing(true);
+    try {
+      const res = await api.get(`/orders/${id}/driver-location`);
+      const data = res.data.data;
+      setDriverInfo(data.driver);
+      if (data.location) {
+        const loc: LatLng = {
+          latitude: data.location.latitude,
+          longitude: data.location.longitude,
+        };
+        setDriverLocation(loc);
+        if (data.location.updated_at) {
+          const d = new Date(data.location.updated_at);
+          setLastUpdated(d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+        }
+      }
+    } catch { }
+    finally { setRefreshing(false); }
+  };
+
+  const fetchOrder = async () => {
+    try {
+      const res = await api.get(`/orders/${id}`);
+      const o = res.data.data;
+      setOrder(o);
+      if (o.user?.latitude && o.user?.longitude) {
+        setUserLocation({ latitude: Number(o.user.latitude), longitude: Number(o.user.longitude) });
+      }
+    } catch { }
+    finally { setLoading(false); }
+  };
+
+  // Fetch rute OSRM antara driver dan tujuan
+  const fetchRoute = async (from: LatLng, to: LatLng) => {
+    try {
+      const url = `http://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?overview=full&geometries=geojson`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      const data = await res.json();
+      if (data.code === 'Ok' && data.routes?.[0]) {
+        const coords = data.routes[0].geometry.coordinates.map(([lng, lat]: number[]) => ({
+          latitude: lat, longitude: lng,
+        }));
+        setRouteCoords(coords);
+        const dist = data.routes[0].distance;
+        const dur = data.routes[0].duration;
+        setDistanceText(dist < 1000 ? `${Math.round(dist)} m` : `${(dist / 1000).toFixed(1)} km`);
+        setDurationText(`~${Math.round(dur / 60)} menit`);
+      }
+    } catch { }
+  };
+
+  useEffect(() => {
+    fetchOrder();
+    fetchDriverLocation();
+
+    // Poll lokasi driver tiap 30 detik
+    pollTimer.current = setInterval(() => fetchDriverLocation(true), 30000);
+    return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
+  }, [id]);
+
+  // Update rute saat driver location berubah
+  useEffect(() => {
+    if (!driverLocation || !order) return;
+    const dest = order.status === 'on_progress' && userLocation
+      ? userLocation
+      : null; // kalau accepted, tujuan driver adalah toko (tidak ada koordinat toko di sini)
+    if (dest) fetchRoute(driverLocation, dest);
+  }, [driverLocation, order?.status]);
+
+  // Fit map
+  useEffect(() => {
+    if (!driverLocation) return;
+    const points: LatLng[] = [driverLocation];
+    if (userLocation) points.push(userLocation);
+    setTimeout(() => {
+      mapRef.current?.fitToCoordinates(points, {
+        edgePadding: { top: 100, right: 60, bottom: 260, left: 60 },
+        animated: true,
+      });
+    }, 600);
+  }, [driverLocation, userLocation]);
+
+  if (loading) return (
+    <SafeAreaView style={s.center} edges={['top']}>
+      <ActivityIndicator size="large" color={GREEN} />
+      <Text style={s.loadingText}>Memuat tracking...</Text>
+    </SafeAreaView>
+  );
+
+  const statusLabel = STATUS_LABEL[order?.status] ?? 'Memproses pesanan';
+  const initialRegion = driverLocation ?? userLocation ?? {
+    latitude: -6.2, longitude: 106.8, latitudeDelta: 0.05, longitudeDelta: 0.05,
+  };
+
+  return (
+    <View style={s.flex}>
+      <MapView
+        ref={mapRef}
+        style={s.map}
+        provider={PROVIDER_DEFAULT}
+        showsUserLocation={false}
+        initialRegion={{ ...initialRegion, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
+      >
+        {/* Marker driver */}
+        {driverLocation && (
+          <Marker coordinate={driverLocation} title="Driver" anchor={{ x: 0.5, y: 0.5 }}>
+            <View style={s.driverMarkerWrap}>
+              <Animated.View style={[s.driverPulse, { transform: [{ scale: pulseAnim }] }]} />
+              <View style={s.driverMarker}>
+                <Navigation size={16} color="#fff" />
+              </View>
+            </View>
+          </Marker>
+        )}
+
+        {/* Marker lokasi user */}
+        {userLocation && (
+          <Marker coordinate={userLocation} title="Lokasi Kamu" anchor={{ x: 0.5, y: 1 }}>
+            <View style={s.userMarker}>
+              <MapPin size={20} color="#fff" />
+            </View>
+          </Marker>
+        )}
+
+        {/* Rute */}
+        {routeCoords.length > 0 && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeColor={GREEN}
+            strokeWidth={4}
+          />
+        )}
+      </MapView>
+
+      {/* Header */}
+      <SafeAreaView style={s.headerOverlay} edges={['top']}>
+        <View style={s.header}>
+          <Pressable style={s.backBtn} onPress={() => router.back()}>
+            <ArrowLeft size={20} color="#111827" />
+          </Pressable>
+          <View style={s.headerInfo}>
+            <Text style={s.headerTitle}>{statusLabel}</Text>
+            {(distanceText || durationText) && (
+              <Text style={s.headerSub}>{[distanceText, durationText].filter(Boolean).join(' · ')}</Text>
+            )}
+          </View>
+          <Pressable style={s.refreshBtn} onPress={() => fetchDriverLocation()} disabled={refreshing}>
+            {refreshing
+              ? <ActivityIndicator size="small" color={GREEN} />
+              : <RefreshCw size={16} color={GREEN} />}
+          </Pressable>
+        </View>
+      </SafeAreaView>
+
+      {/* Bottom card */}
+      <View style={s.bottomCard}>
+        {/* Driver info */}
+        {driverInfo && (
+          <View style={s.driverRow}>
+            <View style={s.driverAvatar}>
+              {driverInfo.profile_picture
+                ? <Image source={{ uri: driverInfo.profile_picture }} style={s.driverAvatarImg} />
+                : <Text style={s.driverAvatarText}>{driverInfo.name[0]?.toUpperCase()}</Text>}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.driverName}>{driverInfo.name}</Text>
+              <Text style={s.driverVehicle}>
+                {driverInfo.vehicle_type === 'mobil' ? '🚗' : '🏍️'} {driverInfo.license_plate}
+              </Text>
+              {lastUpdated && (
+                <Text style={s.lastUpdated}>Lokasi diperbarui {lastUpdated}</Text>
+              )}
+            </View>
+            {driverInfo.phone && (
+              <Pressable
+                style={s.callBtn}
+                onPress={() => Linking.openURL(`tel:${driverInfo.phone}`)}
+              >
+                <Phone size={18} color={GREEN} />
+              </Pressable>
+            )}
+          </View>
+        )}
+
+        {/* Status bar */}
+        <View style={s.statusBar}>
+          <View style={[s.statusStep, { backgroundColor: '#DCFCE7' }]}>
+            <Text style={s.statusStepText}>✓ Diterima</Text>
+          </View>
+          <View style={s.statusLine} />
+          <View style={[s.statusStep, {
+            backgroundColor: order?.status === 'on_progress' ? '#DCFCE7' : '#F3F4F6',
+          }]}>
+            <Text style={[s.statusStepText, {
+              color: order?.status === 'on_progress' ? DARK_GREEN : '#9CA3AF',
+            }]}>
+              {order?.status === 'on_progress' ? '✓ Dijemput' : 'Dijemput'}
+            </Text>
+          </View>
+          <View style={s.statusLine} />
+          <View style={[s.statusStep, { backgroundColor: '#F3F4F6' }]}>
+            <Text style={[s.statusStepText, { color: '#9CA3AF' }]}>Tiba</Text>
+          </View>
+        </View>
+
+        {/* No location fallback */}
+        {!driverLocation && (
+          <View style={s.noLocation}>
+            <Text style={s.noLocationText}>
+              Lokasi driver belum tersedia. Driver akan muncul setelah membuka peta.
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const s = StyleSheet.create({
+  flex: { flex: 1 },
+  map: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
+  loadingText: { marginTop: 12, color: '#6B7280', fontSize: 14 },
+
+  headerOverlay: { position: 'absolute', top: 0, left: 0, right: 0 },
+  header: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: 16, marginTop: 8,
+    backgroundColor: '#fff', borderRadius: 16, padding: 12,
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 12, elevation: 6,
+  },
+  backBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center',
+  },
+  headerInfo: { flex: 1, marginLeft: 10 },
+  headerTitle: { fontSize: 13, fontWeight: '800', color: '#111827' },
+  headerSub: { fontSize: 12, color: DARK_GREEN, marginTop: 1, fontWeight: '600' },
+  refreshBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center',
+  },
+
+  // Driver marker
+  driverMarkerWrap: { alignItems: 'center', justifyContent: 'center' },
+  driverPulse: {
+    position: 'absolute', width: 48, height: 48, borderRadius: 24,
+    backgroundColor: 'rgba(46,204,113,0.25)',
+  },
+  driverMarker: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 3, borderColor: '#fff',
+    shadowColor: GREEN, shadowOpacity: 0.5, shadowRadius: 6, elevation: 6,
+  },
+  userMarker: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 3, borderColor: '#fff',
+    shadowColor: '#EF4444', shadowOpacity: 0.4, shadowRadius: 6, elevation: 6,
+  },
+
+  // Bottom card
+  bottomCard: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 20, paddingBottom: 36,
+    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 16, elevation: 10,
+  },
+  driverRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  driverAvatar: {
+    width: 50, height: 50, borderRadius: 25,
+    backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+  },
+  driverAvatarImg: { width: '100%', height: '100%' },
+  driverAvatarText: { color: '#fff', fontWeight: '800', fontSize: 20 },
+  driverName: { fontSize: 15, fontWeight: '800', color: '#111827' },
+  driverVehicle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  lastUpdated: { fontSize: 10, color: '#9CA3AF', marginTop: 2 },
+  callBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0',
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  // Status bar
+  statusBar: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  statusStep: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
+  statusStepText: { fontSize: 11, fontWeight: '700', color: DARK_GREEN },
+  statusLine: { width: 16, height: 2, backgroundColor: '#E5E7EB' },
+
+  noLocation: {
+    backgroundColor: '#FEF9C3', borderRadius: 12, padding: 12,
+    borderWidth: 1, borderColor: '#FDE68A',
+  },
+  noLocationText: { fontSize: 12, color: '#92400E', textAlign: 'center', lineHeight: 18 },
+});

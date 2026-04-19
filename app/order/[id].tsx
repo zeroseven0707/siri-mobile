@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Receipt, User, Info, FileText, ArrowLeft } from 'lucide-react-native';
+import { Receipt, User, Info, FileText, ArrowLeft, Navigation } from 'lucide-react-native';
 import api from '../../lib/api';
 
 const GREEN = '#2ECC71';
@@ -74,6 +74,17 @@ export default function OrderDetailScreen() {
                </View>
             </View>
           </View>
+
+          {/* Lacak Driver — tampil saat accepted atau on_progress */}
+          {(order.status === 'accepted' || order.status === 'on_progress') && (
+            <Pressable
+              style={styles.trackBtn}
+              onPress={() => router.push(`/order/tracking/${order.id}` as any)}
+            >
+              <Navigation size={18} color="#fff" />
+              <Text style={styles.trackBtnText}>Lacak Driver</Text>
+            </Pressable>
+          )}
 
           {/* Service Info */}
           {order.service && (
@@ -209,4 +220,10 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 18, fontWeight: '800', color: DARK_GREEN },
   notesBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#E5E7EB' },
   notesText: { marginLeft: 8, fontSize: 13, color: '#4B5563', fontStyle: 'italic', flex: 1 },
+  trackBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#2ECC71', borderRadius: 16, padding: 14, marginBottom: 16,
+    shadowColor: '#2ECC71', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+  },
+  trackBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 });
