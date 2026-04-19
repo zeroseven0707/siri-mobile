@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Receipt, User, Info, FileText, ArrowLeft, Navigation } from 'lucide-react-native';
+import { Receipt, User, Info, FileText, ArrowLeft, Navigation, Map } from 'lucide-react-native';
 import api from '../../lib/api';
+import LeafletMap, { LeafletMapRef, MarkerData } from '../../components/LeafletMap';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -22,6 +23,9 @@ export default function OrderDetailScreen() {
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [driverLocation, setDriverLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const mapRef = useRef<LeafletMapRef>(null);
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -35,6 +39,24 @@ export default function OrderDetailScreen() {
     };
     if (id) fetchOrder();
   }, [id]);
+
+  // Poll lokasi driver tiap 30 detik saat order aktif
+  useEffect(() => {
+    if (!order) return;
+    if (!['accepted', 'on_progress'].includes(order.status)) return;
+
+    const fetchDriverLoc = async () => {
+      try {
+        const res = await api.get(`/orders/${id}/driver-location`);
+        const loc = res.data.data?.location;
+        if (loc) setDriverLocation({ latitude: loc.latitude, longitude: loc.longitude });
+      } catch { }
+    };
+
+    fetchDriverLoc();
+    pollTimer.current = setInterval(fetchDriverLoc, 30000);
+    return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
+  }, [order?.status]);
 
   if (loading) {
     return (
@@ -77,13 +99,42 @@ export default function OrderDetailScreen() {
 
           {/* Lacak Driver — tampil saat accepted atau on_progress */}
           {(order.status === 'accepted' || order.status === 'on_progress') && (
-            <Pressable
-              style={styles.trackBtn}
-              onPress={() => router.push(`/order/tracking/${order.id}` as any)}
-            >
-              <Navigation size={18} color="#fff" />
-              <Text style={styles.trackBtnText}>Lacak Driver</Text>
-            </Pressable>
+            <>
+              {/* Peta preview inline */}
+              <View style={styles.mapCard}>
+                <View style={styles.mapCardHeader}>
+                  <Text style={styles.mapCardTitle}>
+                    {driverLocation ? 'Posisi Driver' : 'Menunggu lokasi driver...'}
+                  </Text>
+                  <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)} style={styles.mapExpandBtn}>
+                    <Map size={14} color={GREEN} />
+                    <Text style={styles.mapExpandText}>Perluas</Text>
+                  </Pressable>
+                </View>
+                <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)}>
+                  <LeafletMap
+                    ref={mapRef}
+                    style={styles.mapPreview}
+                    initialLat={driverLocation?.latitude ?? (order.user?.latitude ? Number(order.user.latitude) : -6.2)}
+                    initialLng={driverLocation?.longitude ?? (order.user?.longitude ? Number(order.user.longitude) : 106.8)}
+                    initialZoom={14}
+                    markers={[
+                      ...(driverLocation ? [{ id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Driver', pulse: true }] : []),
+                      ...(order.user?.latitude && order.user?.longitude ? [{ id: 'user', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Lokasi Kamu' }] : []),
+                    ]}
+                  />
+                  <View style={styles.mapOverlayHint}>
+                    <Text style={styles.mapOverlayHintText}>Tap untuk tracking penuh</Text>
+                  </View>
+                </Pressable>
+              </View>
+
+              {/* Tombol lacak */}
+              <Pressable style={styles.trackBtn} onPress={() => router.push(`/order/tracking/${order.id}` as any)}>
+                <Navigation size={18} color="#fff" />
+                <Text style={styles.trackBtnText}>Lacak Driver</Text>
+              </Pressable>
+            </>
           )}
 
           {/* Service Info */}
@@ -226,4 +277,12 @@ const styles = StyleSheet.create({
     shadowColor: '#2ECC71', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   trackBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  mapCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, elevation: 1, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
+  mapCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  mapCardTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  mapExpandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  mapExpandText: { fontSize: 12, color: GREEN, fontWeight: '700' },
+  mapPreview: { height: 180, borderRadius: 12, overflow: 'hidden' },
+  mapOverlayHint: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  mapOverlayHintText: { color: '#fff', fontSize: 11, fontWeight: '600' },
 });

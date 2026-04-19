@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
   ActivityIndicator, Alert, Linking, Modal,
@@ -10,7 +10,9 @@ import {
   ArrowLeft, QrCode, X, Map,
 } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
+import * as Location from 'expo-location';
 import api from '../../../lib/api';
+import LeafletMap, { LeafletMapRef, MarkerData } from '../../../components/LeafletMap';
 
 const GREEN = '#16a34a';
 const DARK_GREEN = '#15803d';
@@ -37,9 +39,27 @@ export default function DriverOrderDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [driverLocation, setDriverLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const mapRef = useRef<LeafletMapRef>(null);
+  const locationSub = useRef<Location.LocationSubscription | null>(null);
 
   useEffect(() => {
     fetchOrder();
+
+    // Ambil lokasi driver untuk preview peta
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setDriverLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+
+      locationSub.current = await Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.Balanced, timeInterval: 30000, distanceInterval: 0 },
+        (l) => setDriverLocation({ latitude: l.coords.latitude, longitude: l.coords.longitude })
+      );
+    })();
+
+    return () => { locationSub.current?.remove(); };
   }, [id]);
 
   const fetchOrder = async () => {
@@ -198,6 +218,37 @@ export default function DriverOrderDetailScreen() {
               </View>
             </View>
           </View>
+
+          {/* Peta preview — tampil saat accepted atau on_progress */}
+          {(order.status === 'accepted' || order.status === 'on_progress') && driverLocation && (
+            <View style={styles.card}>
+              <View style={styles.mapCardHeader}>
+                <Text style={styles.cardTitle}>Posisi Kamu</Text>
+                <Pressable onPress={() => router.push(`/driver/map/${id}` as any)} style={styles.mapExpandBtn}>
+                  <Map size={14} color={GREEN} />
+                  <Text style={styles.mapExpandText}>Perluas</Text>
+                </Pressable>
+              </View>
+              <Pressable onPress={() => router.push(`/driver/map/${id}` as any)}>
+                <LeafletMap
+                  ref={mapRef}
+                  style={styles.mapPreview}
+                  initialLat={driverLocation.latitude}
+                  initialLng={driverLocation.longitude}
+                  initialZoom={14}
+                  markers={[
+                    { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true },
+                    ...(order.status === 'on_progress' && order.user?.latitude && order.user?.longitude ? [{
+                      id: 'dest', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Pelanggan',
+                    }] : []),
+                  ]}
+                />
+                <View style={styles.mapOverlayHint}>
+                  <Text style={styles.mapOverlayHintText}>Tap untuk peta penuh</Text>
+                </View>
+              </Pressable>
+            </View>
+          )}
 
           {/* Order Items */}
           {order.food_items && order.food_items.length > 0 && (
@@ -458,6 +509,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0',
     alignItems: 'center', justifyContent: 'center',
   },
+  mapCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  mapExpandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  mapExpandText: { fontSize: 12, color: GREEN, fontWeight: '700' },
+  mapPreview: { height: 180, borderRadius: 12, overflow: 'hidden' },
+  mapOverlayHint: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  mapOverlayHintText: { color: '#fff', fontSize: 11, fontWeight: '600' },
 
   // QR
   qrCard: {
