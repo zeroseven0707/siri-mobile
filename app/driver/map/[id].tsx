@@ -57,7 +57,7 @@ export default function DriverMapScreen() {
       }
 
       locationSub.current = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.High, timeInterval: 30000, distanceInterval: 0 },
+        { accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0 },
         (loc) => {
           if (!active) return;
           const pos = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
@@ -111,25 +111,56 @@ export default function DriverMapScreen() {
   useEffect(() => {
     if (!driverLocation) return;
     const dest = getDestination();
-    const points = [driverLocation, ...(dest ? [dest] : [])];
+    const sec = getSecondaryPoint();
+    const points = [driverLocation, ...(dest ? [dest] : []), ...(sec ? [sec.loc] : [])];
     setTimeout(() => mapRef.current?.fitBounds(points), 800);
   }, [driverLocation, order]);
 
   const getDestination = (): LatLng | null => {
     if (!order) return null;
-    // Prioritaskan koordinat tersimpan di order
     if (order.status === 'on_progress') {
-      if (order.destination_lat && order.destination_lng) {
+      if (order.destination_lat && order.destination_lng)
         return { latitude: Number(order.destination_lat), longitude: Number(order.destination_lng) };
-      }
-      if (order.user?.latitude && order.user?.longitude) {
+      if (order.user?.latitude && order.user?.longitude)
         return { latitude: Number(order.user.latitude), longitude: Number(order.user.longitude) };
-      }
     }
     if (order.status === 'accepted') {
-      if (order.pickup_lat && order.pickup_lng) {
+      // Food order: tuju store dulu
+      if (order.store?.latitude && order.store?.longitude)
+        return { latitude: Number(order.store.latitude), longitude: Number(order.store.longitude) };
+      // Ojek/car: tuju pickup (lokasi user)
+      if (order.pickup_lat && order.pickup_lng)
         return { latitude: Number(order.pickup_lat), longitude: Number(order.pickup_lng) };
-      }
+    }
+    return null;
+  };
+
+  // Titik kedua yang ditampilkan sebagai referensi (bukan tujuan aktif)
+  const getSecondaryPoint = (): { loc: LatLng; label: string; color: string } | null => {
+    if (!order) return null;
+    if (order.status === 'accepted') {
+      // Tampilkan destination sebagai referensi
+      if (order.destination_lat && order.destination_lng)
+        return {
+          loc: { latitude: Number(order.destination_lat), longitude: Number(order.destination_lng) },
+          label: 'Tujuan Akhir',
+          color: '#EF4444',
+        };
+    }
+    if (order.status === 'on_progress') {
+      // Tampilkan pickup/store sebagai referensi
+      if (order.store?.latitude && order.store?.longitude)
+        return {
+          loc: { latitude: Number(order.store.latitude), longitude: Number(order.store.longitude) },
+          label: order.store.name,
+          color: '#3B82F6',
+        };
+      if (order.pickup_lat && order.pickup_lng)
+        return {
+          loc: { latitude: Number(order.pickup_lat), longitude: Number(order.pickup_lng) },
+          label: 'Titik Jemput',
+          color: '#F97316',
+        };
     }
     return null;
   };
@@ -155,9 +186,27 @@ export default function DriverMapScreen() {
   }
 
   const dest = getDestination();
+  const sec = getSecondaryPoint();
+  const isFood = !!order?.store;
+
   const markers: MarkerData[] = [
     { id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Posisi Kamu', pulse: true, icon: order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike' },
-    ...(dest ? [{ id: 'dest', latitude: dest.latitude, longitude: dest.longitude, color: '#EF4444', label: order?.status === 'on_progress' ? 'Lokasi Pelanggan' : 'Pickup', icon: 'person' as any }] : []),
+    ...(dest ? [{
+      id: 'dest',
+      latitude: dest.latitude,
+      longitude: dest.longitude,
+      color: order?.status === 'on_progress' ? '#EF4444' : (isFood ? '#3B82F6' : '#F97316'),
+      label: order?.status === 'on_progress' ? 'Tujuan Pelanggan' : (isFood ? order.store.name : 'Titik Jemput'),
+      icon: (order?.status === 'on_progress' ? 'pin' : isFood ? 'pin' : 'person') as any,
+    }] : []),
+    ...(sec ? [{
+      id: 'secondary',
+      latitude: sec.loc.latitude,
+      longitude: sec.loc.longitude,
+      color: sec.color,
+      label: sec.label,
+      icon: 'pin' as any,
+    }] : []),
   ];
 
   return (
@@ -198,9 +247,28 @@ export default function DriverMapScreen() {
               {order?.status === 'on_progress' ? <User size={18} color="#1D4ED8" /> : <MapPin size={18} color="#A16207" />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.destLabel}>{order?.status === 'on_progress' ? 'Lokasi Pelanggan' : 'Lokasi Pickup'}</Text>
+              <Text style={s.destLabel}>
+                {order?.status === 'on_progress' ? 'Tujuan Pelanggan' : (isFood ? 'Ambil di Toko' : 'Titik Jemput')}
+              </Text>
               <Text style={s.destAddress} numberOfLines={2}>
-                {order?.status === 'on_progress' ? order?.destination_location : order?.pickup_location}
+                {order?.status === 'on_progress'
+                  ? order?.destination_location
+                  : (isFood ? order?.store?.address : order?.pickup_location)}
+              </Text>
+            </View>
+          </View>
+        )}
+        {sec && (
+          <View style={[s.destInfo, { marginTop: -4 }]}>
+            <View style={[s.destIcon, { backgroundColor: order?.status === 'accepted' ? '#FEE2E2' : '#DBEAFE' }]}>
+              <MapPin size={18} color={order?.status === 'accepted' ? '#EF4444' : '#3B82F6'} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.destLabel}>{order?.status === 'accepted' ? 'Tujuan Akhir' : 'Titik Jemput'}</Text>
+              <Text style={s.destAddress} numberOfLines={2}>
+                {order?.status === 'accepted'
+                  ? order?.destination_location
+                  : order?.pickup_location}
               </Text>
             </View>
           </View>

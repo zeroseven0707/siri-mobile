@@ -15,8 +15,8 @@ const DARK_GREEN = '#16a34a';
 interface LatLng { latitude: number; longitude: number; }
 
 const STATUS_LABEL: Record<string, string> = {
-  accepted:    'Driver sedang menuju ke toko',
-  on_progress: 'Driver sedang menuju ke kamu',
+  accepted:    'Driver menuju ke toko / titik jemput',
+  on_progress: 'Driver sedang menuju ke tujuan',
 };
 
 export default function OrderTrackingScreen() {
@@ -29,6 +29,8 @@ export default function OrderTrackingScreen() {
   const [driverInfo, setDriverInfo] = useState<any>(null);
   const [driverLocation, setDriverLocation] = useState<LatLng | null>(null);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+  const [storeLocation, setStoreLocation] = useState<LatLng | null>(null);
+  const [destinationLocation, setDestinationLocation] = useState<LatLng | null>(null);
   const [routeCoords, setRouteCoords] = useState<LatLng[]>([]);
   const [distanceText, setDistanceText] = useState('');
   const [durationText, setDurationText] = useState('');
@@ -37,6 +39,7 @@ export default function OrderTrackingScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const orderPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     Animated.loop(
@@ -75,8 +78,17 @@ export default function OrderTrackingScreen() {
       const res = await api.get(`/orders/${id}`);
       const o = res.data.data;
       setOrder(o);
+      // User location (refresh tiap 1 menit untuk deteksi fraud)
       if (o.user?.latitude && o.user?.longitude) {
         setUserLocation({ latitude: Number(o.user.latitude), longitude: Number(o.user.longitude) });
+      }
+      // Store location (food orders, fixed)
+      if (o.store?.latitude && o.store?.longitude) {
+        setStoreLocation({ latitude: Number(o.store.latitude), longitude: Number(o.store.longitude) });
+      }
+      // Destination
+      if (o.destination_lat && o.destination_lng) {
+        setDestinationLocation({ latitude: Number(o.destination_lat), longitude: Number(o.destination_lng) });
       }
     } catch { }
     finally { setLoading(false); }
@@ -100,24 +112,40 @@ export default function OrderTrackingScreen() {
   useEffect(() => {
     fetchOrder();
     fetchDriverLocation();
-    // Poll tiap 5 detik untuk realtime
+    // Driver: poll tiap 5 detik (realtime)
     pollTimer.current = setInterval(() => fetchDriverLocation(true), 5000);
-    return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
+    // User/order: poll tiap 1 menit (anti-fraud check)
+    orderPollTimer.current = setInterval(() => fetchOrder(), 60000);
+    return () => {
+      if (pollTimer.current) clearInterval(pollTimer.current);
+      if (orderPollTimer.current) clearInterval(orderPollTimer.current);
+    };
   }, [id]);
 
   useEffect(() => {
     if (!driverLocation || !order) return;
-    if (order.status === 'on_progress' && userLocation) {
-      fetchRoute(driverLocation, userLocation);
+    if (order.status === 'on_progress' && destinationLocation) {
+      fetchRoute(driverLocation, destinationLocation);
+    } else if (order.status === 'accepted') {
+      // Route ke store (food) atau ke pickup (ojek)
+      const target = storeLocation ?? (order.pickup_lat && order.pickup_lng
+        ? { latitude: Number(order.pickup_lat), longitude: Number(order.pickup_lng) }
+        : null);
+      if (target) fetchRoute(driverLocation, target);
     }
   }, [driverLocation, order?.status]);
 
   // Fit map setelah marker tersedia
   useEffect(() => {
     if (!driverLocation) return;
-    const points = [driverLocation, ...(userLocation ? [userLocation] : [])];
+    const points = [
+      driverLocation,
+      ...(storeLocation ? [storeLocation] : []),
+      ...(destinationLocation ? [destinationLocation] : []),
+      ...(userLocation && !destinationLocation ? [userLocation] : []),
+    ];
     setTimeout(() => mapRef.current?.fitBounds(points), 800);
-  }, [driverLocation, userLocation]);
+  }, [driverLocation, storeLocation, destinationLocation]);
 
   if (loading) return (
     <SafeAreaView style={s.center} edges={['top']}>
@@ -140,11 +168,30 @@ export default function OrderTrackingScreen() {
       pulse: true,
       icon: (driverInfo?.vehicle_type === 'mobil' ? 'car' : 'bike') as any,
     }] : []),
-    ...(userLocation ? [{
+    // Store (food orders, fixed)
+    ...(storeLocation ? [{
+      id: 'store',
+      latitude: storeLocation.latitude,
+      longitude: storeLocation.longitude,
+      color: '#3B82F6',
+      label: order?.store?.name ?? 'Toko',
+      icon: 'pin' as any,
+    }] : []),
+    // Destination (tujuan akhir)
+    ...(destinationLocation ? [{
+      id: 'destination',
+      latitude: destinationLocation.latitude,
+      longitude: destinationLocation.longitude,
+      color: '#EF4444',
+      label: order?.destination_location ?? 'Tujuan',
+      icon: 'pin' as any,
+    }] : []),
+    // User location (fallback jika tidak ada destination)
+    ...(!destinationLocation && userLocation ? [{
       id: 'user',
       latitude: userLocation.latitude,
       longitude: userLocation.longitude,
-      color: '#EF4444',
+      color: '#F97316',
       label: 'Lokasi Kamu',
       icon: 'person' as any,
     }] : []),
