@@ -198,7 +198,7 @@ export default function OrderTrackingScreen() {
       color: GREEN,
       label: `Driver: ${driverInfo?.name ?? ''}`,
       pulse: true,
-      icon: (driverInfo?.vehicle_type === 'mobil' ? 'car' : 'bike') as any,
+      icon: (driverInfo?.driver_profile?.vehicle_type === 'mobil' || order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any,
     }] : []),
   ];
 

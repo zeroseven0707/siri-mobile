@@ -102,7 +102,7 @@ export default function ServiceOrderScreen() {
       ]);
       return;
     }
-    const finalFee = deliveryFee ?? service?.base_price ?? 15000;
+    const finalFee = deliveryFee ?? 15000;
     setIsSubmitting(true);
     try {
       await api.post('/orders', {
@@ -232,9 +232,6 @@ export default function ServiceOrderScreen() {
               <Text style={styles.bannerTitle}>{service.name}</Text>
               <Text style={styles.bannerSub}>{service.description || 'Cepat, aman, dan terpercaya'}</Text>
             </View>
-            <View style={styles.pricePill}>
-              <Text style={styles.pricePillText}>Rp {Number(service.base_price || 15000).toLocaleString('id-ID')}</Text>
-            </View>
           </View>
 
           {/* Pickup */}
@@ -338,7 +335,7 @@ export default function ServiceOrderScreen() {
               <ActivityIndicator size="small" color={GREEN} />
             ) : (
               <Text style={styles.bottomPrice}>
-                Rp {Number(deliveryFee ?? service?.base_price ?? 15000).toLocaleString('id-ID')}
+                Rp {Number(deliveryFee ?? 15000).toLocaleString('id-ID')}
               </Text>
             )}
             {deliveryFee && !calcFee && (
@@ -421,8 +418,6 @@ const styles = StyleSheet.create({
   serviceIconCircle: { width: 52, height: 52, borderRadius: 16, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center' },
   bannerTitle: { fontSize: 16, fontWeight: '800', color: '#111827' },
   bannerSub: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
-  pricePill: { backgroundColor: '#F0FDF4', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  pricePillText: { color: DARK_GREEN, fontWeight: '800', fontSize: 13 },
 
   formCard: { backgroundColor: '#fff', borderRadius: 20, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
   formCardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 8 },

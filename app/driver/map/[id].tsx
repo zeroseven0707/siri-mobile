@@ -31,6 +31,7 @@ export default function DriverMapScreen() {
   const routeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevLatRef = useRef('');
   const isFirstLocationUpdate = useRef(true);
+  const currentDriverLocation = useRef<LatLng | null>(null);
 
   useEffect(() => {
     api.get(`/orders/${id}`)
@@ -54,6 +55,7 @@ export default function DriverMapScreen() {
       if (active) {
         const pos = { latitude: initial.coords.latitude, longitude: initial.coords.longitude };
         setDriverLocation(pos);
+        currentDriverLocation.current = pos;
         api.post('/driver/location', pos).catch(() => {});
       }
 
@@ -62,14 +64,20 @@ export default function DriverMapScreen() {
         (loc) => {
           if (!active) return;
           const pos = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+          currentDriverLocation.current = pos;
           
           if (isFirstLocationUpdate.current) {
             isFirstLocationUpdate.current = false;
-            setDriverLocation(pos);
           } else {
-            // Smooth move marker tanpa reload peta
-            setDriverLocation(pos);
+            // Smooth move marker tanpa reload peta - JANGAN setDriverLocation
             mapRef.current?.updateMarker('driver', pos.latitude, pos.longitude);
+          }
+          
+          // Trigger route update jika lokasi berubah signifikan
+          const key = `${pos.latitude.toFixed(3)},${pos.longitude.toFixed(3)}`;
+          if (key !== prevLatRef.current) {
+            prevLatRef.current = key;
+            fetchRoute(pos);
           }
           
           api.post('/driver/location', pos).catch(() => {});
@@ -84,38 +92,44 @@ export default function DriverMapScreen() {
     };
   }, []);
 
-  // Fetch rute tiap 30 detik saat lokasi berubah signifikan
-  useEffect(() => {
-    if (!driverLocation || !order) return;
+  // Fetch rute saat lokasi berubah signifikan
+  const fetchRoute = async (driverPos: LatLng) => {
+    if (!order) return;
     const dest = getDestination();
     if (!dest) return;
 
-    const key = `${driverLocation.latitude.toFixed(3)},${driverLocation.longitude.toFixed(3)}`;
-    if (key === prevLatRef.current) return;
-    prevLatRef.current = key;
+    setFetchingRoute(true);
+    try {
+      const url = `http://router.project-osrm.org/route/v1/driving/${driverPos.longitude},${driverPos.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      const data = await res.json();
+      if (data.code === 'Ok' && data.routes?.[0]) {
+        setRouteCoords(data.routes[0].geometry.coordinates.map(([lng, lat]: number[]) => ({ latitude: lat, longitude: lng })));
+        const dist = data.routes[0].distance;
+        const dur = data.routes[0].duration;
+        setDistanceText(dist < 1000 ? `${Math.round(dist)} m` : `${(dist / 1000).toFixed(1)} km`);
+        setDurationText(`${Math.round(dur / 60)} menit`);
+      }
+    } catch { }
+    finally { setFetchingRoute(false); }
+  };
 
-    const doFetch = async () => {
-      setFetchingRoute(true);
-      try {
-        const url = `http://router.project-osrm.org/route/v1/driving/${driverLocation.longitude},${driverLocation.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        const data = await res.json();
-        if (data.code === 'Ok' && data.routes?.[0]) {
-          setRouteCoords(data.routes[0].geometry.coordinates.map(([lng, lat]: number[]) => ({ latitude: lat, longitude: lng })));
-          const dist = data.routes[0].distance;
-          const dur = data.routes[0].duration;
-          setDistanceText(dist < 1000 ? `${Math.round(dist)} m` : `${(dist / 1000).toFixed(1)} km`);
-          setDurationText(`${Math.round(dur / 60)} menit`);
-        }
-      } catch { }
-      finally { setFetchingRoute(false); }
+  // Initial route fetch
+  useEffect(() => {
+    if (!driverLocation || !order) return;
+    fetchRoute(driverLocation);
+    
+    // Refresh route tiap 30 detik
+    routeTimer.current = setInterval(() => {
+      if (currentDriverLocation.current) {
+        fetchRoute(currentDriverLocation.current);
+      }
+    }, 30000);
+    
+    return () => { 
+      if (routeTimer.current) clearInterval(routeTimer.current); 
     };
-
-    doFetch();
-    if (routeTimer.current) clearInterval(routeTimer.current);
-    routeTimer.current = setInterval(doFetch, 30000);
-    return () => { if (routeTimer.current) clearInterval(routeTimer.current); };
-  }, [order, driverLocation?.latitude?.toFixed(3)]);
+  }, [order]);
 
   // Fit map hanya sekali saat pertama kali semua marker tersedia
   const hasInitialFit = useRef(false);
@@ -186,8 +200,9 @@ export default function DriverMapScreen() {
   };
 
   const centerOnDriver = () => {
-    if (!driverLocation) return;
-    mapRef.current?.setView(driverLocation.latitude, driverLocation.longitude, 16);
+    const loc = currentDriverLocation.current || driverLocation;
+    if (!loc) return;
+    mapRef.current?.setView(loc.latitude, loc.longitude, 16);
   };
 
   if (loading || !driverLocation) {
@@ -218,7 +233,21 @@ export default function DriverMapScreen() {
       longitude: sec.loc.longitude,
       color: sec.color,
       label: sec.label,
-      icon: (sec.label === 'Tujuan Akhir' ? 'pin' : sec.label.includes('Toko') || sec.label.includes('store') ? 'home' : 'person') as any,
+      // Tentukan icon berdasarkan status dan kondisi
+      icon: (() => {
+        if (order?.status === 'accepted') {
+          // Saat accepted, secondary adalah destination (pin)
+          return 'pin';
+        }
+        if (order?.status === 'on_progress') {
+          // Saat on_progress, secondary adalah store (home) atau pickup (person)
+          if (order.store?.latitude && order.store?.longitude) {
+            return 'home';
+          }
+          return 'person';
+        }
+        return 'pin';
+      })() as any,
     }] : []),
     // Driver - always on top
     { 
