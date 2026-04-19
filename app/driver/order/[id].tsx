@@ -314,15 +314,6 @@ export default function DriverOrderDetailScreen() {
         {/* Action Button */}
         {nextAction && (
           <View style={styles.actionBar}>
-            {/* Tombol peta — selalu tampil kalau order aktif */}
-            {(order.status === 'accepted' || order.status === 'on_progress') && (
-              <Pressable
-                style={styles.mapBtn}
-                onPress={() => router.push(`/driver/map/${id}` as any)}
-              >
-                <Map size={20} color={GREEN} />
-              </Pressable>
-            )}
             <Pressable
               style={[styles.actionBtn, { backgroundColor: nextAction.color, flex: 1 }, updating && styles.actionBtnDisabled]}
               onPress={() => handleUpdateStatus(nextAction.endpoint)}
@@ -340,16 +331,25 @@ export default function DriverOrderDetailScreen() {
           </View>
         )}
 
-        {/* Tombol peta saja kalau tidak ada next action (on_progress) */}
-        {!nextAction && (order.status === 'accepted' || order.status === 'on_progress') && (
+        {/* on_progress: Buka Maps + Tampilkan QR */}
+        {order.status === 'on_progress' && (
           <View style={styles.actionBar}>
             <Pressable
-              style={[styles.actionBtn, { backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0' }]}
-              onPress={() => router.push(`/driver/map/${id}` as any)}
+              style={[styles.actionBtn, { flex: 1, backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0' }]}
+              onPress={() => openMaps(order.destination_location)}
             >
-              <Map size={20} color={GREEN} />
-              <Text style={[styles.actionBtnText, { color: GREEN }]}>Buka Peta</Text>
+              <Navigation size={18} color={GREEN} />
+              <Text style={[styles.actionBtnText, { color: GREEN }]}>Buka Maps</Text>
             </Pressable>
+            {order.completion_token && (
+              <Pressable
+                style={[styles.actionBtn, { flex: 1, backgroundColor: GREEN }]}
+                onPress={() => setShowQR(true)}
+              >
+                <QrCode size={18} color="#fff" />
+                <Text style={styles.actionBtnText}>Tampilkan QR</Text>
+              </Pressable>
+            )}
           </View>
         )}
 
@@ -484,6 +484,8 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 18, fontWeight: '800', color: DARK_GREEN },
 
   actionBar: {
+    flexDirection: 'row',
+    gap: 10,
     padding: 16,
     paddingBottom: 24,
     backgroundColor: '#fff',

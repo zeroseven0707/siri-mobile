@@ -57,7 +57,11 @@ export interface Order {
   id: string;
   status: 'pending' | 'accepted' | 'on_progress' | 'completed' | 'cancelled';
   pickup_location: string;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
   destination_location: string;
+  destination_lat?: number | null;
+  destination_lng?: number | null;
   price: number;
   delivery_fee: number;
   notes: string | null;

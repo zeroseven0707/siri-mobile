@@ -117,8 +117,19 @@ export default function DriverMapScreen() {
 
   const getDestination = (): LatLng | null => {
     if (!order) return null;
-    if (order.status === 'on_progress' && order.user?.latitude && order.user?.longitude) {
-      return { latitude: Number(order.user.latitude), longitude: Number(order.user.longitude) };
+    // Prioritaskan koordinat tersimpan di order
+    if (order.status === 'on_progress') {
+      if (order.destination_lat && order.destination_lng) {
+        return { latitude: Number(order.destination_lat), longitude: Number(order.destination_lng) };
+      }
+      if (order.user?.latitude && order.user?.longitude) {
+        return { latitude: Number(order.user.latitude), longitude: Number(order.user.longitude) };
+      }
+    }
+    if (order.status === 'accepted') {
+      if (order.pickup_lat && order.pickup_lng) {
+        return { latitude: Number(order.pickup_lat), longitude: Number(order.pickup_lng) };
+      }
     }
     return null;
   };

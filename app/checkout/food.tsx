@@ -97,7 +97,11 @@ export default function FoodCheckoutScreen() {
       const payload = {
         service_id: foodService.id,
         pickup_location: storeAddress || 'Lokasi Toko',
+        pickup_lat: storeLat ? parseFloat(storeLat) : null,
+        pickup_lng: storeLng ? parseFloat(storeLng) : null,
         destination_location: user?.address || 'Lokasi Anda',
+        destination_lat: user?.latitude ?? null,
+        destination_lng: user?.longitude ?? null,
         price: total,
         delivery_fee: deliveryFee,
         notes: `Pembayaran: ${paymentMethod.toUpperCase()} | Voucher: ${voucherCode || 'None'}`,

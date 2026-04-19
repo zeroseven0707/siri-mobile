@@ -355,27 +355,7 @@ export default function DriverHomeScreen() {
                         <Text style={styles.routeValue} numberOfLines={1}>{order.destination_location}</Text>
                       </View>
                     </View>
-                    {/* Action buttons untuk order aktif */}
-                    {order.status === 'accepted' && (
-                      <View style={styles.orderListActions}>
-                        <Pressable style={styles.startTripBtn} onPress={() => handleStartTrip(order.id)}>
-                          <Package size={14} color="#fff" />
-                          <Text style={styles.startTripBtnText}>Mulai Perjalanan</Text>
-                        </Pressable>
-                      </View>
-                    )}
-                    {order.status === 'on_progress' && (
-                      <View style={styles.orderListActions}>
-                        <Pressable style={styles.mapBtn} onPress={() => router.push(`/driver/map/${order.id}` as any)}>
-                          <Map size={14} color="#3B82F6" />
-                          <Text style={styles.mapBtnText}>Peta</Text>
-                        </Pressable>
-                        <Pressable style={[styles.showQrBtn, { flex: 1 }]} onPress={() => setQrOrder(order)}>
-                          <QrCode size={14} color="#fff" />
-                          <Text style={styles.showQrBtnText}>Tampilkan QR Code</Text>
-                        </Pressable>
-                      </View>
-                    )}
+                    {/* Tap card untuk ke detail */}
                   </Pressable>
                 );
               })}

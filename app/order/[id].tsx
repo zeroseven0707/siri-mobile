@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Receipt, User, Info, FileText, ArrowLeft, Navigation, Map } from 'lucide-react-native';
+import { Receipt, User, Info, FileText, ArrowLeft, Map } from 'lucide-react-native';
 import api from '../../lib/api';
 import LeafletMap, { LeafletMapRef, MarkerData } from '../../components/LeafletMap';
 
@@ -97,44 +97,35 @@ export default function OrderDetailScreen() {
             </View>
           </View>
 
-          {/* Lacak Driver — tampil saat accepted atau on_progress */}
+          {/* Peta preview inline */}
           {(order.status === 'accepted' || order.status === 'on_progress') && (
-            <>
-              {/* Peta preview inline */}
-              <View style={styles.mapCard}>
-                <View style={styles.mapCardHeader}>
-                  <Text style={styles.mapCardTitle}>
-                    {driverLocation ? 'Posisi Driver' : 'Menunggu lokasi driver...'}
-                  </Text>
-                  <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)} style={styles.mapExpandBtn}>
-                    <Map size={14} color={GREEN} />
-                    <Text style={styles.mapExpandText}>Perluas</Text>
-                  </Pressable>
-                </View>
-                <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)}>
-                  <LeafletMap
-                    ref={mapRef}
-                    style={styles.mapPreview}
-                    initialLat={driverLocation?.latitude ?? (order.user?.latitude ? Number(order.user.latitude) : -6.2)}
-                    initialLng={driverLocation?.longitude ?? (order.user?.longitude ? Number(order.user.longitude) : 106.8)}
-                    initialZoom={14}
-                    markers={[
-                      ...(driverLocation ? [{ id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Driver', pulse: true, icon: 'bike' as any }] : []),
-                      ...(order.user?.latitude && order.user?.longitude ? [{ id: 'user', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Lokasi Kamu', icon: 'person' as any }] : []),
-                    ]}
-                  />
-                  <View style={styles.mapOverlayHint}>
-                    <Text style={styles.mapOverlayHintText}>Tap untuk tracking penuh</Text>
-                  </View>
+            <View style={styles.mapCard}>
+              <View style={styles.mapCardHeader}>
+                <Text style={styles.mapCardTitle}>
+                  {driverLocation ? 'Posisi Driver' : 'Menunggu lokasi driver...'}
+                </Text>
+                <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)} style={styles.mapExpandBtn}>
+                  <Map size={14} color={GREEN} />
+                  <Text style={styles.mapExpandText}>Perluas</Text>
                 </Pressable>
               </View>
-
-              {/* Tombol lacak */}
-              <Pressable style={styles.trackBtn} onPress={() => router.push(`/order/tracking/${order.id}` as any)}>
-                <Navigation size={18} color="#fff" />
-                <Text style={styles.trackBtnText}>Lacak Driver</Text>
+              <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)}>
+                <LeafletMap
+                  ref={mapRef}
+                  style={styles.mapPreview}
+                  initialLat={driverLocation?.latitude ?? (order.user?.latitude ? Number(order.user.latitude) : -6.2)}
+                  initialLng={driverLocation?.longitude ?? (order.user?.longitude ? Number(order.user.longitude) : 106.8)}
+                  initialZoom={14}
+                  markers={[
+                    ...(driverLocation ? [{ id: 'driver', latitude: driverLocation.latitude, longitude: driverLocation.longitude, color: GREEN, label: 'Driver', pulse: true, icon: 'bike' as any }] : []),
+                    ...(order.user?.latitude && order.user?.longitude ? [{ id: 'user', latitude: Number(order.user.latitude), longitude: Number(order.user.longitude), color: '#EF4444', label: 'Lokasi Kamu', icon: 'person' as any }] : []),
+                  ]}
+                />
+                <View style={styles.mapOverlayHint}>
+                  <Text style={styles.mapOverlayHintText}>Tap untuk tracking penuh</Text>
+                </View>
               </Pressable>
-            </>
+            </View>
           )}
 
           {/* Service Info */}
@@ -271,12 +262,6 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 18, fontWeight: '800', color: DARK_GREEN },
   notesBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#E5E7EB' },
   notesText: { marginLeft: 8, fontSize: 13, color: '#4B5563', fontStyle: 'italic', flex: 1 },
-  trackBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#2ECC71', borderRadius: 16, padding: 14, marginBottom: 16,
-    shadowColor: '#2ECC71', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
-  },
-  trackBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   mapCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, elevation: 1, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
   mapCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   mapCardTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
