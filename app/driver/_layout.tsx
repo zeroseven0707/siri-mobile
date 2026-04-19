@@ -1,14 +1,12 @@
 import { Tabs } from 'expo-router';
-import { Home, Bell, UserCircle2 } from 'lucide-react-native';
+import { Home, UserCircle2 } from 'lucide-react-native';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNotificationStore } from '../../lib/notificationStore';
 
 const GREEN = '#16a34a';
 
 export default function DriverTabsLayout() {
   const insets = useSafeAreaInsets();
-  const { unreadCount } = useNotificationStore();
   const pb = Platform.OS === 'android' ? 10 : (insets.bottom > 0 ? insets.bottom : 8);
 
   return (
@@ -44,17 +42,6 @@ export default function DriverTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Notifikasi',
-          tabBarIcon: ({ color, focused }) => (
-            <Bell size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-          ),
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: '#EF4444', fontSize: 9, minWidth: 16, height: 16 },
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Akun',
@@ -65,11 +52,11 @@ export default function DriverTabsLayout() {
           ),
         }}
       />
-      {/* Sembunyikan orders dari tab bar */}
-      <Tabs.Screen
-        name="orders"
-        options={{ href: null }}
-      />
+      {/* Sembunyikan dari tab bar */}
+      <Tabs.Screen name="orders"        options={{ href: null }} />
+      <Tabs.Screen name="history"       options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
+      <Tabs.Screen name="order"         options={{ href: null }} />
     </Tabs>
   );
 }

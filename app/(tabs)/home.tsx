@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, Star, HandHelping } from 'lucide-react-native';
+import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, Star, HandHelping, Bell } from 'lucide-react-native';
 import api from '../../lib/api';
 import { storageUrl } from '../../lib/storage';
 import { useAuthStore } from '../../lib/authStore';
+import { useNotificationStore } from '../../lib/notificationStore';
 import { HomeSection, HomeSectionItem } from '../../types';
 
 const GREEN = '#2ECC71';
@@ -30,6 +31,7 @@ const getServiceCfg = (slug: string, title: string) =>
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { unreadCount } = useNotificationStore();
   const [sections, setSections] = useState<HomeSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -234,9 +236,19 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-            <View style={styles.logoWrap}>
-              <Image source={require('../../assets/images/push.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
-            </View>
+            <Pressable
+              style={styles.bellBtn}
+              onPress={() => router.push('/(tabs)/notifications' as any)}
+            >
+              <Bell size={22} color="#fff" strokeWidth={1.8} />
+              {unreadCount > 0 && (
+                <View style={styles.bellBadge}>
+                  <Text style={styles.bellBadgeText}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
           </View>
 
           {/* Search */}
@@ -282,7 +294,18 @@ const styles = StyleSheet.create({
   greeting: { color: '#fff', fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   locationText: { color: 'rgba(255,255,255,0.85)', fontSize: 12 },
-  logoWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  bellBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  bellBadge: {
+    position: 'absolute', top: 1, right: 1,
+    backgroundColor: '#EF4444', borderRadius: 8,
+    minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',

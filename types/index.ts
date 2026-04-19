@@ -7,6 +7,7 @@ export interface User {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  is_active: boolean;
   photo_url?: string | null;
   driver_profile?: DriverProfile;
   created_at: string;
@@ -125,8 +126,11 @@ export interface Post {
 export interface PostComment {
   id: string;
   body: string;
+  likes_count: number;
+  is_liked: boolean;
   created_at: string;
   user: PostUser;
+  replies: PostComment[];
 }
 
 export interface ApiResponse<T> {

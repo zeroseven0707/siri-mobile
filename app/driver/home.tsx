@@ -6,11 +6,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
-  MapPin, Navigation, Package, CheckCircle2, Clock,
-  TrendingUp, Bike, Car, ChevronRight, Zap,
+  Navigation, Package, CheckCircle2, Clock,
+  TrendingUp, Bike, Car, ChevronRight, Zap, History, Bell,
 } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
+import { useNotificationStore } from '../../lib/notificationStore';
 import { Order } from '../../types';
 
 const GREEN = '#16a34a';
@@ -35,11 +36,12 @@ interface DriverStats {
 export default function DriverHomeScreen() {
   const router = useRouter();
   const { user, updateUser } = useAuthStore();
-  const [isOnline, setIsOnline] = useState(
-    user?.driver_profile?.status === 'online'
-  );
+  const { unreadCount } = useNotificationStore();
+  const [isActive, setIsActive] = useState(user?.is_active ?? true);
+  const [togglingActive, setTogglingActive] = useState(false);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const [allActiveOrders, setAllActiveOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<DriverStats>({
     today_orders: 0,
     today_earnings: 0,
@@ -52,7 +54,7 @@ export default function DriverHomeScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (isOnline) {
+    if (isActive) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, { toValue: 1.3, duration: 900, useNativeDriver: true }),
@@ -63,7 +65,7 @@ export default function DriverHomeScreen() {
       pulseAnim.stopAnimation();
       pulseAnim.setValue(1);
     }
-  }, [isOnline]);
+  }, [isActive]);
 
   const fetchData = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -72,15 +74,24 @@ export default function DriverHomeScreen() {
       console.log('driver/orders raw:', JSON.stringify(ordersRes.data));
       const allOrders: Order[] = ordersRes.data.data?.orders ?? ordersRes.data.data ?? [];
 
-      // Order aktif: accepted atau on_progress (assign ke driver ini)
-      const active = allOrders.find(
+      // Urutkan terlama dulu (ascending created_at)
+      const sorted = [...allOrders].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+
+      // Order aktif: accepted atau on_progress (ambil yang paling baru untuk card utama)
+      const active = sorted.find(
         (o) => o.status === 'accepted' || o.status === 'on_progress'
       ) ?? null;
 
+      // Semua order non-completed untuk ditampilkan di home (pending, accepted, on_progress, cancelled)
+      const nonCompleted = sorted.filter((o) => o.status !== 'completed');
+
       // Tersedia: pending saja
-      const available = allOrders.filter((o) => o.status === 'pending');
+      const available = sorted.filter((o) => o.status === 'pending');
 
       setActiveOrder(active);
+      setAllActiveOrders(nonCompleted);
       setPendingOrders(available);
 
       // Stats
@@ -107,17 +118,22 @@ export default function DriverHomeScreen() {
     fetchData();
   }, []));
 
-  const handleToggleStatus = async () => {
-    // Backend belum punya endpoint toggle status driver
-    // Simpan state lokal saja untuk UX
-    const newStatus = isOnline ? 'offline' : 'online';
-    setIsOnline(!isOnline);
-    updateUser({
-      driver_profile: {
-        ...user?.driver_profile!,
-        status: newStatus,
-      },
-    });
+  const handleToggleActive = async () => {
+    if (togglingActive) return;
+    setTogglingActive(true);
+    const prev = isActive;
+    setIsActive(!prev); // optimistic
+    try {
+      const res = await api.post('/driver/toggle-active');
+      const newState: boolean = res.data.data.is_active;
+      setIsActive(newState);
+      updateUser({ is_active: newState });
+    } catch (e: any) {
+      setIsActive(prev); // revert
+      Alert.alert('Gagal', e.message || 'Tidak dapat mengubah status aktif');
+    } finally {
+      setTogglingActive(false);
+    }
   };
 
   const handleAcceptOrder = async (orderId: string) => {
@@ -142,6 +158,40 @@ export default function DriverHomeScreen() {
             await api.put(`/driver/orders/${orderId}/reject`);
             fetchData(true);
           } catch {}
+        },
+      },
+    ]);
+  };
+
+  const handleStartTrip = async (orderId: string) => {
+    Alert.alert('Mulai Perjalanan', 'Konfirmasi mulai perjalanan?', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Ya',
+        onPress: async () => {
+          try {
+            await api.put(`/driver/orders/${orderId}/process`);
+            fetchData(true);
+          } catch (e: any) {
+            Alert.alert('Gagal', e.message || 'Tidak dapat update status');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleCompleteOrder = async (orderId: string) => {
+    Alert.alert('Pesanan Diterima', 'Konfirmasi pesanan telah diterima customer?', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Ya',
+        onPress: async () => {
+          try {
+            await api.put(`/driver/orders/${orderId}/complete`);
+            fetchData(true);
+          } catch (e: any) {
+            Alert.alert('Gagal', e.message || 'Tidak dapat update status');
+          }
         },
       },
     ]);
@@ -188,40 +238,58 @@ export default function DriverHomeScreen() {
               </View>
             </View>
 
-            {/* Online Toggle */}
-            <View style={styles.toggleWrap}>
+            {/* Bell + Active Status */}
+            <View style={styles.headerRight}>
+              <Pressable
+                style={styles.bellBtn}
+                onPress={() => router.push('/driver/notifications' as any)}
+              >
+                <Bell size={20} color="#fff" strokeWidth={1.8} />
+                {unreadCount > 0 && (
+                  <View style={styles.bellBadge}>
+                    <Text style={styles.bellBadgeText}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+
+              {/* Active Status toggle */}
+              <View style={styles.toggleWrap}>
               <View style={styles.toggleRow}>
-                {isOnline && (
+                {isActive && (
                   <Animated.View
                     style={[styles.onlinePulse, { transform: [{ scale: pulseAnim }] }]}
                   />
                 )}
-                <View style={[styles.onlineDot, { backgroundColor: isOnline ? LIGHT_GREEN : '#9CA3AF' }]} />
+                <View style={[styles.onlineDot, { backgroundColor: isActive ? LIGHT_GREEN : '#9CA3AF' }]} />
               </View>
-              <Text style={styles.toggleLabel}>{isOnline ? 'Online' : 'Offline'}</Text>
+              <Text style={styles.toggleLabel}>{isActive ? 'Aktif' : 'Nonaktif'}</Text>
               <Switch
-                value={isOnline}
-                onValueChange={handleToggleStatus}
+                value={isActive}
+                onValueChange={handleToggleActive}
+                disabled={togglingActive}
                 trackColor={{ false: 'rgba(255,255,255,0.3)', true: 'rgba(255,255,255,0.5)' }}
-                thumbColor={isOnline ? '#fff' : 'rgba(255,255,255,0.7)'}
+                thumbColor={isActive ? '#fff' : 'rgba(255,255,255,0.7)'}
                 style={{ marginLeft: 6 }}
               />
+              </View>
             </View>
           </View>
 
           {/* Status Banner */}
-          <View style={[styles.statusBanner, { backgroundColor: isOnline ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }]}>
-            <Zap size={14} color={isOnline ? '#fff' : 'rgba(255,255,255,0.6)'} />
-            <Text style={[styles.statusBannerText, { opacity: isOnline ? 1 : 0.7 }]}>
-              {isOnline
-                ? 'Kamu sedang online — siap menerima pesanan'
-                : 'Kamu sedang offline — aktifkan untuk menerima pesanan'}
+          <View style={[styles.statusBanner, { backgroundColor: isActive ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }]}>
+            <Zap size={14} color={isActive ? '#fff' : 'rgba(255,255,255,0.6)'} />
+            <Text style={[styles.statusBannerText, { opacity: isActive ? 1 : 0.7 }]}>
+              {isActive
+                ? 'Kamu sedang aktif — siap menerima pesanan'
+                : 'Kamu nonaktif — aktifkan untuk menerima pesanan'}
             </Text>
           </View>
         </View>
 
         <View style={styles.content}>
-          {/* Stats */}
+          {/* Stats + History shortcut */}
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <View style={[styles.statIcon, { backgroundColor: '#FFF7ED' }]}>
@@ -248,53 +316,82 @@ export default function DriverHomeScreen() {
             </View>
           </View>
 
-          {/* Active Order — selalu tampil jika ada, terlepas status online */}
-          {activeOrder && (
+          {/* History shortcut */}
+          <Pressable style={styles.historyShortcut} onPress={() => router.push('/driver/history' as any)}>
+            <View style={styles.historyLeft}>
+              <View style={styles.historyIcon}>
+                <History size={18} color={GREEN} />
+              </View>
+              <View>
+                <Text style={styles.historyTitle}>History Pesanan</Text>
+                <Text style={styles.historyDesc}>{stats.total_completed} pesanan selesai</Text>
+              </View>
+            </View>
+            <ChevronRight size={18} color="#9CA3AF" />
+          </Pressable>
+
+          {/* Semua pesanan non-completed (terlama dulu) */}
+          {allActiveOrders.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Pesanan Aktif</Text>
-              <Pressable
-                style={styles.activeOrderCard}
-                onPress={() => router.push(`/driver/order/${activeOrder.id}` as any)}
-              >
-                <View style={styles.activeOrderHeader}>
-                  <View style={styles.activeOrderBadge}>
-                    <View style={styles.activeDot} />
-                    <Text style={styles.activeOrderBadgeText}>
-                      {STATUS_CFG[activeOrder.status]?.label ?? activeOrder.status}
-                    </Text>
-                  </View>
-                  <Text style={styles.activeOrderPrice}>
-                    Rp {Number(activeOrder.price).toLocaleString('id-ID')}
-                  </Text>
-                </View>
-                <View style={styles.routeRow}>
-                  <View style={styles.routeDots}>
-                    <View style={[styles.dot, { borderColor: GREEN }]} />
-                    <View style={styles.dotLine} />
-                    <View style={[styles.dot, { borderColor: '#F59E0B' }]} />
-                  </View>
-                  <View style={styles.routeTexts}>
-                    <Text style={styles.routeLabel}>Jemput</Text>
-                    <Text style={styles.routeValue} numberOfLines={1}>
-                      {activeOrder.pickup_location}
-                    </Text>
-                    <Text style={[styles.routeLabel, { marginTop: 10 }]}>Antar</Text>
-                    <Text style={styles.routeValue} numberOfLines={1}>
-                      {activeOrder.destination_location}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.activeOrderFooter}>
-                  <Navigation size={14} color={GREEN} />
-                  <Text style={styles.activeOrderFooterText}>Ketuk untuk lihat detail & navigasi</Text>
-                  <ChevronRight size={14} color={GREEN} />
-                </View>
-              </Pressable>
+              <Text style={styles.sectionTitle}>Semua Pesanan</Text>
+              {allActiveOrders.map((order) => {
+                const cfg = STATUS_CFG[order.status];
+                const isRunning = order.status === 'accepted' || order.status === 'on_progress';
+                return (
+                  <Pressable
+                    key={order.id}
+                    style={styles.orderListCard}
+                    onPress={() => router.push(`/driver/order/${order.id}` as any)}
+                  >
+                    <View style={styles.orderListTop}>
+                      <View style={[styles.statusBadge, { backgroundColor: cfg?.bg ?? '#F3F4F6' }]}>
+                        {isRunning && <View style={[styles.statusDot, { backgroundColor: cfg.color }]} />}
+                        <Text style={[styles.statusBadgeText, { color: cfg?.color ?? '#374151' }]}>
+                          {cfg?.label ?? order.status}
+                        </Text>
+                      </View>
+                      <Text style={styles.orderListPrice}>
+                        Rp {Number(order.price).toLocaleString('id-ID')}
+                      </Text>
+                    </View>
+                    <View style={styles.routeRow}>
+                      <View style={styles.routeDots}>
+                        <View style={[styles.dot, { borderColor: GREEN }]} />
+                        <View style={styles.dotLine} />
+                        <View style={[styles.dot, { borderColor: '#F59E0B' }]} />
+                      </View>
+                      <View style={styles.routeTexts}>
+                        <Text style={styles.routeLabel}>Jemput</Text>
+                        <Text style={styles.routeValue} numberOfLines={1}>{order.pickup_location}</Text>
+                        <Text style={[styles.routeLabel, { marginTop: 8 }]}>Antar</Text>
+                        <Text style={styles.routeValue} numberOfLines={1}>{order.destination_location}</Text>
+                      </View>
+                    </View>
+                    {/* Action buttons untuk order aktif */}
+                    {order.status === 'accepted' && (
+                      <View style={styles.orderListActions}>
+                        <Pressable style={styles.startTripBtn} onPress={() => handleStartTrip(order.id)}>
+                          <Package size={14} color="#fff" />
+                          <Text style={styles.startTripBtnText}>Mulai Perjalanan</Text>
+                        </Pressable>
+                      </View>
+                    )}
+                    {order.status === 'on_progress' && (
+                      <View style={styles.orderListActions}>
+                        <Pressable style={styles.completeBtn} onPress={() => handleCompleteOrder(order.id)}>
+                          <CheckCircle2 size={14} color="#fff" />
+                          <Text style={styles.completeBtnText}>Pesanan Diterima</Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
             </View>
           )}
 
-          {/* Available Orders */}
-          {isOnline && (
+          {/* Available Orders (pending) */}
+          {isActive && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Pesanan Tersedia</Text>
@@ -326,16 +423,16 @@ export default function DriverHomeScreen() {
             </View>
           )}
 
-          {!isOnline && (
+          {!isActive && (
             <View style={styles.offlineBanner}>
               <Text style={styles.offlineEmoji}>😴</Text>
-              <Text style={styles.offlineTitle}>Kamu sedang offline</Text>
+              <Text style={styles.offlineTitle}>Kamu sedang nonaktif</Text>
               <Text style={styles.offlineDesc}>
-                Aktifkan status online untuk mulai menerima pesanan dari pelanggan
+                Aktifkan status untuk mulai menerima pesanan dari pelanggan
               </Text>
-              <Pressable style={styles.goOnlineBtn} onPress={handleToggleStatus}>
+              <Pressable style={styles.goOnlineBtn} onPress={handleToggleActive}>
                 <Zap size={16} color="#fff" />
-                <Text style={styles.goOnlineBtnText}>Mulai Online</Text>
+                <Text style={styles.goOnlineBtnText}>Aktifkan Sekarang</Text>
               </Pressable>
             </View>
           )}
@@ -442,6 +539,19 @@ const styles = StyleSheet.create({
   vehicleRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
   vehicleText: { color: 'rgba(255,255,255,0.85)', fontSize: 12 },
 
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  bellBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  bellBadge: {
+    position: 'absolute', top: 0, right: 0,
+    backgroundColor: '#EF4444', borderRadius: 8,
+    minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
   toggleWrap: { flexDirection: 'row', alignItems: 'center' },
   toggleRow: { position: 'relative', alignItems: 'center', justifyContent: 'center', marginRight: 4 },
   onlinePulse: {
@@ -465,6 +575,26 @@ const styles = StyleSheet.create({
   statusBannerText: { color: '#fff', fontSize: 12, flex: 1 },
 
   content: { padding: 20 },
+
+  // Active Status Card
+  activeStatusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  activeStatusLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  activeStatusDot: { width: 10, height: 10, borderRadius: 5 },
+  activeStatusTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  activeStatusDesc: { fontSize: 11, color: '#6B7280', marginTop: 2 },
 
   // Stats
   statsGrid: { flexDirection: 'row', gap: 10, marginBottom: 24 },
@@ -496,6 +626,60 @@ const styles = StyleSheet.create({
   },
   countBadgeText: { color: '#fff', fontSize: 11, fontWeight: '800' },
 
+  // History shortcut
+  historyShortcut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  historyLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  historyIcon: {
+    width: 38, height: 38, borderRadius: 12,
+    backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center',
+  },
+  historyTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  historyDesc: { fontSize: 11, color: '#6B7280', marginTop: 1 },
+
+  // Order list card (semua pesanan non-completed)
+  orderListCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  orderListTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusBadgeText: { fontSize: 12, fontWeight: '700' },
+  orderListPrice: { fontSize: 14, fontWeight: '800', color: DARK_GREEN },
+  orderListActions: { marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+
   // Active Order
   activeOrderCard: {
     backgroundColor: '#fff',
@@ -526,16 +710,57 @@ const styles = StyleSheet.create({
   activeDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: GREEN },
   activeOrderBadgeText: { color: DARK_GREEN, fontSize: 12, fontWeight: '700' },
   activeOrderPrice: { fontSize: 16, fontWeight: '800', color: DARK_GREEN },
-  activeOrderFooter: {
+  activeOrderActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F0FDF4',
   },
-  activeOrderFooterText: { flex: 1, color: GREEN, fontSize: 12, fontWeight: '600' },
+  detailBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#BBF7D0',
+    backgroundColor: '#F0FDF4',
+  },
+  detailBtnText: { color: GREEN, fontWeight: '700', fontSize: 12 },
+  startTripBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: '#3B82F6',
+    shadowColor: '#3B82F6',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  startTripBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  completeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 10,
+    backgroundColor: GREEN,
+    shadowColor: GREEN,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  completeBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
   // Route
   routeRow: { flexDirection: 'row', gap: 12 },

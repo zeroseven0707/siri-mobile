@@ -66,7 +66,11 @@ export default function DriverOrderDetailScreen() {
           setUpdating(true);
           try {
             await api.put(`/driver/orders/${id}/${endpoint}`);
-            await fetchOrder();
+            if (endpoint === 'complete') {
+              router.replace('/driver/home' as any);
+            } else {
+              await fetchOrder();
+            }
           } catch (e: any) {
             Alert.alert('Gagal', e.message || 'Tidak dapat update status');
           } finally {

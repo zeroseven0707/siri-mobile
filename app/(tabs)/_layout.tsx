@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, ClipboardList, Bell, UserCircle2, LayoutGrid } from 'lucide-react-native';
+import { Home, ClipboardList, UserCircle2, LayoutGrid } from 'lucide-react-native';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNotificationStore } from '../../lib/notificationStore';
@@ -67,17 +67,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Notifikasi',
-          tabBarIcon: ({ color, focused }) => (
-            <Bell size={22} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-          ),
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: '#EF4444', fontSize: 9, minWidth: 16, height: 16 },
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Akun',
@@ -88,6 +77,8 @@ export default function TabsLayout() {
           ),
         }}
       />
+      {/* Sembunyikan notifikasi dari tab bar */}
+      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 }
