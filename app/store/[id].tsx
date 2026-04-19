@@ -49,7 +49,14 @@ export default function StoreDetailScreen() {
     if (cartCount === 0) return;
     router.push({
       pathname: '/checkout/food',
-      params: { storeId: id, storeName: store?.name, storeAddress: store?.address, cartItems: JSON.stringify(Object.values(cart)) }
+      params: {
+        storeId: id,
+        storeName: store?.name,
+        storeAddress: store?.address,
+        storeLat: store?.latitude ?? '',
+        storeLng: store?.longitude ?? '',
+        cartItems: JSON.stringify(Object.values(cart)),
+      }
     });
   };
 

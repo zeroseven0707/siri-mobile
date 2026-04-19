@@ -227,10 +227,18 @@ export default function DriverOrderDetailScreen() {
                 <Text style={styles.notesText}>📝 Catatan: "{order.notes}"</Text>
               </View>
             )}
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Pembayaran</Text>
+            {order.food_items?.length > 0 && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Total Pesanan</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
+                  Rp {Number(order.price).toLocaleString('id-ID')}
+                </Text>
+              </View>
+            )}
+            <View style={[styles.summaryRow, { marginTop: order.food_items?.length > 0 ? 8 : 0, paddingTop: order.food_items?.length > 0 ? 8 : 12, borderTopWidth: order.food_items?.length > 0 ? 1 : 1, borderTopColor: '#E5E7EB' }]}>
+              <Text style={[styles.summaryLabel, { color: DARK_GREEN }]}>Ongkos Kirim (Kamu)</Text>
               <Text style={styles.summaryValue}>
-                Rp {Number(order.price).toLocaleString('id-ID')}
+                Rp {Number(order.delivery_fee ?? order.price).toLocaleString('id-ID')}
               </Text>
             </View>
           </View>

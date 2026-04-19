@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert, TextInput, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, MapPin, ShoppingCart, CreditCard, Banknote, Globe, Tag, AlertTriangle, UtensilsCrossed } from 'lucide-react-native';
+import { User, MapPin, ShoppingCart, CreditCard, Banknote, Globe, Tag, AlertTriangle, UtensilsCrossed, Loader } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Service } from '../../types';
@@ -14,11 +14,13 @@ import CustomHeader from '../../components/CustomHeader';
 import AuthPlaceholder from '../../components/AuthPlaceholder';
 
 export default function FoodCheckoutScreen() {
-  const { storeId, cartItems: cartItemsStr, storeName, storeAddress } = useLocalSearchParams<{
+  const { storeId, cartItems: cartItemsStr, storeName, storeAddress, storeLat, storeLng } = useLocalSearchParams<{
     storeId: string;
     cartItems: string;
     storeName: string;
     storeAddress: string;
+    storeLat: string;
+    storeLng: string;
   }>();
 
   const router = useRouter();
@@ -26,12 +28,42 @@ export default function FoodCheckoutScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [voucherCode, setVoucherCode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'xendit'>('cod');
+  const [deliveryFee, setDeliveryFee] = useState(10000);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
+  const [durationMin, setDurationMin] = useState<number | null>(null);
+  const [loadingFee, setLoadingFee] = useState(false);
 
   const cartItems = JSON.parse(cartItemsStr || '[]');
   const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.qty), 0);
-  const deliveryFee = 10000; // Contoh biaya ongkir statis
-  const serviceFee = 2000;   // Contoh biaya layanan
+  const serviceFee = 2000;
   const total = subtotal + deliveryFee + serviceFee;
+
+  // Hitung ongkir saat komponen mount
+  useEffect(() => {
+    const fetchDeliveryFee = async () => {
+      if (!storeLat || !storeLng || !user?.latitude || !user?.longitude) return;
+      setLoadingFee(true);
+      try {
+        const res = await api.get('/delivery-fee', {
+          params: {
+            from_lat: storeLat,
+            from_lng: storeLng,
+            to_lat: user.latitude,
+            to_lng: user.longitude,
+          },
+        });
+        const data = res.data.data;
+        setDeliveryFee(data.delivery_fee);
+        setDistanceKm(data.distance_km);
+        setDurationMin(data.duration_minutes);
+      } catch {
+        // Tetap pakai default 10.000
+      } finally {
+        setLoadingFee(false);
+      }
+    };
+    fetchDeliveryFee();
+  }, [storeLat, storeLng, user?.latitude, user?.longitude]);
 
   const handleConfirmOrder = async () => {
     // Validasi alamat sebelum submit
@@ -58,6 +90,7 @@ export default function FoodCheckoutScreen() {
         pickup_location: storeAddress || 'Lokasi Toko',
         destination_location: user?.address || 'Lokasi Anda',
         price: total,
+        delivery_fee: deliveryFee,
         notes: `Pembayaran: ${paymentMethod.toUpperCase()} | Voucher: ${voucherCode || 'None'}`,
         food_items: cartItems.map((item: any) => ({
           food_item_id: item.id,
@@ -223,7 +256,18 @@ export default function FoodCheckoutScreen() {
             </View>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Ongkos Kirim</Text>
-              <Text style={styles.priceVal}>Rp {deliveryFee.toLocaleString('id-ID')}</Text>
+              {loadingFee ? (
+                <ActivityIndicator size="small" color={GREEN} />
+              ) : (
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={styles.priceVal}>Rp {deliveryFee.toLocaleString('id-ID')}</Text>
+                  {distanceKm !== null && (
+                    <Text style={{ fontSize: 11, color: '#9CA3AF' }}>
+                      {distanceKm} km{durationMin ? ` · ~${Math.round(durationMin)} menit` : ''}
+                    </Text>
+                  )}
+                </View>
+              )}
             </View>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Biaya Layanan</Text>

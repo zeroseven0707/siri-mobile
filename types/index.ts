@@ -59,6 +59,7 @@ export interface Order {
   pickup_location: string;
   destination_location: string;
   price: number;
+  delivery_fee: number;
   notes: string | null;
   completion_token?: string | null;
   service?: Service;

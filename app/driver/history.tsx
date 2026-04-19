@@ -52,7 +52,7 @@ export default function DriverHistoryScreen() {
     fetchHistory(page + 1);
   };
 
-  const totalEarnings = orders.reduce((sum, o) => sum + Number(o.price), 0);
+  const totalEarnings = orders.reduce((sum, o) => sum + Number(o.delivery_fee ?? o.price), 0);
 
   if (loading) return (
     <SafeAreaView style={styles.center}>
@@ -116,7 +116,7 @@ export default function DriverHistoryScreen() {
                 <Text style={styles.completedText}>Selesai</Text>
               </View>
               <Text style={styles.cardPrice}>
-                Rp {Number(item.price).toLocaleString('id-ID')}
+                Rp {Number(item.delivery_fee ?? item.price).toLocaleString('id-ID')}
               </Text>
             </View>
 

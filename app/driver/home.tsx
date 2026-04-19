@@ -103,8 +103,8 @@ export default function DriverHomeScreen() {
         (o) => new Date(o.created_at).toDateString() === todayStr
       );
       setStats({
-        today_orders: todayCompleted.length,
-        today_earnings: todayCompleted.reduce((sum, o) => sum + Number(o.price), 0),
+        today_orders:   todayCompleted.length,
+        today_earnings: todayCompleted.reduce((sum, o) => sum + Number(o.delivery_fee ?? o.price), 0),
         total_completed: completed.length,
         rating: 5.0,
       });
@@ -335,9 +335,12 @@ export default function DriverHomeScreen() {
                           {cfg?.label ?? order.status}
                         </Text>
                       </View>
-                      <Text style={styles.orderListPrice}>
-                        Rp {Number(order.price).toLocaleString('id-ID')}
-                      </Text>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.orderListPrice}>
+                          Rp {Number(order.delivery_fee ?? order.price).toLocaleString('id-ID')}
+                        </Text>
+                        <Text style={styles.orderListPriceLabel}>ongkir</Text>
+                      </View>
                     </View>
                     <View style={styles.routeRow}>
                       <View style={styles.routeDots}>
@@ -697,6 +700,7 @@ const styles = StyleSheet.create({
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusBadgeText: { fontSize: 12, fontWeight: '700' },
   orderListPrice: { fontSize: 14, fontWeight: '800', color: DARK_GREEN },
+  orderListPriceLabel: { fontSize: 10, color: '#9CA3AF', fontWeight: '600' },
   orderListActions: { marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
 
   // Active Order
