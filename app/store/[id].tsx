@@ -6,6 +6,8 @@ import { Minus, Plus, ArrowLeft, MapPin, Star, ShoppingCart, Clock } from 'lucid
 import api from '../../lib/api';
 import { FoodItem, Store } from '../../types';
 import { storageUrl } from '../../lib/storage';
+import { useAuthStore } from '../../lib/authStore';
+import { fetchRouteInfo, formatDistance, formatDuration } from '../../lib/deliveryFee';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
@@ -15,17 +17,35 @@ type CartItem = FoodItem & { qty: number };
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [store, setStore] = useState<Store | null>(null);
   const [foods, setFoods] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<Record<string, CartItem>>({});
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
+  const [durationMin, setDurationMin] = useState<number | null>(null);
+  const [deliveryFee, setDeliveryFee] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchStore = async () => {
       try {
         const res = await api.get(`/stores/${id}`);
-        setStore(res.data.data);
-        setFoods(res.data.data.food_items || []);
+        const storeData: Store = res.data.data;
+        setStore(storeData);
+        setFoods(storeData.food_items || []);
+
+        // Fetch jarak setelah store data tersedia
+        if (storeData.latitude && storeData.longitude && user?.latitude && user?.longitude) {
+          const info = await fetchRouteInfo(
+            storeData.latitude, storeData.longitude,
+            user.latitude, user.longitude,
+          );
+          if (info) {
+            setDistanceKm(info.distance_km);
+            setDurationMin(info.duration_minutes);
+            setDeliveryFee(info.delivery_fee);
+          }
+        }
       } catch { Alert.alert('Error', 'Gagal memuat detail toko'); }
       finally { setLoading(false); }
     };
@@ -93,12 +113,25 @@ export default function StoreDetailScreen() {
             <View style={styles.heroMeta}>
               <Star size={13} color="#F59E0B" fill="#F59E0B" />
               <Text style={styles.heroMetaText}>4.8</Text>
-              <Text style={styles.heroMetaDot}>·</Text>
-              <Clock size={13} color="rgba(255,255,255,0.8)" />
-              <Text style={styles.heroMetaText}>20-30 min</Text>
-              <Text style={styles.heroMetaDot}>·</Text>
-              <MapPin size={13} color="rgba(255,255,255,0.8)" />
-              <Text style={styles.heroMetaText} numberOfLines={1}>{store.address || 'Lokasi toko'}</Text>
+              {distanceKm !== null && (
+                <>
+                  <Text style={styles.heroMetaDot}>·</Text>
+                  <Clock size={13} color="rgba(255,255,255,0.8)" />
+                  <Text style={styles.heroMetaText}>
+                    {durationMin ? formatDuration(durationMin) : '-'}
+                  </Text>
+                  <Text style={styles.heroMetaDot}>·</Text>
+                  <MapPin size={13} color="rgba(255,255,255,0.8)" />
+                  <Text style={styles.heroMetaText}>{formatDistance(distanceKm)}</Text>
+                </>
+              )}
+              {distanceKm === null && (
+                <>
+                  <Text style={styles.heroMetaDot}>·</Text>
+                  <MapPin size={13} color="rgba(255,255,255,0.8)" />
+                  <Text style={styles.heroMetaText} numberOfLines={1}>{store.address || 'Lokasi toko'}</Text>
+                </>
+              )}
             </View>
           </View>
         </View>
@@ -170,7 +203,12 @@ export default function StoreDetailScreen() {
             <View style={styles.cartBadge}><Text style={styles.cartBadgeText}>{cartCount}</Text></View>
             <View>
               <Text style={styles.cartLabel}>{cartCount} item dipilih</Text>
-              <Text style={styles.cartTotal}>Rp {cartTotal.toLocaleString('id-ID')}</Text>
+              <Text style={styles.cartTotal}>
+                Rp {cartTotal.toLocaleString('id-ID')}
+                {deliveryFee !== null && (
+                  <Text style={styles.cartDelivery}> + Rp {deliveryFee.toLocaleString('id-ID')} ongkir</Text>
+                )}
+              </Text>
             </View>
           </View>
           <Pressable style={styles.checkoutBtn} onPress={handleCheckout}>
@@ -238,6 +276,7 @@ const styles = StyleSheet.create({
   cartBadgeText: { color: '#fff', fontWeight: '800', fontSize: 14 },
   cartLabel: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
   cartTotal: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  cartDelivery: { fontSize: 11, fontWeight: '400', color: 'rgba(255,255,255,0.6)' },
   checkoutBtn: { backgroundColor: GREEN, paddingVertical: 12, paddingHorizontal: 20, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 6 },
   checkoutText: { color: '#fff', fontWeight: '800', fontSize: 14 },
 });

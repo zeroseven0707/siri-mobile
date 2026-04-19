@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router';
 import { Search, X, Star, MapPin } from 'lucide-react-native';
 import api from '../lib/api';
 import { storageUrl } from '../lib/storage';
+import { useAuthStore } from '../lib/authStore';
+import { fetchRouteInfo, formatDistance, formatDuration } from '../lib/deliveryFee';
 import CustomHeader from '../components/CustomHeader';
 
 const GREEN = '#2ECC71';
@@ -12,17 +14,35 @@ const DARK_GREEN = '#22A85A';
 
 export default function StoresScreen() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
+  // Map storeId → { distance_km, duration_minutes }
+  const [routeMap, setRouteMap] = useState<Record<string, { distance_km: number; duration_minutes: number | null }>>({});
 
   const fetchStores = async (q = '', showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const endpoint = q ? `/search?q=${q}&type=store` : '/stores';
       const res = await api.get(endpoint);
-      setStores(res.data.data.stores || res.data.data || []);
+      const data: any[] = res.data.data.stores || res.data.data || [];
+      setStores(data);
+
+      // Fetch jarak untuk semua store secara paralel (kalau user punya koordinat)
+      if (user?.latitude && user?.longitude) {
+        const entries = await Promise.all(
+          data.map(async (s) => {
+            if (!s.latitude || !s.longitude) return [s.id, null];
+            const info = await fetchRouteInfo(s.latitude, s.longitude, user.latitude, user.longitude);
+            return [s.id, info];
+          })
+        );
+        const map: Record<string, any> = {};
+        entries.forEach(([id, info]) => { if (id && info) map[id as string] = info; });
+        setRouteMap(map);
+      }
     } catch {
       setStores([]);
     } finally {
@@ -96,7 +116,17 @@ export default function StoresScreen() {
                   <Text style={styles.metaText}>{item.rating || '4.8'}</Text>
                   <Text style={styles.metaDot}>•</Text>
                   <MapPin size={12} color="#9CA3AF" />
-                  <Text style={styles.metaText}>{item.distance || '1.2 km'}</Text>
+                  <Text style={styles.metaText}>
+                    {routeMap[item.id]
+                      ? formatDistance(routeMap[item.id].distance_km)
+                      : (item.latitude && item.longitude && user?.latitude ? '...' : '-')}
+                  </Text>
+                  {routeMap[item.id]?.duration_minutes && (
+                    <>
+                      <Text style={styles.metaDot}>•</Text>
+                      <Text style={styles.metaText}>{formatDuration(routeMap[item.id].duration_minutes)}</Text>
+                    </>
+                  )}
                 </View>
               </View>
             </Pressable>
