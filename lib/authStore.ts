@@ -36,7 +36,22 @@ export const useAuthStore = create<AuthState>((set) => ({
       const token = await SecureStore.getItemAsync('auth_token');
       const userJson = await SecureStore.getItemAsync('auth_user');
       if (token && userJson) {
-        set({ token, user: JSON.parse(userJson), isLoading: false });
+        // Set dari cache dulu agar UI cepat tampil
+        const cachedUser = JSON.parse(userJson);
+        set({ token, user: cachedUser, isLoading: false });
+
+        // Verifikasi token + refresh data user di background
+        try {
+          const res = await api.get('/profile');
+          const freshUser = res.data.data;
+          await SecureStore.setItemAsync('auth_user', JSON.stringify(freshUser));
+          set({ user: freshUser });
+        } catch {
+          // Token expired atau invalid — logout
+          await SecureStore.deleteItemAsync('auth_token');
+          await SecureStore.deleteItemAsync('auth_user');
+          set({ user: null, token: null });
+        }
       } else {
         set({ isLoading: false });
       }

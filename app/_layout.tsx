@@ -66,37 +66,28 @@ export default function RootLayout() {
     const inAuth   = segments[0] === '(auth)';
     const inDriver = segments[0] === 'driver';
     const inUser   = segments[0] === '(tabs)';
+    const inRoot   = !segments[0] || segments[0] === 'index';
 
     if (!user) {
-      // Belum login — paksa ke halaman login
       if (!inAuth) {
         router.replace('/(auth)/login');
       }
       return;
     }
 
-    // Sudah login — arahkan ke halaman yang sesuai role
-    if (inAuth) {
-      if (user.role === 'driver') {
+    // Driver — harus selalu di halaman driver
+    if (user.role === 'driver') {
+      if (!inDriver) {
         router.replace('/driver/home' as any);
-      } else {
-        router.replace('/(tabs)/home');
       }
       return;
     }
 
-    // Driver mencoba akses halaman user
-    if (user.role === 'driver' && inUser) {
-      router.replace('/driver/home' as any);
-      return;
-    }
-
-    // User/admin mencoba akses halaman driver
-    if (user.role !== 'driver' && inDriver) {
+    // User/admin — harus selalu di halaman user
+    if (inAuth || inDriver || inRoot) {
       router.replace('/(tabs)/home');
-      return;
     }
-  }, [user, isLoading, fontsLoaded, fontError]);
+  }, [user, isLoading, fontsLoaded, fontError, segments]);
 
   // Jika sudah tidak loading (auth) DAN (font sudah siap ATAU gagal)
   const isReady = !isLoading && (fontsLoaded || fontError);
