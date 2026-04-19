@@ -417,11 +417,23 @@ export default function FeedScreen() {
     try {
       const form = new FormData();
       if (caption.trim()) form.append('caption', caption.trim());
+
+      // Kirim setiap gambar sebagai images[] — React Native FormData
       selectedImages.forEach((uri, i) => {
-        const ext = uri.split('.').pop() ?? 'jpg';
-        form.append('images[]', { uri, name: `img_${i}.${ext}`, type: `image/${ext}` } as any);
+        const filename = uri.split('/').pop() ?? `image_${i}.jpg`;
+        const ext = filename.split('.').pop()?.toLowerCase() ?? 'jpg';
+        const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+        form.append('images[]', {
+          uri,
+          name: `image_${i}_${Date.now()}.${ext}`,
+          type: mimeType,
+        } as any);
       });
-      const res = await api.post('/posts', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+      const res = await api.post('/posts', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000, // upload bisa lebih lama
+      });
       setPosts(prev => [res.data.data, ...prev]);
       setShowCreate(false); setCaption(''); setSelectedImages([]);
     } catch (e: any) { Alert.alert('Gagal', e.message); }
