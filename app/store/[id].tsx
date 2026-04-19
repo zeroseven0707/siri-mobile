@@ -113,9 +113,9 @@ export default function StoreDetailScreen() {
             <View style={styles.heroMeta}>
               <Star size={13} color="#F59E0B" fill="#F59E0B" />
               <Text style={styles.heroMetaText}>4.8</Text>
-              {distanceKm !== null && (
+              <Text style={styles.heroMetaDot}>·</Text>
+              {distanceKm !== null ? (
                 <>
-                  <Text style={styles.heroMetaDot}>·</Text>
                   <Clock size={13} color="rgba(255,255,255,0.8)" />
                   <Text style={styles.heroMetaText}>
                     {durationMin ? formatDuration(durationMin) : '-'}
@@ -124,12 +124,16 @@ export default function StoreDetailScreen() {
                   <MapPin size={13} color="rgba(255,255,255,0.8)" />
                   <Text style={styles.heroMetaText}>{formatDistance(distanceKm)}</Text>
                 </>
-              )}
-              {distanceKm === null && (
+              ) : (
                 <>
-                  <Text style={styles.heroMetaDot}>·</Text>
                   <MapPin size={13} color="rgba(255,255,255,0.8)" />
-                  <Text style={styles.heroMetaText} numberOfLines={1}>{store.address || 'Lokasi toko'}</Text>
+                  <Text style={styles.heroMetaText} numberOfLines={1}>
+                    {!user?.latitude || !user?.longitude
+                      ? 'Atur lokasi untuk lihat jarak'
+                      : !store.latitude || !store.longitude
+                        ? store.address || 'Lokasi toko'
+                        : 'Menghitung jarak...'}
+                  </Text>
                 </>
               )}
             </View>

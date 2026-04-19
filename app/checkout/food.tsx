@@ -41,7 +41,16 @@ export default function FoodCheckoutScreen() {
   // Hitung ongkir saat komponen mount
   useEffect(() => {
     const fetchDeliveryFee = async () => {
-      if (!storeLat || !storeLng || !user?.latitude || !user?.longitude) return;
+      if (!storeLat || !storeLng) {
+        // Store belum punya koordinat — pakai flat rate
+        setDeliveryFee(10000);
+        return;
+      }
+      if (!user?.latitude || !user?.longitude) {
+        // User belum set lokasi — pakai flat rate, beri tahu di UI
+        setDeliveryFee(10000);
+        return;
+      }
       setLoadingFee(true);
       try {
         const res = await api.get('/delivery-fee', {
@@ -57,7 +66,7 @@ export default function FoodCheckoutScreen() {
         setDistanceKm(data.distance_km);
         setDurationMin(data.duration_minutes);
       } catch {
-        // Tetap pakai default 10.000
+        setDeliveryFee(10000);
       } finally {
         setLoadingFee(false);
       }
@@ -261,11 +270,15 @@ export default function FoodCheckoutScreen() {
               ) : (
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={styles.priceVal}>Rp {deliveryFee.toLocaleString('id-ID')}</Text>
-                  {distanceKm !== null && (
+                  {distanceKm !== null ? (
                     <Text style={{ fontSize: 11, color: '#9CA3AF' }}>
                       {distanceKm} km{durationMin ? ` · ~${Math.round(durationMin)} menit` : ''}
                     </Text>
-                  )}
+                  ) : (!storeLat || !storeLng) ? (
+                    <Text style={{ fontSize: 11, color: '#F59E0B' }}>Koordinat toko belum tersedia</Text>
+                  ) : (!user?.latitude || !user?.longitude) ? (
+                    <Text style={{ fontSize: 11, color: '#F59E0B' }}>Atur lokasi untuk ongkir akurat</Text>
+                  ) : null}
                 </View>
               )}
             </View>

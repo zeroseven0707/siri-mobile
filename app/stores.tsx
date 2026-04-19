@@ -117,9 +117,11 @@ export default function StoresScreen() {
                   <Text style={styles.metaDot}>•</Text>
                   <MapPin size={12} color="#9CA3AF" />
                   <Text style={styles.metaText}>
-                    {routeMap[item.id]
-                      ? formatDistance(routeMap[item.id].distance_km)
-                      : (item.latitude && item.longitude && user?.latitude ? '...' : '-')}
+                    {!user?.latitude || !user?.longitude
+                      ? 'Atur lokasi'
+                      : routeMap[item.id]
+                        ? formatDistance(routeMap[item.id].distance_km)
+                        : (!item.latitude || !item.longitude ? 'Jarak N/A' : '...')}
                   </Text>
                   {routeMap[item.id]?.duration_minutes && (
                     <>
