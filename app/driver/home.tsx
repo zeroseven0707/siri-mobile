@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
   Navigation, Package, CheckCircle2, Clock,
-  TrendingUp, Bike, Car, ChevronRight, Zap, History, Bell, QrCode, X,
+  TrendingUp, Bike, Car, ChevronRight, Zap, History, Bell, QrCode, X, Map,
 } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import api from '../../lib/api';
@@ -366,7 +366,11 @@ export default function DriverHomeScreen() {
                     )}
                     {order.status === 'on_progress' && (
                       <View style={styles.orderListActions}>
-                        <Pressable style={styles.showQrBtn} onPress={() => setQrOrder(order)}>
+                        <Pressable style={styles.mapBtn} onPress={() => router.push(`/driver/map/${order.id}` as any)}>
+                          <Map size={14} color="#3B82F6" />
+                          <Text style={styles.mapBtnText}>Peta</Text>
+                        </Pressable>
+                        <Pressable style={[styles.showQrBtn, { flex: 1 }]} onPress={() => setQrOrder(order)}>
                           <QrCode size={14} color="#fff" />
                           <Text style={styles.showQrBtnText}>Tampilkan QR Code</Text>
                         </Pressable>
@@ -769,6 +773,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   startTripBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  mapBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingVertical: 9, paddingHorizontal: 14, borderRadius: 10,
+    backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE',
+  },
+  mapBtnText: { color: '#3B82F6', fontWeight: '700', fontSize: 13 },
   showQrBtn: {
     flex: 1,
     flexDirection: 'row',

@@ -57,6 +57,7 @@ export default function DriverTabsLayout() {
       <Tabs.Screen name="history"       options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
       <Tabs.Screen name="order"         options={{ href: null }} />
+      <Tabs.Screen name="map"           options={{ href: null }} />
     </Tabs>
   );
 }

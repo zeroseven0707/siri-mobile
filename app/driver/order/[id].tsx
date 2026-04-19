@@ -7,7 +7,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Phone, Navigation, User, Package,
-  ArrowLeft, QrCode, X,
+  ArrowLeft, QrCode, X, Map,
 } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import api from '../../../lib/api';
@@ -263,8 +263,17 @@ export default function DriverOrderDetailScreen() {
         {/* Action Button */}
         {nextAction && (
           <View style={styles.actionBar}>
+            {/* Tombol peta — selalu tampil kalau order aktif */}
+            {(order.status === 'accepted' || order.status === 'on_progress') && (
+              <Pressable
+                style={styles.mapBtn}
+                onPress={() => router.push(`/driver/map/${id}` as any)}
+              >
+                <Map size={20} color={GREEN} />
+              </Pressable>
+            )}
             <Pressable
-              style={[styles.actionBtn, { backgroundColor: nextAction.color }, updating && styles.actionBtnDisabled]}
+              style={[styles.actionBtn, { backgroundColor: nextAction.color, flex: 1 }, updating && styles.actionBtnDisabled]}
               onPress={() => handleUpdateStatus(nextAction.endpoint)}
               disabled={updating}
             >
@@ -276,6 +285,19 @@ export default function DriverOrderDetailScreen() {
                   <Text style={styles.actionBtnText}>{nextAction.label}</Text>
                 </>
               )}
+            </Pressable>
+          </View>
+        )}
+
+        {/* Tombol peta saja kalau tidak ada next action (on_progress) */}
+        {!nextAction && (order.status === 'accepted' || order.status === 'on_progress') && (
+          <View style={styles.actionBar}>
+            <Pressable
+              style={[styles.actionBtn, { backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0' }]}
+              onPress={() => router.push(`/driver/map/${id}` as any)}
+            >
+              <Map size={20} color={GREEN} />
+              <Text style={[styles.actionBtnText, { color: GREEN }]}>Buka Peta</Text>
             </Pressable>
           </View>
         )}
@@ -431,6 +453,11 @@ const styles = StyleSheet.create({
   },
   actionBtnDisabled: { opacity: 0.6 },
   actionBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  mapBtn: {
+    width: 52, height: 52, borderRadius: 14,
+    backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0',
+    alignItems: 'center', justifyContent: 'center',
+  },
 
   // QR
   qrCard: {
