@@ -1,10 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Modal, Pressable,
-  StyleSheet, Text, TouchableOpacity, View,
+  StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Keyboard,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { X, MapPin, Navigation, Check } from 'lucide-react-native';
+import { X, MapPin, Navigation, Check, Search } from 'lucide-react-native';
 import * as Location from 'expo-location';
 
 const GREEN = '#2ECC71';
@@ -24,6 +24,13 @@ interface Props {
   onClose: () => void;
 }
 
+interface SearchResult {
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
+
 export default function LocationPicker({
   visible, title = 'Pilih Lokasi',
   initialLat = -6.2, initialLng = 106.8,
@@ -34,6 +41,77 @@ export default function LocationPicker({
   const [address, setAddress] = useState('');
   const [loadingAddr, setLoadingAddr] = useState(false);
   const [gettingGPS, setGettingGPS] = useState(false);
+  
+  // Search states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  // Search lokasi via Nominatim
+  const searchLocation = async (query: string) => {
+    if (!query.trim() || query.trim().length < 3) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    
+    setSearching(true);
+    
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=id&accept-language=id`;
+      
+      const res = await fetch(url, { 
+        headers: { 'User-Agent': 'SiriApp/1.0' } 
+      });
+      
+      const data = await res.json();
+      
+      setSearchResults(data);
+      setShowResults(data.length > 0);
+    } catch (err) {
+      setSearchResults([]);
+      setShowResults(false);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // Auto search dengan debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim().length >= 3) {
+        searchLocation(searchQuery);
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim().length >= 3) {
+      searchLocation(searchQuery);
+    }
+  };
+
+  const selectSearchResult = (result: SearchResult) => {
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    setCenter({ lat, lng });
+    setAddress(result.display_name);
+    setSearchQuery('');
+    setShowResults(false);
+    setSearchResults([]);
+    Keyboard.dismiss();
+    
+    // Move map to selected location
+    webRef.current?.injectJavaScript(
+      `map.setView([${lat},${lng}],16,{animate:true});true;`
+    );
+  };
 
   // Reverse geocode via Nominatim
   const reverseGeocode = async (lat: number, lng: number) => {
@@ -127,8 +205,41 @@ export default function LocationPicker({
           <View style={{ width: 36 }} />
         </View>
 
-        {/* Map */}
-        <View style={s.mapWrap}>
+        {/* Search Bar */}
+        <View style={s.searchContainer}>
+          <View style={s.searchBar}>
+            <Search size={16} color="#9CA3AF" />
+            <TextInput
+              style={s.searchInput}
+              placeholder="Cari alamat, tempat, atau landmark..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearchSubmit}
+              placeholderTextColor="#9CA3AF"
+              returnKeyType="search"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {searching && <ActivityIndicator size="small" color={GREEN} />}
+            {searchQuery.length > 0 && !searching && (
+              <TouchableOpacity onPress={() => { 
+                setSearchQuery(''); 
+                setShowResults(false); 
+                setSearchResults([]); 
+              }}>
+                <X size={16} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {searchQuery.length > 0 && searchQuery.length < 3 && (
+            <Text style={s.hintText}>Ketik minimal 3 karakter untuk mencari</Text>
+          )}
+        </View>
+
+        {/* Map Container with Overlay Results */}
+        <View style={s.mapContainer}>
+          {/* Map */}
           <WebView
             ref={webRef}
             source={{ html }}
@@ -146,6 +257,37 @@ export default function LocationPicker({
               } catch { }
             }}
           />
+
+          {/* Search Results Overlay - Absolute positioned */}
+          {showResults && searchResults.length > 0 && (
+            <View style={s.resultsOverlay}>
+              <ScrollView 
+                style={s.resultsList} 
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
+              >
+                {searchResults.map((result) => (
+                  <TouchableOpacity
+                    key={result.place_id}
+                    style={s.resultItem}
+                    onPress={() => selectSearchResult(result)}
+                    activeOpacity={0.7}
+                  >
+                    <MapPin size={16} color={GREEN} />
+                    <Text style={s.resultText} numberOfLines={2}>
+                      {result.display_name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+          
+          {showResults && searchResults.length === 0 && !searching && searchQuery.length >= 3 && (
+            <View style={s.noResultsOverlay}>
+              <Text style={s.noResultsText}>Tidak ada hasil untuk "{searchQuery}"</Text>
+            </View>
+          )}
 
           {/* GPS button */}
           <TouchableOpacity style={s.gpsBtn} onPress={handleGPS} disabled={gettingGPS}>
@@ -192,13 +334,120 @@ const s = StyleSheet.create({
   },
   closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: '800', color: '#111827' },
-  mapWrap: { flex: 1, position: 'relative' },
-  map: { flex: 1 },
+  
+  // Search
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1F2937',
+  },
+  hintText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  searchingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  searchingText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  
+  // Map container
+  mapContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  map: { 
+    flex: 1,
+  },
+  
+  // Results overlay - absolute positioned over map
+  resultsOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    maxHeight: 250,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  resultsList: {
+    flex: 1,
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    backgroundColor: '#fff',
+  },
+  resultText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#374151',
+    lineHeight: 18,
+  },
+  noResultsOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F9FAFB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  noResultsText: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    textAlign: 'center',
+  },
   gpsBtn: {
-    position: 'absolute', bottom: 16, right: 16,
-    width: 46, height: 46, borderRadius: 23,
-    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 8, elevation: 6,
+    position: 'absolute', 
+    bottom: 16, 
+    right: 16,
+    width: 46, 
+    height: 46, 
+    borderRadius: 23,
+    backgroundColor: '#fff', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    shadowColor: '#000', 
+    shadowOpacity: 0.15, 
+    shadowRadius: 8, 
+    elevation: 6,
   },
   bottom: {
     padding: 16, paddingBottom: 32,

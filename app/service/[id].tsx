@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, X, Star, MapPin, ChevronRight, Bike, FileText, Info, Clock, Navigation } from 'lucide-react-native';
+import { Search, X, Star, MapPin, ChevronRight, Bike, Car, FileText, Info, Clock, Navigation } from 'lucide-react-native';
 import api from '../../lib/api';
 import { Service } from '../../types';
 import { useAuthStore } from '../../lib/authStore';
@@ -226,7 +226,11 @@ export default function ServiceOrderScreen() {
           {/* Service Banner */}
           <View style={styles.serviceBanner}>
             <View style={styles.serviceIconCircle}>
-              <Bike size={28} color={GREEN} />
+              {service.slug === 'mobil' || service.slug === 'car' ? (
+                <Car size={28} color={GREEN} />
+              ) : (
+                <Bike size={28} color={GREEN} />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.bannerTitle}>{service.name}</Text>
@@ -345,7 +349,11 @@ export default function ServiceOrderScreen() {
           <Pressable style={[styles.btnOrder, isSubmitting && { opacity: 0.7 }]} onPress={handleOrder} disabled={isSubmitting}>
             {isSubmitting ? <ActivityIndicator color="#fff" /> : (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Bike size={18} color="#fff" />
+                {service.slug === 'mobil' || service.slug === 'car' ? (
+                  <Car size={18} color="#fff" />
+                ) : (
+                  <Bike size={18} color="#fff" />
+                )}
                 <Text style={styles.btnOrderText}>Pesan Sekarang</Text>
               </View>
             )}
