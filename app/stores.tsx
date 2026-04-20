@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, Image, TextInput, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Search, X, Star, MapPin } from 'lucide-react-native';
+import { Search, X, MapPin } from 'lucide-react-native';
 import api from '../lib/api';
 import { storageUrl } from '../lib/storage';
 import { useAuthStore } from '../lib/authStore';
@@ -112,9 +112,6 @@ export default function StoresScreen() {
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.category}>{item.category?.name || 'Kuliner'}</Text>
                 <View style={styles.meta}>
-                  <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                  <Text style={styles.metaText}>{item.rating || '4.8'}</Text>
-                  <Text style={styles.metaDot}>•</Text>
                   <MapPin size={12} color="#9CA3AF" />
                   <Text style={styles.metaText}>
                     {!user?.latitude || !user?.longitude

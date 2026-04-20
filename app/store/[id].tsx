@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, ScrollView, Image, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Minus, Plus, ArrowLeft, MapPin, Star, ShoppingCart, Clock } from 'lucide-react-native';
+import { Minus, Plus, ArrowLeft, MapPin, ShoppingCart, Clock } from 'lucide-react-native';
 import api from '../../lib/api';
 import { FoodItem, Store } from '../../types';
 import { storageUrl } from '../../lib/storage';
@@ -111,9 +111,6 @@ export default function StoreDetailScreen() {
             </View>
             <Text style={styles.heroStoreName}>{store.name}</Text>
             <View style={styles.heroMeta}>
-              <Star size={13} color="#F59E0B" fill="#F59E0B" />
-              <Text style={styles.heroMetaText}>4.8</Text>
-              <Text style={styles.heroMetaDot}>·</Text>
               {distanceKm !== null ? (
                 <>
                   <Clock size={13} color="rgba(255,255,255,0.8)" />

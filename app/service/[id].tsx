@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, X, Star, MapPin, ChevronRight, Bike, Car, FileText, Info, Clock, Navigation } from 'lucide-react-native';
+import { Search, X, MapPin, ChevronRight, Bike, Car, FileText, Navigation } from 'lucide-react-native';
 import api from '../../lib/api';
 import { Service } from '../../types';
 import { useAuthStore } from '../../lib/authStore';
@@ -180,13 +180,8 @@ export default function ServiceOrderScreen() {
                   <Text style={styles.storeCardName}>{store.name}</Text>
                   <Text style={styles.storeCardCat}>{store.category?.name || 'Kuliner'}</Text>
                   <View style={styles.storeCardMeta}>
-                    <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                    <Text style={styles.metaText}>{store.rating || '4.8'}</Text>
-                    <Text style={styles.metaDot}>•</Text>
-                    <Clock size={12} color="#9CA3AF" />
-                    <Text style={styles.metaText}>20-30 min</Text>
-                    <Text style={styles.metaDot}>•</Text>
-                    <View style={styles.promoBadge}><Text style={styles.promoText}>Promo</Text></View>
+                    <MapPin size={12} color="#9CA3AF" />
+                    <Text style={styles.metaText}>{store.address || 'Lihat lokasi'}</Text>
                   </View>
                 </View>
                 <ChevronRight size={18} color="#D1D5DB" />
@@ -414,8 +409,6 @@ const styles = StyleSheet.create({
   storeCardMeta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
   metaText: { fontSize: 11, color: '#4B5563', fontWeight: '600' },
   metaDot: { color: '#D1D5DB' },
-  promoBadge: { backgroundColor: '#F0FDF4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  promoText: { color: DARK_GREEN, fontSize: 9, fontWeight: '800' },
   emptyContainer: { alignItems: 'center', paddingTop: 60 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: '#374151', marginTop: 12 },
   emptyDesc: { fontSize: 13, color: '#9CA3AF', marginTop: 4 },

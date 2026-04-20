@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, Star, HandHelping, Bell } from 'lucide-react-native';
+import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, HandHelping, Bell } from 'lucide-react-native';
 import api from '../../lib/api';
 import { storageUrl } from '../../lib/storage';
 import { useAuthStore } from '../../lib/authStore';
@@ -136,18 +136,10 @@ export default function HomeScreen() {
                 {item.image
                   ? <Image source={{ uri: storageUrl(item.image)! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
                   : <Text style={{ fontSize: 32 }}>🍽️</Text>}
-                <View style={styles.storeBadge}>
-                  <View style={styles.storeBadgeDot} />
-                  <Text style={styles.storeBadgeText}>Buka</Text>
-                </View>
               </View>
               <View style={styles.storeInfo}>
                 <Text style={styles.storeName} numberOfLines={1}>{item.title}</Text>
                 <Text style={styles.storeAddr} numberOfLines={1}>{item.subtitle}</Text>
-                <View style={styles.storeRating}>
-                  <Star size={11} color="#F59E0B" fill="#F59E0B" />
-                  <Text style={styles.ratingText}>4.8</Text>
-                </View>
               </View>
             </Pressable>
           )}
@@ -345,14 +337,9 @@ const styles = StyleSheet.create({
   // Store
   storeCard: { width: 160, backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
   storeImgWrap: { height: 100, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  storeBadge: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3, gap: 4 },
-  storeBadgeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
-  storeBadgeText: { fontSize: 10, fontWeight: '700', color: DARK_GREEN },
   storeInfo: { padding: 10 },
   storeName: { fontWeight: '700', color: '#111827', fontSize: 13 },
   storeAddr: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
-  storeRating: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 6 },
-  ratingText: { fontSize: 11, fontWeight: '700', color: '#374151' },
 
   // Food
   foodCard: { width: 140, backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
