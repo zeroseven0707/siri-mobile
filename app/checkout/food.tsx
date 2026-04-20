@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert, TextInput, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, MapPin, ShoppingCart, CreditCard, Banknote, Globe, Tag, AlertTriangle, UtensilsCrossed, Loader } from 'lucide-react-native';
+import { User, MapPin, ShoppingCart, CreditCard, Banknote, Globe, Tag, AlertTriangle, UtensilsCrossed } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Service } from '../../types';
@@ -182,18 +182,15 @@ export default function FoodCheckoutScreen() {
             <Text style={styles.sectionTitle}>Pesanan di {storeName}</Text>
           </View>
           <View style={styles.card}>
-            {cartItems.map((item: any, i: number) => {
-              const ItemView = View as any;
-              return (
-                <ItemView key={item.id} style={[styles.foodItem, i === cartItems.length - 1 && { borderBottomWidth: 0 }]}>
+            {cartItems.map((item: any, i: number) => (
+                <View key={item.id} style={[styles.foodItem, i === cartItems.length - 1 && { borderBottomWidth: 0 }]}>
                   <View style={styles.foodInfo}>
                     <Text style={styles.foodQty}>{item.qty}x</Text>
                     <Text style={styles.foodName}>{item.name}</Text>
                   </View>
                   <Text style={styles.foodSubtotal}>Rp {(item.price * item.qty).toLocaleString('id-ID')}</Text>
-                </ItemView>
-              );
-            })}
+                </View>
+            ))}
           </View>
         </View>
 

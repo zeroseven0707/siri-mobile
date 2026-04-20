@@ -12,7 +12,7 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 import * as Location from 'expo-location';
 import api from '../../../lib/api';
-import LeafletMap, { LeafletMapRef, MarkerData } from '../../../components/LeafletMap';
+import LeafletMap, { LeafletMapRef } from '../../../components/LeafletMap';
 
 const GREEN = '#16a34a';
 const DARK_GREEN = '#15803d';
@@ -47,19 +47,23 @@ export default function DriverOrderDetailScreen() {
     fetchOrder();
 
     // Ambil lokasi driver untuk preview peta
+    let active = true;
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
+      if (status !== 'granted' || !active) return;
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      setDriverLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+      if (active) setDriverLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
 
       locationSub.current = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Balanced, timeInterval: 30000, distanceInterval: 0 },
-        (l) => setDriverLocation({ latitude: l.coords.latitude, longitude: l.coords.longitude })
+        (l) => { if (active) setDriverLocation({ latitude: l.coords.latitude, longitude: l.coords.longitude }); }
       );
     })();
 
-    return () => { locationSub.current?.remove(); };
+    return () => {
+      active = false;
+      locationSub.current?.remove();
+    };
   }, [id]);
 
   const fetchOrder = async () => {

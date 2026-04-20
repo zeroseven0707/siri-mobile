@@ -42,12 +42,14 @@ export default function OrderTrackingScreen() {
   const orderPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    Animated.loop(
+    const anim = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.3, duration: 900, useNativeDriver: true }),
         Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
       ])
-    ).start();
+    );
+    anim.start();
+    return () => anim.stop();
   }, []);
 
   const fetchDriverLocation = async (silent = false) => {
