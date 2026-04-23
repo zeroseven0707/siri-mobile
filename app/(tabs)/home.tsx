@@ -14,15 +14,15 @@ const DARK_GREEN = '#22A85A';
 
 const SERVICE_ICONS: Record<string, { icon: any; color: string; bg: string }> = {
   // by slug
-  food:     { icon: Utensils,    color: '#F97316', bg: '#FFF7ED' },
-  ojek:     { icon: Bike,        color: '#2ECC71', bg: '#F0FDF4' },
-  car:      { icon: Car,         color: '#3B82F6', bg: '#EFF6FF' },
-  delivery: { icon: Package,     color: '#A855F7', bg: '#FAF5FF' },
-  nitah:    { icon: HandHelping, color: '#EC4899', bg: '#FDF2F8' },
+  food: { icon: Utensils, color: '#F97316', bg: '#FFF7ED' },
+  ojek: { icon: Bike, color: '#2ECC71', bg: '#F0FDF4' },
+  car: { icon: Car, color: '#3B82F6', bg: '#EFF6FF' },
+  delivery: { icon: Package, color: '#A855F7', bg: '#FAF5FF' },
+  nitah: { icon: HandHelping, color: '#EC4899', bg: '#FDF2F8' },
   // by title lowercase as fallback
-  'pesan makanan': { icon: Utensils,    color: '#F97316', bg: '#FFF7ED' },
-  'mobil':         { icon: Car,         color: '#3B82F6', bg: '#EFF6FF' },
-  'kirim paket':   { icon: Package,     color: '#A855F7', bg: '#FAF5FF' },
+  'pesan makanan': { icon: Utensils, color: '#F97316', bg: '#FFF7ED' },
+  'mobil': { icon: Car, color: '#3B82F6', bg: '#EFF6FF' },
+  'kirim paket': { icon: Package, color: '#A855F7', bg: '#FAF5FF' },
 };
 
 const getServiceCfg = (slug: string, title: string) =>
