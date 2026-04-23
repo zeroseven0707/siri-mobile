@@ -84,6 +84,88 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
   initialZoom = 13,
 }, ref) => {
   const webRef = useRef<WebView>(null);
+  const initialized = useRef(false);
+
+  // Fungsi helper untuk build HTML marker di sisi JS WebView
+  const buildMarkerScript = `
+    window.buildMarkerHtml = function(m) {
+      var iconType = m.icon || 'circle';
+      var size = iconType === 'circle' ? 32 : 36;
+      var color = m.color;
+      
+      var icons = {
+        circle: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="' + color + '"/></svg>',
+        bike: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-5 8h7l1-4"/><path d="m9 17 3-8"/></svg>',
+        car: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 9h14l-1.5-4H6.5L5 9z"/></svg>',
+        person: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        pin: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" viewBox="0 0 24 28"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 20 8 20s8-14.6 8-20c0-4.4-3.6-8-8-8z" fill="' + color + '"/><circle cx="12" cy="8" r="3" fill="white"/></svg>',
+        home: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
+      };
+
+      var pulseHtml = m.pulse ? 
+        '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:' + (size + 12) + 'px;height:' + (size + 12) + 'px;border-radius:50%;background:' + color + '33;animation:pulse 1.8s ease-in-out infinite;"></div>' 
+        : '';
+
+      return '<div style="position:relative;width:' + size + 'px;height:' + size + 'px;display:flex;align-items:center;justify-content:center;">' + 
+               pulseHtml + 
+               '<div style="position:relative;z-index:1;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:white;border:2.5px solid ' + color + ';box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;overflow:hidden;">' +
+                 '<img src=\'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(icons[iconType]) + '\' width="' + (size - 12) + '" height="' + (size - 12) + '" style="display:block;" />' +
+               '</div>' +
+             '</div>';
+    };
+
+    window.syncMarkers = function(markersJson) {
+      var newMarkers = JSON.parse(markersJson);
+      if(!window._markers) window._markers = {};
+      
+      // Update or Add
+      newMarkers.forEach(function(m, idx) {
+        var zIndex = m.pulse ? 1000 : 100 + idx;
+        var iconHtml = window.buildMarkerHtml(m);
+        var icon = L.divIcon({
+          className: '',
+          html: iconHtml,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+          popupAnchor: [0, -18]
+        });
+
+        if(window._markers[m.id]) {
+          var marker = window._markers[m.id];
+          marker.setIcon(icon);
+          marker.setZIndexOffset(zIndex);
+          // Hanya update posisi jika bukan driver (karena driver diupdate smooth via updateMarker)
+          if(m.id !== 'driver') {
+            marker.setLatLng([m.latitude, m.longitude]);
+          }
+          if(m.label) marker.getPopup() ? marker.setPopupContent(m.label) : marker.bindPopup(m.label);
+        } else {
+          var marker = L.marker([m.latitude, m.longitude], {icon: icon, zIndexOffset: zIndex}).addTo(map);
+          if(m.label) marker.bindPopup(m.label);
+          window._markers[m.id] = marker;
+        }
+      });
+
+      // Remove deleted
+      var newIds = newMarkers.map(function(m){ return m.id; });
+      Object.keys(window._markers).forEach(function(id) {
+        if(newIds.indexOf(id) === -1) {
+          map.removeLayer(window._markers[id]);
+          delete window._markers[id];
+        }
+      });
+    };
+
+    window.syncPolyline = function(coordsJson, color) {
+      var coords = JSON.parse(coordsJson);
+      if(window._polyline) map.removeLayer(window._polyline);
+      if(coords.length > 1) {
+        window._polyline = L.polyline(coords.map(function(p){ return [p.latitude, p.longitude]; }), {
+          color: color, weight: 5, opacity: 0.85, lineJoin: 'round', lineCap: 'round'
+        }).addTo(map);
+      }
+    };
+  `;
 
   useImperativeHandle(ref, () => ({
     setView: (lat, lng, zoom = 15) => {
@@ -95,55 +177,50 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
       webRef.current?.injectJavaScript(`map.fitBounds([${bounds}],{padding:[${padding},${padding}],animate:true});true;`);
     },
     updateMarker: (id, lat, lng) => {
-      // Smooth move: interpolate via JS
       webRef.current?.injectJavaScript(`
         (function(){
           var m = window._markers && window._markers['${id}'];
           if(!m) return;
           var start = m.getLatLng();
           var end = L.latLng(${lat},${lng});
-          var steps = 20, step = 0;
-          var timer = setInterval(function(){
-            step++;
-            var t = step/steps;
-            var lat = start.lat + (end.lat - start.lat)*t;
-            var lng = start.lng + (end.lng - start.lng)*t;
-            m.setLatLng([lat,lng]);
-            if(step>=steps){ clearInterval(timer); }
-          }, 50);
+          if(start.equals(end)) return;
+          
+          var duration = 1000; // 1 detik animasi
+          var startTime = performance.now();
+          
+          function animate(currentTime) {
+            var elapsed = currentTime - startTime;
+            var t = Math.min(elapsed / duration, 1);
+            
+            // Easing function
+            var ease = t * (2 - t);
+            
+            var curLat = start.lat + (end.lat - start.lat) * ease;
+            var curLng = start.lng + (end.lng - start.lng) * ease;
+            m.setLatLng([curLat, curLng]);
+            
+            if (t < 1) {
+              requestAnimationFrame(animate);
+            }
+          }
+          requestAnimationFrame(animate);
         })();
         true;
       `);
     },
   }));
 
-  const markersJs = markers.map((m, index) => {
-    const html = buildMarkerHtml(m).replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    const zIndex = m.pulse ? 1000 : 100 + index; // Driver dengan pulse selalu di atas
-    return `
-      (function(){
-        var icon = L.divIcon({
-          className:'',
-          html:'${buildMarkerHtml(m).replace(/'/g, "\\'").replace(/\n/g, '').replace(/\r/g, '')}',
-          iconSize:[36,36],
-          iconAnchor:[18,18],
-          popupAnchor:[0,-18],
-        });
-        var marker = L.marker([${m.latitude},${m.longitude}],{icon:icon,zIndexOffset:${zIndex}})
-          .addTo(map)
-          ${m.label ? `.bindPopup('${m.label.replace(/'/g, "\\'")}')` : ''};
-        if(!window._markers) window._markers = {};
-        window._markers['${m.id}'] = marker;
-      })();
-    `;
-  }).join('\n');
-
-  const polylineJs = polyline.length > 1 ? `
-    L.polyline([${polyline.map(p => `[${p.latitude},${p.longitude}]`).join(',')}],{
-      color:'${polylineColor}',weight:5,opacity:0.85,
-      lineJoin:'round',lineCap:'round',
-    }).addTo(map);
-  ` : '';
+  useEffect(() => {
+    if (initialized.current) {
+      const markersJson = JSON.stringify(markers).replace(/'/g, "\\'");
+      const polylineJson = JSON.stringify(polyline).replace(/'/g, "\\'");
+      webRef.current?.injectJavaScript(`
+        window.syncMarkers('${markersJson}');
+        window.syncPolyline('${polylineJson}', '${polylineColor}');
+        true;
+      `);
+    }
+  }, [markers, polyline, polylineColor]);
 
   const html = `<!DOCTYPE html>
 <html>
@@ -153,15 +230,8 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    html,body,#map{width:100%;height:100%;}
+    html,body,#map{width:100%;height:100%;background:#f3f4f6;}
     .leaflet-control-attribution{display:none;}
-    .leaflet-control-zoom{border:none!important;}
-    .leaflet-control-zoom a{
-      background:#fff!important;color:#374151!important;
-      border-radius:8px!important;margin-bottom:4px!important;
-      box-shadow:0 2px 8px rgba(0,0,0,0.15)!important;
-      border:none!important;
-    }
     @keyframes pulse{
       0%{transform:translate(-50%,-50%) scale(1);opacity:0.7;}
       50%{transform:translate(-50%,-50%) scale(1.8);opacity:0.1;}
@@ -172,12 +242,11 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
 <body>
   <div id="map"></div>
   <script>
-    var map = L.map('map',{zoomControl:true,attributionControl:false})
+    var map = L.map('map',{zoomControl:false,attributionControl:false})
       .setView([${initialLat},${initialLng}],${initialZoom});
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
     window._markers = {};
-    ${markersJs}
-    ${polylineJs}
+    ${buildMarkerScript}
   </script>
 </body>
 </html>`;
@@ -191,8 +260,17 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
         scrollEnabled={false}
         javaScriptEnabled
         domStorageEnabled
+        onLoadEnd={() => {
+          initialized.current = true;
+          const markersJson = JSON.stringify(markers).replace(/'/g, "\\'");
+          const polylineJson = JSON.stringify(polyline).replace(/'/g, "\\'");
+          webRef.current?.injectJavaScript(`
+            window.syncMarkers('${markersJson}');
+            window.syncPolyline('${polylineJson}', '${polylineColor}');
+            true;
+          `);
+        }}
         originWhitelist={['*']}
-        mixedContentMode="always"
       />
     </View>
   );

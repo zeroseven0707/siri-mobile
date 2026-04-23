@@ -60,6 +60,8 @@ export default function DriverOrderDetailScreen() {
           if (active) {
             const pos = { latitude: l.coords.latitude, longitude: l.coords.longitude };
             setDriverLocation(pos);
+            // Smooth move marker tanpa reload peta
+            mapRef.current?.updateMarker('driver', pos.latitude, pos.longitude);
             // Kirim ke backend agar user bisa track
             api.post('/driver/location', pos).catch(() => {});
           }
