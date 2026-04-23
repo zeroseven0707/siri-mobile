@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const { user } = useAuthStore();
   const { unreadCount } = useNotificationStore();
   const [sections, setSections] = useState<HomeSection[]>([]);
+  const [activeOrder, setActiveOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -42,11 +43,24 @@ export default function HomeScreen() {
       let data = homeRes.data.data || [];
       data.sort((a: HomeSection, b: HomeSection) => a.order - b.order);
       setSections(data);
+      
+      // Get active orders
+      const ordersRes = await api.get('/orders');
+      const orders = ordersRes.data.data.orders || [];
+      const active = orders.find((o: any) => o.status === 'accepted' || o.status === 'on_progress');
+      setActiveOrder(active);
     } catch { }
     finally { setLoading(false); setRefreshing(false); }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(); 
+    // Poll active orders every 10s
+    const timer = setInterval(() => {
+      fetchData();
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   if (loading) return (
     <SafeAreaView style={styles.center}>
@@ -250,6 +264,27 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
+        {/* Active Order Widget */}
+        {activeOrder && (
+          <Pressable 
+            style={styles.activeOrderCard} 
+            onPress={() => router.push(`/order/tracking/${activeOrder.id}` as any)}
+          >
+            <View style={styles.activeOrderLeft}>
+              <View style={styles.activeOrderIcon}>
+                <Bike size={20} color="#fff" />
+              </View>
+              <View>
+                <Text style={styles.activeOrderTitle}>
+                  {activeOrder.status === 'on_progress' ? 'Driver Menuju Lokasi Kamu' : 'Driver Menuju Toko/Pickup'}
+                </Text>
+                <Text style={styles.activeOrderSub}>Ketuk untuk melacak posisi driver</Text>
+              </View>
+            </View>
+            <ChevronRight size={18} color="#9CA3AF" />
+          </Pressable>
+        )}
+
         {/* Sections */}
         <View style={styles.content}>
           {sections.map(section => {
@@ -370,4 +405,27 @@ const styles = StyleSheet.create({
   promoTitle: { fontWeight: '800', color: '#111827', fontSize: 15 },
   promoSub: { color: '#6B7280', fontSize: 12, marginTop: 4, lineHeight: 17 },
   promoImg: { width: 70, height: 70, borderRadius: 14 },
+
+  // Active Order Card
+  activeOrderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginTop: -20,
+    marginBottom: 20,
+    padding: 16,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  activeOrderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  activeOrderIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
+  activeOrderTitle: { fontSize: 13, fontWeight: '800', color: '#111827' },
+  activeOrderSub: { fontSize: 11, color: '#9CA3AF', marginTop: 1 },
 });

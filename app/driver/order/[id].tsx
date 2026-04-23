@@ -55,8 +55,15 @@ export default function DriverOrderDetailScreen() {
       if (active) setDriverLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
 
       locationSub.current = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.Balanced, timeInterval: 30000, distanceInterval: 0 },
-        (l) => { if (active) setDriverLocation({ latitude: l.coords.latitude, longitude: l.coords.longitude }); }
+        { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 0 },
+        (l) => {
+          if (active) {
+            const pos = { latitude: l.coords.latitude, longitude: l.coords.longitude };
+            setDriverLocation(pos);
+            // Kirim ke backend agar user bisa track
+            api.post('/driver/location', pos).catch(() => {});
+          }
+        }
       );
     })();
 

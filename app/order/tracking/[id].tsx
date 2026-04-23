@@ -116,8 +116,8 @@ export default function OrderTrackingScreen() {
     fetchDriverLocation();
     // Driver: poll tiap 5 detik (realtime)
     pollTimer.current = setInterval(() => fetchDriverLocation(true), 5000);
-    // User/order: poll tiap 1 menit (anti-fraud check)
-    orderPollTimer.current = setInterval(() => fetchOrder(), 60000);
+    // User/order: poll tiap 10 detik (status update)
+    orderPollTimer.current = setInterval(() => fetchOrder(), 10000);
     return () => {
       if (pollTimer.current) clearInterval(pollTimer.current);
       if (orderPollTimer.current) clearInterval(orderPollTimer.current);
