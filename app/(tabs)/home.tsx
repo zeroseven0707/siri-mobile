@@ -225,7 +225,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor={GREEN} />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} tintColor={GREEN} />}
       >
         {/* Header */}
@@ -264,27 +264,6 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Active Order Widget */}
-        {activeOrder && (
-          <Pressable 
-            style={styles.activeOrderCard} 
-            onPress={() => router.push(`/order/tracking/${activeOrder.id}` as any)}
-          >
-            <View style={styles.activeOrderLeft}>
-              <View style={styles.activeOrderIcon}>
-                <Bike size={20} color="#fff" />
-              </View>
-              <View>
-                <Text style={styles.activeOrderTitle}>
-                  {activeOrder.status === 'on_progress' ? 'Driver Menuju Lokasi Kamu' : 'Driver Menuju Toko/Pickup'}
-                </Text>
-                <Text style={styles.activeOrderSub}>Ketuk untuk melacak posisi driver</Text>
-              </View>
-            </View>
-            <ChevronRight size={18} color="#9CA3AF" />
-          </Pressable>
-        )}
-
         {/* Sections */}
         <View style={styles.content}>
           {sections.map(section => {
@@ -300,6 +279,32 @@ export default function HomeScreen() {
           })}
         </View>
       </ScrollView>
+
+      {/* Floating Active Order Widget */}
+      {activeOrder && (
+        <View style={styles.floatingContainer}>
+          <Pressable 
+            style={styles.floatingOrderCard} 
+            onPress={() => router.push(`/order/tracking/${activeOrder.id}` as any)}
+          >
+            <View style={styles.activeOrderLeft}>
+              <View style={styles.activeOrderIcon}>
+                <Bike size={24} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.activeOrderTitle} numberOfLines={1}>
+                  {activeOrder.status === 'on_progress' ? 'Pesanan Sedang Diantar' : 'Driver Menjemput Pesanan'}
+                </Text>
+                <Text style={styles.activeOrderSub}>Driver: {activeOrder.driver?.name || 'Menunggu'}</Text>
+              </View>
+            </View>
+            <View style={styles.trackBadge}>
+              <Text style={styles.trackBadgeText}>LACAK</Text>
+              <ChevronRight size={14} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -307,6 +312,45 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#F7F8FA' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F8FA' },
+  
+  // Floating Order Widget
+  floatingContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    zIndex: 9999,
+  },
+  floatingOrderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 12,
+    borderWidth: 1.5,
+    borderColor: '#E8F5E9',
+  },
+  activeOrderLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  activeOrderIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
+  activeOrderTitle: { fontSize: 14, fontWeight: '800', color: '#111827', marginBottom: 2 },
+  activeOrderSub: { fontSize: 12, color: '#6B7280' },
+  trackBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: DARK_GREEN,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    marginLeft: 12,
+  },
+  trackBadgeText: { color: '#fff', fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
 
   // Header
   header: {
@@ -405,27 +449,4 @@ const styles = StyleSheet.create({
   promoTitle: { fontWeight: '800', color: '#111827', fontSize: 15 },
   promoSub: { color: '#6B7280', fontSize: 12, marginTop: 4, lineHeight: 17 },
   promoImg: { width: 70, height: 70, borderRadius: 14 },
-
-  // Active Order Card
-  activeOrderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginTop: -20,
-    marginBottom: 20,
-    padding: 16,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  activeOrderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  activeOrderIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: GREEN, alignItems: 'center', justifyContent: 'center' },
-  activeOrderTitle: { fontSize: 13, fontWeight: '800', color: '#111827' },
-  activeOrderSub: { fontSize: 11, color: '#9CA3AF', marginTop: 1 },
 });
