@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+﻿import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Switch } from 'react-native';
 import { Key, Fingerprint, Smartphone, LogOut, Trash2, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -10,19 +10,56 @@ const GREEN = '#2ECC71';
 
 export default function SecurityScreen() {
   const router = useRouter();
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
 
-  const handleAction = async (title: string) => {
-    if (title === 'Biometrik') {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      if (!hasHardware) return Alert.alert('Error', 'HP Anda tidak mendukung sensor biometrik.');
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      if (!isEnrolled) return Alert.alert('Info', 'Belum ada sidik jari/wajah yang terdaftar di HP ini.');
-      const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Autentikasi Keamanan Push', fallbackLabel: 'Gunakan Password' });
+  useEffect(() => {
+    checkBiometricStatus();
+  }, []);
+
+  const checkBiometricStatus = async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    setBiometricAvailable(hasHardware && isEnrolled);
+    
+    const isEnabled = await SecureStore.getItemAsync('biometric_enabled');
+    setBiometricEnabled(isEnabled === 'true');
+  };
+
+  const handleBiometricToggle = async (value: boolean) => {
+    if (!biometricAvailable) {
+      return Alert.alert('Error', 'Biometrik tidak tersedia di perangkat ini atau belum ada data biometrik yang terdaftar.');
+    }
+
+    if (value) {
+      // Enable biometric - require authentication
+      const result = await LocalAuthentication.authenticateAsync({ 
+        promptMessage: 'Autentikasi untuk Mengaktifkan Biometrik', 
+        fallbackLabel: 'Gunakan Password' 
+      });
+      
       if (result.success) {
         await SecureStore.setItemAsync('biometric_enabled', 'true');
+        setBiometricEnabled(true);
         Alert.alert('Sukses', 'Biometrik berhasil diaktifkan!');
       }
-    } else if (title === 'Ganti Password') { router.push('/change-password');
+    } else {
+      // Disable biometric - require authentication for security
+      const result = await LocalAuthentication.authenticateAsync({ 
+        promptMessage: 'Autentikasi untuk Menonaktifkan Biometrik', 
+        fallbackLabel: 'Gunakan Password' 
+      });
+      
+      if (result.success) {
+        await SecureStore.deleteItemAsync('biometric_enabled');
+        setBiometricEnabled(false);
+        Alert.alert('Sukses', 'Biometrik berhasil dinonaktifkan!');
+      }
+    }
+  };
+
+  const handleAction = async (title: string) => {
+    if (title === 'Ganti Password') { router.push('/change-password');
     } else if (title === 'Riwayat Login') { router.push('/login-history');
     } else if (title === 'Perangkat Terintegrasi') { router.push('/devices');
     } else if (title === 'Hapus Akun') { router.push('/delete-account');
@@ -42,6 +79,29 @@ export default function SecurityScreen() {
     </Pressable>
   );
 
+  const BiometricItem = () => (
+    <View style={styles.item}>
+      <View style={[styles.iconBox, { backgroundColor: '#F0FDF4' }]}>
+        <Fingerprint size={22} color={GREEN} />
+      </View>
+      <View style={styles.content}>
+        <Text style={styles.title}>Biometrik</Text>
+        <Text style={styles.desc}>
+          {biometricAvailable 
+            ? (biometricEnabled ? 'Login dengan Face ID atau Sidik Jari' : 'Gunakan Face ID atau Sidik Jari')
+            : 'Tidak tersedia di perangkat ini'}
+        </Text>
+      </View>
+      <Switch
+        value={biometricEnabled}
+        onValueChange={handleBiometricToggle}
+        trackColor={{ false: '#D1D5DB', true: '#86EFAC' }}
+        thumbColor={biometricEnabled ? GREEN : '#F3F4F6'}
+        disabled={!biometricAvailable}
+      />
+    </View>
+  );
+
   return (
     <View style={styles.flex}>
       <CustomHeader title="Keamanan Akun" />
@@ -49,7 +109,7 @@ export default function SecurityScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Login & Autentikasi</Text>
           <SecurityItem IconComp={Key} title="Ganti Password" desc="Perbarui password Anda secara berkala" />
-          <SecurityItem IconComp={Fingerprint} title="Biometrik" desc="Gunakan Face ID atau Sidik Jari" />
+          <BiometricItem />
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Akses Perangkat</Text>
