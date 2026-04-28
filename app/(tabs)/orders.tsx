@@ -15,14 +15,15 @@ const SERVICE_ICON_MAP: Record<string, any> = {
   food:     UtensilsCrossed,
   ojek:     Bike,
   car:      Car,
+  mobil:    Car, // alias for car
   delivery: Package,
   nitah:    HandHelping,
 };
 const SERVICE_COLOR_MAP: Record<string, string> = {
-  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', delivery: '#FAF5FF', nitah: '#FDF2F8',
+  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', mobil: '#EFF6FF', delivery: '#FAF5FF', nitah: '#FDF2F8',
 };
 const SERVICE_ICON_COLOR_MAP: Record<string, string> = {
-  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', delivery: '#A855F7', nitah: '#EC4899',
+  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', mobil: '#3B82F6', delivery: '#A855F7', nitah: '#EC4899',
 };
 
 const STATUS: Record<Order['status'], { label: string; bg: string; color: string }> = {

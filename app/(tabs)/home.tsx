@@ -14,20 +14,22 @@ const DARK_GREEN = '#22A85A';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const SERVICE_ICONS: Record<string, { icon: any; color: string; bg: string }> = {
-  // by slug
+  // Primary mapping by slug (most reliable)
   food: { icon: Utensils, color: '#F97316', bg: '#FFF7ED' },
   ojek: { icon: Bike, color: '#2ECC71', bg: '#F0FDF4' },
   car: { icon: Car, color: '#3B82F6', bg: '#EFF6FF' },
+  mobil: { icon: Car, color: '#3B82F6', bg: '#EFF6FF' }, // alias for car
   delivery: { icon: Package, color: '#A855F7', bg: '#FAF5FF' },
   nitah: { icon: HandHelping, color: '#EC4899', bg: '#FDF2F8' },
-  // by title lowercase as fallback
-  'pesan makanan': { icon: Utensils, color: '#F97316', bg: '#FFF7ED' },
-  'mobil': { icon: Car, color: '#3B82F6', bg: '#EFF6FF' },
-  'kirim paket': { icon: Package, color: '#A855F7', bg: '#FAF5FF' },
 };
 
-const getServiceCfg = (slug: string, title: string) =>
-  SERVICE_ICONS[slug] ?? SERVICE_ICONS[title?.toLowerCase()] ?? { icon: Grid, color: GREEN, bg: '#F0FDF4' };
+const getServiceCfg = (slug: string, title: string) => {
+  // Try slug first (most reliable since it doesn't change)
+  if (SERVICE_ICONS[slug]) return SERVICE_ICONS[slug];
+  
+  // Fallback to default
+  return { icon: Grid, color: GREEN, bg: '#F0FDF4' };
+};
 
 export default function HomeScreen() {
   const router = useRouter();

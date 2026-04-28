@@ -24,8 +24,8 @@ export interface Service {
   id: string;
   name: string;
   slug: string;
-  icon: string;
   base_price: number;
+  vehicle_type: string;
   description?: string;
 }
 

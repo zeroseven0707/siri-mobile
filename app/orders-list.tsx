@@ -12,6 +12,7 @@ const SERVICE_ICON_MAP: Record<string, any> = {
   food:     UtensilsCrossed,
   ojek:     Bike,
   car:      Car,
+  mobil:    Car, // alias for car
   delivery: Package,
   nitah:    HandHelping,
 };

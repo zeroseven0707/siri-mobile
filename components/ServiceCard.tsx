@@ -7,14 +7,15 @@ const SERVICE_ICONS: Record<string, any> = {
   food:     UtensilsCrossed,
   ojek:     Bike,
   car:      Car,
+  mobil:    Car, // alias for car
   delivery: Package,
   nitah:    HandHelping,
 };
 const SERVICE_COLORS: Record<string, string> = {
-  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', delivery: '#FAF5FF', nitah: '#FDF2F8',
+  food: '#FFF7ED', ojek: '#F0FDF4', car: '#EFF6FF', mobil: '#EFF6FF', delivery: '#FAF5FF', nitah: '#FDF2F8',
 };
 const ICON_COLORS: Record<string, string> = {
-  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', delivery: '#A855F7', nitah: '#EC4899',
+  food: '#F97316', ojek: '#22C55E', car: '#3B82F6', mobil: '#3B82F6', delivery: '#A855F7', nitah: '#EC4899',
 };
 
 export default function ServiceCard({ service, onPress }: { service: Service; onPress: () => void }) {
