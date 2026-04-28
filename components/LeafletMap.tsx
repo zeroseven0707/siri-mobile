@@ -42,175 +42,114 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
   const webRef = useRef<WebView>(null);
   const [mapReady, setMapReady] = useState(false);
 
-  // Helper to escape strings for JS injection
   const esc = (obj: any) => JSON.stringify(obj).replace(/'/g, "\\'");
-
-  const buildMarkerScript = `
-    window.buildMarkerHtml = function(m) {
-      var iconType = m.icon || 'circle';
-      var size = iconType === 'circle' ? 32 : 36;
-      var color = m.color;
-      var icons = {
-        circle: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="' + color + '"/></svg>',
-        bike: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-5 8h7l1-4"/><path d="m9 17 3-8"/></svg>',
-        car: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 9h14l-1.5-4H6.5L5 9z"/></svg>',
-        person: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-        pin: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" viewBox="0 0 24 28"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 20 8 20s8-14.6 8-20c0-4.4-3.6-8-8-8z" fill="' + color + '"/><circle cx="12" cy="8" r="3" fill="white"/></svg>',
-        home: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
-      };
-      var pulseHtml = m.pulse ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:' + (size + 12) + 'px;height:' + (size + 12) + 'px;border-radius:50%;background:' + color + '33;animation:pulse 1.8s ease-in-out infinite;"></div>' : '';
-      return '<div style="position:relative;width:' + size + 'px;height:' + size + 'px;display:flex;align-items:center;justify-content:center;">' + pulseHtml + '<div style="position:relative;z-index:1;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:white;border:2.5px solid ' + color + ';box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src=\'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(icons[iconType]) + '\' width="' + (size - 12) + '" height="' + (size - 12) + '" style="display:block;" /></div></div>';
-    };
-
-    window.syncMarkers = function(markersJson) {
-      var newMarkers = JSON.parse(markersJson);
-      if(!window._markers) window._markers = {};
-      newMarkers.forEach(function(m, idx) {
-        var zIndex = m.pulse ? 1000 : 100 + idx;
-        var icon = L.divIcon({ className: '', html: window.buildMarkerHtml(m), iconSize: [36, 36], iconAnchor: [18, 18] });
-        if(window._markers[m.id]) {
-          var marker = window._markers[m.id];
-          marker.setIcon(icon);
-          marker.setZIndexOffset(zIndex);
-          if(m.id !== 'driver') marker.setLatLng([m.latitude, m.longitude]);
-        } else {
-          window._markers[m.id] = L.marker([m.latitude, m.longitude], {icon: icon, zIndexOffset: zIndex}).addTo(window.map);
-          if(m.label) window._markers[m.id].bindPopup(m.label);
-        }
-      });
-      var newIds = newMarkers.map(function(m){ return m.id; });
-      Object.keys(window._markers).forEach(function(id) {
-        if(newIds.indexOf(id) === -1) { window.map.removeLayer(window._markers[id]); delete window._markers[id]; }
-      });
-    };
-
-    window.syncPolyline = function(coordsJson, color) {
-      var coords = JSON.parse(coordsJson);
-      if(window._polyline) window.map.removeLayer(window._polyline);
-      if(coords.length > 1) {
-        window._polyline = L.polyline(coords.map(function(p){ return [p.latitude, p.longitude]; }), {
-          color: color, weight: 5, opacity: 0.85, lineJoin: 'round', lineCap: 'round'
-        }).addTo(window.map);
-      }
-    };
-  `;
 
   useImperativeHandle(ref, () => ({
     setView: (lat, lng, zoom = 15) => {
-      webRef.current?.injectJavaScript(`window.map.setView([${lat},${lng}],${zoom},{animate:true});true;`);
+      webRef.current?.injectJavaScript(`window.map&&window.map.setView([${lat},${lng}],${zoom},{animate:true});true;`);
     },
     fitBounds: (points, padding = 60) => {
       if (!points.length) return;
       const bounds = points.map(p => `[${p.latitude},${p.longitude}]`).join(',');
-      webRef.current?.injectJavaScript(`window.map.fitBounds([${bounds}],{padding:[${padding},${padding}]});true;`);
+      webRef.current?.injectJavaScript(`window.map&&window.map.fitBounds([${bounds}],{padding:[${padding},${padding + 180}]});true;`);
     },
     updateMarker: (id, lat, lng) => {
       webRef.current?.injectJavaScript(`
         (function(){
-          var m = window._markers && window._markers['${id}'];
-          if(!m) return;
-          var start = m.getLatLng();
-          var end = L.latLng(${lat},${lng});
-          if(start.equals(end)) return;
-          var duration = 1000;
-          var startTime = performance.now();
-          function animate(currentTime) {
-            var elapsed = currentTime - startTime;
-            var t = Math.min(elapsed / duration, 1);
-            var ease = t * (2 - t);
-            m.setLatLng([start.lat + (end.lat - start.lat) * ease, start.lng + (end.lng - start.lng) * ease]);
-            if (t < 1) requestAnimationFrame(animate);
-          }
-          requestAnimationFrame(animate);
-        })();
-        true;
+          var m=window._markers&&window._markers['${id}'];
+          if(!m)return;
+          var s=m.getLatLng(),e=L.latLng(${lat},${lng});
+          if(s.equals(e))return;
+          var dur=1000,t0=performance.now();
+          function step(t){var p=Math.min((t-t0)/dur,1),k=p*(2-p);m.setLatLng([s.lat+(e.lat-s.lat)*k,s.lng+(e.lng-s.lng)*k]);if(p<1)requestAnimationFrame(step);}
+          requestAnimationFrame(step);
+        })();true;
       `);
     },
   }));
 
   useEffect(() => {
-    if (mapReady) {
-      webRef.current?.injectJavaScript(`
-        window.syncMarkers('${esc(markers)}');
-        window.syncPolyline('${esc(polyline)}', '${polylineColor}');
-        true;
-      `);
-    }
+    if (!mapReady) return;
+    webRef.current?.injectJavaScript(`
+      window.syncMarkers&&window.syncMarkers('${esc(markers)}');
+      window.syncPolyline&&window.syncPolyline('${esc(polyline)}','${polylineColor}');
+      true;
+    `);
   }, [markers, polyline, polylineColor, mapReady]);
+
+  const lat = Number(initialLat) || -6.2297;
+  const lng = Number(initialLng) || 106.8295;
+  const zoom = Number(initialZoom) || 13;
 
   const html = `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    html,body{width:100%;height:100%;margin:0;padding:0;background:#eee;overflow:hidden;}
-    #map{position:absolute;top:0;bottom:0;left:0;right:0;width:100%;height:100%;background:#f0f0f0;}
-    .leaflet-control-attribution{display:none;}
-    @keyframes pulse{
-      0%{transform:translate(-50%,-50%) scale(1);opacity:0.7;}
-      50%{transform:translate(-50%,-50%) scale(1.8);opacity:0.1;}
-      100%{transform:translate(-50%,-50%) scale(1);opacity:0.7;}
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;background:#ddd;}
+#map{position:absolute;top:0;bottom:0;left:0;right:0;}
+.leaflet-control-attribution{display:none;}
+@keyframes pulse{0%{transform:translate(-50%,-50%) scale(1);opacity:.7;}50%{transform:translate(-50%,-50%) scale(1.8);opacity:.1;}100%{transform:translate(-50%,-50%) scale(1);opacity:.7;}}
+</style>
 </head>
 <body>
-  <div id="map"></div>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    (function() {
-      function log(msg) {
-        if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage('log:' + msg);
-      }
-      
-      var initialized = false;
-      function init() {
-        if (initialized) return;
-        log('Attempting init');
-        
-        try {
-          if (typeof L === 'undefined') {
-            log('Leaflet not ready, retrying...');
-            setTimeout(init, 300);
-            return;
-          }
-          initialized = true;
-          log('Leaflet loaded, initializing map');
-          
-          var lat = ${Number(initialLat) || -6.2297};
-          var lng = ${Number(initialLng) || 106.8295};
-          var zoom = ${Number(initialZoom) || 13};
-          
-          window.map = L.map('map', {zoomControl:false, attributionControl:false})
-            .setView([lat, lng], zoom);
-            
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 20,
-            crossOrigin: true
-          }).addTo(window.map);
-          
-          window._markers = {};
-          ${buildMarkerScript}
-          
-          log('Map ready, sending signal');
-          window.ReactNativeWebView.postMessage('ready');
-          
-          setTimeout(function(){ window.map.invalidateSize(); }, 300);
-          setTimeout(function(){ window.map.invalidateSize(); }, 1000);
-        } catch (e) {
-          log('Error: ' + e.message);
-          document.body.innerHTML = '<div style="padding:20px;color:red;font-family:sans-serif;"><b>Map Error:</b><br/>' + e.message + '</div>';
-        }
-      }
-      
-      // Jalankan init dengan berbagai cara agar pasti terpanggil
-      document.addEventListener('DOMContentLoaded', init);
-      window.addEventListener('load', init);
-      setTimeout(init, 500);
-      setTimeout(init, 2000);
-    })();
-  </script>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+(function(){
+var initialized=false;
+function init(){
+  if(initialized)return;
+  if(typeof L==='undefined')return;
+  var el=document.getElementById('map');
+  if(!el)return;
+  try{
+    initialized=true;
+    window.map=L.map('map',{zoomControl:false,attributionControl:false}).setView([${lat},${lng}],${zoom});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(window.map);
+    window._markers={};
+    window.buildMarkerHtml=function(m){
+      var t=m.icon||'circle',sz=28,c=m.color;
+      var icons={
+        circle:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="'+c+'"/></svg>',
+        bike:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-5 8h7l1-4"/><path d="m9 17 3-8"/></svg>',
+        car:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 9h14l-1.5-4H6.5L5 9z"/></svg>',
+        person:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        pin:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 28"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 20 8 20s8-14.6 8-20c0-4.4-3.6-8-8-8z" fill="'+c+'"/><circle cx="12" cy="8" r="3" fill="white"/></svg>',
+        home:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
+      };
+      var pulse=m.pulse?'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:'+(sz+10)+'px;height:'+(sz+10)+'px;border-radius:50%;background:'+c+'33;animation:pulse 1.8s ease-in-out infinite;"></div>':'';
+      return '<div style="position:relative;width:'+sz+'px;height:'+sz+'px;display:flex;align-items:center;justify-content:center;">'+pulse+'<div style="position:relative;z-index:1;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:white;border:2px solid '+c+';box-shadow:0 2px 6px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;charset=utf-8,'+encodeURIComponent(icons[t])+'" width="16" height="16" style="display:block;"/></div></div>';
+    };
+    window.syncMarkers=function(j){
+      var ms=JSON.parse(j);
+      if(!window._markers)window._markers={};
+      ms.forEach(function(m,i){
+        var z=m.pulse?1000:100+i,ic=L.divIcon({className:'',html:window.buildMarkerHtml(m),iconSize:[28,28],iconAnchor:[14,14]});
+        if(window._markers[m.id]){window._markers[m.id].setIcon(ic);window._markers[m.id].setZIndexOffset(z);if(m.id!=='driver')window._markers[m.id].setLatLng([m.latitude,m.longitude]);}
+        else{window._markers[m.id]=L.marker([m.latitude,m.longitude],{icon:ic,zIndexOffset:z}).addTo(window.map);if(m.label)window._markers[m.id].bindPopup(m.label);}
+      });
+      var ids=ms.map(function(m){return m.id;});
+      Object.keys(window._markers).forEach(function(id){if(ids.indexOf(id)===-1){window.map.removeLayer(window._markers[id]);delete window._markers[id];}});
+    };
+    window.syncPolyline=function(j,color){
+      var cs=JSON.parse(j);
+      if(window._polyline)window.map.removeLayer(window._polyline);
+      if(cs.length>1)window._polyline=L.polyline(cs.map(function(p){return[p.latitude,p.longitude];}),{color:color,weight:5,opacity:.85,lineJoin:'round',lineCap:'round'}).addTo(window.map);
+    };
+    setTimeout(function(){window.map.invalidateSize();},200);
+    window.ReactNativeWebView&&window.ReactNativeWebView.postMessage('ready');
+  }catch(e){
+    initialized=false;
+  }
+}
+setTimeout(init,100);
+setTimeout(init,500);
+setTimeout(init,1500);
+})();
+</script>
 </body>
 </html>`;
 
@@ -218,27 +157,24 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
     <View style={[styles.container, style]}>
       <WebView
         ref={webRef}
-        source={{ html, baseUrl: 'https://leafletjs.com' }}
+        source={{ html }}
         style={styles.webview}
         javaScriptEnabled
         domStorageEnabled
         originWhitelist={['*']}
-        onMessage={(event) => {
-          const data = event.nativeEvent.data;
-          if (data === 'ready') setMapReady(true);
-          else if (data.startsWith('log:')) console.log('[WebView]', data.substring(4));
-        }}
         mixedContentMode="always"
-        allowFileAccess
-        allowUniversalAccessFromFileURLs
+        onMessage={(e) => {
+          const d = e.nativeEvent.data;
+          if (d === 'ready') setMapReady(true);
+        }}
         onLoadEnd={() => {
-          setTimeout(() => { if (!mapReady) setMapReady(true); }, 5000);
+          setTimeout(() => setMapReady(p => p || true), 4000);
         }}
       />
       {!mapReady && (
-        <View style={styles.loader}>
+        <View style={[StyleSheet.absoluteFillObject, styles.loader]}>
           <ActivityIndicator size="large" color="#16a34a" />
-          <Text style={{ marginTop: 10, color: '#6B7280', fontSize: 12, fontWeight: '600' }}>Menghubungkan Peta...</Text>
+          <Text style={styles.loaderText}>Memuat Peta...</Text>
         </View>
       )}
     </View>
@@ -248,7 +184,8 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
 export default LeafletMap;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f3f4f6' },
-  webview: { flex: 1 },
-  loader: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f3f4f6', zIndex: 10 },
+  container: { flex: 1, backgroundColor: '#ddd' },
+  webview: { flex: 1, backgroundColor: 'transparent' },
+  loader: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#f3f4f6', zIndex: 10 },
+  loaderText: { marginTop: 10, color: '#6B7280', fontSize: 12, fontWeight: '600' },
 });

@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Image, Alert, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Receipt, User, Info, FileText, ArrowLeft, Map } from 'lucide-react-native';
+import { Receipt, User, Info, FileText, Map } from 'lucide-react-native';
 import api from '../../lib/api';
-import LeafletMap, { LeafletMapRef, MarkerData } from '../../components/LeafletMap';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#27AE60';
@@ -23,9 +22,6 @@ export default function OrderDetailScreen() {
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [driverLocation, setDriverLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const mapRef = useRef<LeafletMapRef>(null);
-  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -39,24 +35,6 @@ export default function OrderDetailScreen() {
     };
     if (id) fetchOrder();
   }, [id]);
-
-  // Poll lokasi driver tiap 30 detik saat order aktif
-  useEffect(() => {
-    if (!order) return;
-    if (!['accepted', 'on_progress'].includes(order.status)) return;
-
-    const fetchDriverLoc = async () => {
-      try {
-        const res = await api.get(`/orders/${id}/driver-location`);
-        const loc = res.data.data?.location;
-        if (loc) setDriverLocation({ latitude: loc.latitude, longitude: loc.longitude });
-      } catch { }
-    };
-
-    fetchDriverLoc();
-    pollTimer.current = setInterval(fetchDriverLoc, 30000);
-    return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
-  }, [order?.status]);
 
   if (loading) {
     return (
@@ -97,66 +75,25 @@ export default function OrderDetailScreen() {
             </View>
           </View>
 
-          {/* Peta preview inline */}
+          {/* Button untuk buka tracking map */}
           {(order.status === 'accepted' || order.status === 'on_progress') && (
-            <View style={styles.mapCard}>
-              <View style={styles.mapCardHeader}>
-                <Text style={styles.mapCardTitle}>
-                  {driverLocation ? 'Posisi Driver' : 'Menunggu lokasi driver...'}
-                </Text>
-                <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)} style={styles.mapExpandBtn}>
-                  <Map size={14} color={GREEN} />
-                  <Text style={styles.mapExpandText}>Perluas</Text>
-                </Pressable>
+            <Pressable 
+              style={styles.trackingButton}
+              onPress={() => router.push(`/order/tracking/${order.id}` as any)}
+            >
+              <View style={styles.trackingIconWrap}>
+                <Map size={24} color={GREEN} />
               </View>
-              <Pressable onPress={() => router.push(`/order/tracking/${order.id}` as any)}>
-                <LeafletMap
-                  ref={mapRef}
-                  style={styles.mapPreview}
-                  initialLat={driverLocation?.latitude ?? (order.user?.latitude ? Number(order.user.latitude) : -6.2)}
-                  initialLng={driverLocation?.longitude ?? (order.user?.longitude ? Number(order.user.longitude) : 106.8)}
-                  initialZoom={14}
-                  markers={[
-                    ...(order.store?.latitude && order.store?.longitude ? [{
-                      id: 'store',
-                      latitude: Number(order.store.latitude),
-                      longitude: Number(order.store.longitude),
-                      color: '#3B82F6',
-                      label: order.store.name,
-                      icon: 'home' as any,
-                    }] : []),
-                    ...(order.destination_lat && order.destination_lng ? [{
-                      id: 'destination',
-                      latitude: Number(order.destination_lat),
-                      longitude: Number(order.destination_lng),
-                      color: '#EF4444',
-                      label: 'Tujuan',
-                      icon: 'pin' as any,
-                    }] : []),
-                    ...(order.user?.latitude && order.user?.longitude && !order.destination_lat ? [{ 
-                      id: 'user', 
-                      latitude: Number(order.user.latitude), 
-                      longitude: Number(order.user.longitude), 
-                      color: '#F97316', 
-                      label: 'Lokasi Kamu', 
-                      icon: 'person' as any 
-                    }] : []),
-                    ...(driverLocation ? [{ 
-                      id: 'driver', 
-                      latitude: driverLocation.latitude, 
-                      longitude: driverLocation.longitude, 
-                      color: GREEN, 
-                      label: 'Driver', 
-                      pulse: true, 
-                      icon: (order.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any 
-                    }] : []),
-                  ]}
-                />
-                <View style={styles.mapOverlayHint}>
-                  <Text style={styles.mapOverlayHintText}>Tap untuk tracking penuh</Text>
-                </View>
-              </Pressable>
-            </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.trackingTitle}>Lacak Pesanan</Text>
+                <Text style={styles.trackingDesc}>
+                  {order.status === 'accepted' ? 'Driver menuju ke toko / titik jemput' : 'Driver sedang menuju ke tujuan'}
+                </Text>
+              </View>
+              <View style={styles.trackingArrow}>
+                <Text style={styles.trackingArrowText}>›</Text>
+              </View>
+            </Pressable>
           )}
 
           {/* Service Info */}
@@ -293,12 +230,33 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 18, fontWeight: '800', color: DARK_GREEN },
   notesBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#E5E7EB' },
   notesText: { marginLeft: 8, fontSize: 13, color: '#4B5563', fontStyle: 'italic', flex: 1 },
-  mapCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 12, elevation: 1, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8 },
-  mapCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  mapCardTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  mapExpandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
-  mapExpandText: { fontSize: 12, color: GREEN, fontWeight: '700' },
-  mapPreview: { height: 180, borderRadius: 12, overflow: 'hidden' },
-  mapOverlayHint: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  mapOverlayHintText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+  trackingButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
+    padding: 16, 
+    marginBottom: 16, 
+    elevation: 2, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.08, 
+    shadowRadius: 12, 
+    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  trackingIconWrap: { 
+    width: 48, 
+    height: 48, 
+    borderRadius: 12, 
+    backgroundColor: '#F0FDF4', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  trackingTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  trackingDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
+  trackingArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  trackingArrowText: { fontSize: 24, color: '#9CA3AF', fontWeight: '300' },
 });

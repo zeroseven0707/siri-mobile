@@ -13,6 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "assets/**"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "id.Push.mobile"

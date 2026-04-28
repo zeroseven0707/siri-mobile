@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
   ActivityIndicator, Alert, Linking, Modal,
@@ -10,9 +10,7 @@ import {
   ArrowLeft, QrCode, X, Map,
 } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
-import * as Location from 'expo-location';
 import api from '../../../lib/api';
-import LeafletMap, { LeafletMapRef } from '../../../components/LeafletMap';
 
 const GREEN = '#16a34a';
 const DARK_GREEN = '#15803d';
@@ -39,40 +37,9 @@ export default function DriverOrderDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showQR, setShowQR] = useState(false);
-  const [driverLocation, setDriverLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const mapRef = useRef<LeafletMapRef>(null);
-  const locationSub = useRef<Location.LocationSubscription | null>(null);
 
   useEffect(() => {
     fetchOrder();
-
-    // Ambil lokasi driver untuk preview peta
-    let active = true;
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted' || !active) return;
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      if (active) setDriverLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-
-      locationSub.current = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 0 },
-        (l) => {
-          if (active) {
-            const pos = { latitude: l.coords.latitude, longitude: l.coords.longitude };
-            setDriverLocation(pos);
-            // Smooth move marker tanpa reload peta
-            mapRef.current?.updateMarker('driver', pos.latitude, pos.longitude);
-            // Kirim ke backend agar user bisa track
-            api.post('/driver/location', pos).catch(() => {});
-          }
-        }
-      );
-    })();
-
-    return () => {
-      active = false;
-      locationSub.current?.remove();
-    };
   }, [id]);
 
   const fetchOrder = async () => {
@@ -232,72 +199,25 @@ export default function DriverOrderDetailScreen() {
             </View>
           </View>
 
-          {/* Peta preview — tampil saat accepted atau on_progress */}
-          {(order.status === 'accepted' || order.status === 'on_progress') && driverLocation && (
-            <View style={styles.card}>
-              <View style={styles.mapCardHeader}>
-                <Text style={styles.cardTitle}>Posisi Kamu</Text>
-                <Pressable onPress={() => router.push(`/driver/map/${id}` as any)} style={styles.mapExpandBtn}>
-                  <Map size={14} color={GREEN} />
-                  <Text style={styles.mapExpandText}>Perluas</Text>
-                </Pressable>
+          {/* Button untuk buka tracking map */}
+          {(order.status === 'accepted' || order.status === 'on_progress') && (
+            <Pressable 
+              style={styles.trackingButton}
+              onPress={() => router.push(`/driver/map/${order.id}` as any)}
+            >
+              <View style={styles.trackingIconWrap}>
+                <Map size={24} color={GREEN} />
               </View>
-              <Pressable onPress={() => router.push(`/driver/map/${id}` as any)}>
-                <LeafletMap
-                  ref={mapRef}
-                  style={styles.mapPreview}
-                  initialLat={driverLocation.latitude}
-                  initialLng={driverLocation.longitude}
-                  initialZoom={14}
-                  markers={[
-                    ...(order.status === 'accepted' && order.store?.latitude && order.store?.longitude ? [{
-                      id: 'store',
-                      latitude: Number(order.store.latitude),
-                      longitude: Number(order.store.longitude),
-                      color: '#3B82F6',
-                      label: order.store.name,
-                      icon: 'home' as any,
-                    }] : []),
-                    ...(order.status === 'accepted' && order.pickup_lat && order.pickup_lng && !order.store ? [{
-                      id: 'pickup',
-                      latitude: Number(order.pickup_lat),
-                      longitude: Number(order.pickup_lng),
-                      color: '#F97316',
-                      label: 'Titik Jemput',
-                      icon: 'person' as any,
-                    }] : []),
-                    ...(order.status === 'on_progress' && order.destination_lat && order.destination_lng ? [{
-                      id: 'dest',
-                      latitude: Number(order.destination_lat),
-                      longitude: Number(order.destination_lng),
-                      color: '#EF4444',
-                      label: 'Tujuan',
-                      icon: 'pin' as any,
-                    }] : []),
-                    ...(order.status === 'on_progress' && order.user?.latitude && order.user?.longitude && !order.destination_lat ? [{
-                      id: 'user',
-                      latitude: Number(order.user.latitude),
-                      longitude: Number(order.user.longitude),
-                      color: '#EF4444',
-                      label: 'Pelanggan',
-                      icon: 'person' as any,
-                    }] : []),
-                    { 
-                      id: 'driver', 
-                      latitude: driverLocation.latitude, 
-                      longitude: driverLocation.longitude, 
-                      color: GREEN, 
-                      label: 'Posisi Kamu', 
-                      pulse: true, 
-                      icon: (order?.driver?.driver_profile?.vehicle_type === 'mobil' ? 'car' : 'bike') as any 
-                    },
-                  ]}
-                />
-                <View style={styles.mapOverlayHint}>
-                  <Text style={styles.mapOverlayHintText}>Tap untuk peta penuh</Text>
-                </View>
-              </Pressable>
-            </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.trackingTitle}>Lihat Peta Lengkap</Text>
+                <Text style={styles.trackingDesc}>
+                  {order.status === 'accepted' ? 'Lihat rute menuju lokasi jemput' : 'Lihat rute menuju tujuan pengiriman'}
+                </Text>
+              </View>
+              <View style={styles.trackingArrow}>
+                <Text style={styles.trackingArrowText}>›</Text>
+              </View>
+            </Pressable>
           )}
 
           {/* Order Items */}
@@ -561,12 +481,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDF4', borderWidth: 1.5, borderColor: '#BBF7D0',
     alignItems: 'center', justifyContent: 'center',
   },
-  mapCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  mapExpandBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
-  mapExpandText: { fontSize: 12, color: GREEN, fontWeight: '700' },
-  mapPreview: { height: 180, borderRadius: 12, overflow: 'hidden' },
-  mapOverlayHint: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  mapOverlayHintText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+
+  trackingButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#fff', 
+    borderRadius: 16, 
+    padding: 16, 
+    marginBottom: 14, 
+    elevation: 2, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.08, 
+    shadowRadius: 12, 
+    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  trackingIconWrap: { 
+    width: 48, 
+    height: 48, 
+    borderRadius: 12, 
+    backgroundColor: '#F0FDF4', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  trackingTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  trackingDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
+  trackingArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  trackingArrowText: { fontSize: 24, color: '#9CA3AF', fontWeight: '300' },
 
   // QR
   qrCard: {
