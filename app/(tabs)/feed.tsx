@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../lib/authStore';
 import api from '../../lib/api';
 import { Post, PostComment } from '../../types';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#16a34a';
@@ -54,10 +55,11 @@ function formatTime(dateStr: string): string {
 function Avatar({ uri, name, size = 38 }: { uri?: string | null; name: string; size?: number }) {
   const colors = ['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'];
   const color = colors[name.charCodeAt(0) % colors.length];
+  const resolvedUri = storageUrl(uri);
   return (
     <View style={[avStyles.wrap, { width: size, height: size, borderRadius: size / 2, backgroundColor: color }]}>
-      {uri
-        ? <Image source={{ uri }} style={avStyles.img} />
+      {resolvedUri
+        ? <Image source={{ uri: resolvedUri }} style={avStyles.img} />
         : <Text style={[avStyles.letter, { fontSize: size * 0.38 }]}>{name[0]?.toUpperCase()}</Text>}
     </View>
   );
@@ -218,7 +220,7 @@ function PostCard({
           keyExtractor={(_, i) => String(i)}
           onMomentumScrollEnd={e => setImgIndex(Math.round(e.nativeEvent.contentOffset.x / SW))}
           renderItem={({ item: img }) => (
-            <Image source={{ uri: img }} style={cs.postImg} resizeMode="cover" />
+            <Image source={{ uri: storageUrl(img)! }} style={cs.postImg} resizeMode="cover" />
           )}
         />
         {/* Dot indicator */}

@@ -9,6 +9,7 @@ import { ArrowLeft, Grid2x2, ImageOff } from 'lucide-react-native';
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Post } from '../../types';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 const { width: SW } = Dimensions.get('window');
@@ -25,10 +26,11 @@ interface ProfileUser {
 function Avatar({ uri, name, size = 80 }: { uri?: string | null; name: string; size?: number }) {
   const colors = ['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'];
   const color = colors[name.charCodeAt(0) % colors.length];
+  const resolvedUri = storageUrl(uri);
   return (
     <View style={[{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }]}>
-      {uri
-        ? <Image source={{ uri }} style={{ width: '100%', height: '100%' }} />
+      {resolvedUri
+        ? <Image source={{ uri: resolvedUri }} style={{ width: '100%', height: '100%' }} />
         : <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.38 }}>{name[0]?.toUpperCase()}</Text>}
     </View>
   );
@@ -141,7 +143,7 @@ export default function UserProfileScreen() {
         ListFooterComponent={loadingMore ? <ActivityIndicator color={GREEN} style={{ marginVertical: 16 }} /> : null}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => setSelectedPost(item)} activeOpacity={0.85}>
-            <Image source={{ uri: item.images[0] }} style={s.thumb} resizeMode="cover" />
+            <Image source={{ uri: storageUrl(item.images[0])! }} style={s.thumb} resizeMode="cover" />
             {item.images.length > 1 && (
               <View style={s.multiIndicator}>
                 <Grid2x2 size={12} color="#fff" />

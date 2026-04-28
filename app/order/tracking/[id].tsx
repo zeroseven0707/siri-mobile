@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Phone, RefreshCw } from 'lucide-react-native';
 import api from '../../../lib/api';
 import LeafletMap, { LeafletMapRef, MarkerData } from '../../../components/LeafletMap';
+import { storageUrl } from '../../../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#16a34a';
@@ -245,7 +246,7 @@ export default function OrderTrackingScreen() {
           <View style={s.driverRow}>
             <View style={s.driverAvatar}>
               {driverInfo.profile_picture
-                ? <Image source={{ uri: driverInfo.profile_picture }} style={s.driverAvatarImg} />
+                ? <Image source={{ uri: storageUrl(driverInfo.profile_picture)! }} style={s.driverAvatarImg} />
                 : <Text style={s.driverAvatarText}>{driverInfo.name?.[0]?.toUpperCase()}</Text>}
             </View>
             <View style={{ flex: 1 }}>

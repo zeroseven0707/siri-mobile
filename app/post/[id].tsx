@@ -13,6 +13,7 @@ import {
 import api from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Post, PostComment } from '../../types';
+import { storageUrl } from '../../lib/storage';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#16a34a';
@@ -33,10 +34,11 @@ function formatTime(dateStr: string): string {
 function Avatar({ uri, name, size = 38 }: { uri?: string | null; name: string; size?: number }) {
   const colors = ['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'];
   const color = colors[name.charCodeAt(0) % colors.length];
+  const resolvedUri = storageUrl(uri);
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-      {uri
-        ? <Image source={{ uri }} style={{ width: '100%', height: '100%' }} />
+      {resolvedUri
+        ? <Image source={{ uri: resolvedUri }} style={{ width: '100%', height: '100%' }} />
         : <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.38 }}>{name[0]?.toUpperCase()}</Text>}
     </View>
   );
@@ -192,7 +194,7 @@ export default function PostDetailScreen() {
             showsHorizontalScrollIndicator={false}
             keyExtractor={(_, i) => String(i)}
             onMomentumScrollEnd={e => setImgIndex(Math.round(e.nativeEvent.contentOffset.x / SW))}
-            renderItem={({ item: img }) => <Image source={{ uri: img }} style={s.postImg} resizeMode="cover" />}
+            renderItem={({ item: img }) => <Image source={{ uri: storageUrl(img)! }} style={s.postImg} resizeMode="cover" />}
           />
           {post.images.length > 1 && (
             <View style={s.dots}>
