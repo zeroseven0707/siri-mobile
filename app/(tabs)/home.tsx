@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, Image, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Utensils, Bike, Car, Package, Grid, MapPin, ChevronRight, HandHelping, Bell } from 'lucide-react-native';
 import api from '../../lib/api';
@@ -11,6 +11,7 @@ import { HomeSection, HomeSectionItem } from '../../types';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const SERVICE_ICONS: Record<string, { icon: any; color: string; bg: string }> = {
   // by slug
@@ -36,6 +37,7 @@ export default function HomeScreen() {
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
 
   const fetchData = async () => {
     try {
@@ -53,14 +55,29 @@ export default function HomeScreen() {
     finally { setLoading(false); setRefreshing(false); }
   };
 
+  const fetchActiveOrder = async () => {
+    try {
+      const ordersRes = await api.get('/orders');
+      const orders = ordersRes.data.data.orders || [];
+      const active = orders.find((o: any) => o.status === 'accepted' || o.status === 'on_progress');
+      setActiveOrder(active);
+    } catch { }
+  };
+
   useEffect(() => { 
     fetchData(); 
-    // Poll active orders every 10s
-    const timer = setInterval(() => {
-      fetchData();
-    }, 10000);
-    return () => clearInterval(timer);
   }, []);
+
+  // Poll active order only when there's an active order
+  useEffect(() => {
+    if (!activeOrder) return; // No polling if no active order
+
+    const timer = setInterval(() => {
+      fetchActiveOrder();
+    }, 15000); // Poll every 15 seconds
+
+    return () => clearInterval(timer);
+  }, [activeOrder]); // Re-run when activeOrder changes
 
   if (loading) return (
     <SafeAreaView style={styles.center}>
@@ -70,16 +87,22 @@ export default function HomeScreen() {
 
   const renderBanner = (section: HomeSection) => {
     if (!section.items?.length) return null;
+    
     return (
-      <View key={section.id} style={{ marginBottom: 8 }}>
+      <View key={section.id} style={{ marginBottom: 16 }}>
         <FlatList
           data={section.items}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={i => i.id}
-          snapToInterval={300}
+          snapToInterval={SCREEN_WIDTH - 32}
           decelerationRate="fast"
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 32));
+            setActiveBannerIndex(index);
+          }}
+          scrollEventThrottle={16}
           renderItem={({ item }) => (
             <Pressable style={styles.bannerItem}>
               {item.image ? (
@@ -91,10 +114,24 @@ export default function HomeScreen() {
               )}
               <View style={styles.bannerOverlay}>
                 <Text style={styles.bannerTitle} numberOfLines={1}>{item.title}</Text>
+                {item.subtitle && <Text style={styles.bannerSubtitle} numberOfLines={1}>{item.subtitle}</Text>}
               </View>
             </Pressable>
           )}
         />
+        {section.items.length > 1 && (
+          <View style={styles.bannerDots}>
+            {section.items.map((_, idx) => (
+              <View 
+                key={idx} 
+                style={[
+                  styles.dot, 
+                  idx === activeBannerIndex && styles.dotActive
+                ]} 
+              />
+            ))}
+          </View>
+        )}
       </View>
     );
   };
@@ -392,10 +429,10 @@ const styles = StyleSheet.create({
   },
   searchPlaceholder: { flex: 1, color: '#9CA3AF', fontSize: 14 },
 
-  content: { paddingTop: 20, paddingHorizontal: 20 },
+  content: { paddingTop: 20 },
 
   // Section
-  section: { marginBottom: 24 },
+  section: { marginBottom: 24, paddingHorizontal: 20 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   sectionTitle: { fontSize: 16, fontWeight: '800', color: '#111827', letterSpacing: -0.3 },
   seeAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
@@ -408,10 +445,54 @@ const styles = StyleSheet.create({
   serviceLabel: { fontSize: 11, textAlign: 'center', color: '#374151', fontWeight: '600', lineHeight: 15 },
 
   // Banner
-  bannerItem: { width: 300, height: 150, borderRadius: 20, overflow: 'hidden' },
+  bannerItem: { 
+    width: SCREEN_WIDTH - 32, 
+    height: 160, 
+    borderRadius: 20, 
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   bannerImage: { width: '100%', height: '100%' },
-  bannerOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.3)', padding: 12 },
-  bannerTitle: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  bannerOverlay: { 
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0, 
+    backgroundColor: 'rgba(0,0,0,0.5)', 
+    padding: 14,
+    paddingBottom: 16,
+  },
+  bannerTitle: { 
+    color: '#fff', 
+    fontWeight: '700', 
+    fontSize: 15,
+    marginBottom: 2,
+  },
+  bannerSubtitle: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  bannerDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D1D5DB',
+  },
+  dotActive: {
+    width: 20,
+    backgroundColor: GREEN,
+  },
 
   // Store
   storeCard: { width: 160, backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
