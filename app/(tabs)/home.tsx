@@ -8,6 +8,7 @@ import { storageUrl } from '../../lib/storage';
 import { useAuthStore } from '../../lib/authStore';
 import { useNotificationStore } from '../../lib/notificationStore';
 import { HomeSection, HomeSectionItem } from '../../types';
+import { Linking } from 'react-native';
 
 const GREEN = '#2ECC71';
 const DARK_GREEN = '#22A85A';
@@ -81,6 +82,35 @@ export default function HomeScreen() {
     return () => clearInterval(timer);
   }, [activeOrder]); // Re-run when activeOrder changes
 
+  const handleItemPress = (item: HomeSectionItem) => {
+    if (!item.action_type || !item.action_value) return;
+
+    switch (item.action_type) {
+      case 'service':
+        // Navigate to service page with slug
+        router.push(`/service/${item.action_value}` as any);
+        break;
+      case 'store':
+        // Navigate to store page with UUID
+        router.push(`/store/${item.action_value}` as any);
+        break;
+      case 'food':
+        // Navigate to food page with UUID
+        router.push(`/food/${item.action_value}` as any);
+        break;
+      case 'url':
+        // Open external URL
+        Linking.openURL(item.action_value).catch(err => console.error('Failed to open URL:', err));
+        break;
+      case 'route':
+        // Navigate to internal route
+        router.push(item.action_value as any);
+        break;
+      default:
+        console.log('Unknown action type:', item.action_type);
+    }
+  };
+
   if (loading) return (
     <SafeAreaView style={styles.center}>
       <ActivityIndicator size="large" color={GREEN} />
@@ -106,7 +136,7 @@ export default function HomeScreen() {
           }}
           scrollEventThrottle={16}
           renderItem={({ item }) => (
-            <Pressable style={styles.bannerItem}>
+            <Pressable style={styles.bannerItem} onPress={() => handleItemPress(item)}>
               {item.image ? (
                 <Image source={{ uri: storageUrl(item.image)! }} style={styles.bannerImage} resizeMode="cover" />
               ) : (
@@ -184,7 +214,7 @@ export default function HomeScreen() {
           keyExtractor={s => s.id}
           contentContainerStyle={{ gap: 12 }}
           renderItem={({ item }) => (
-            <Pressable style={styles.storeCard} onPress={() => router.push(`/store/${item.action_value}` as any)}>
+            <Pressable style={styles.storeCard} onPress={() => handleItemPress(item)}>
               <View style={styles.storeImgWrap}>
                 {item.image
                   ? <Image source={{ uri: storageUrl(item.image)! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -219,7 +249,7 @@ export default function HomeScreen() {
           keyExtractor={f => f.id}
           contentContainerStyle={{ gap: 12 }}
           renderItem={({ item }) => (
-            <Pressable style={styles.foodCard} onPress={() => router.push(`/food/${item.action_value}` as any)}>
+            <Pressable style={styles.foodCard} onPress={() => handleItemPress(item)}>
               <View style={styles.foodImgWrap}>
                 {item.image
                   ? <Image source={{ uri: storageUrl(item.image)! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -244,7 +274,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>{section.title}</Text>
         </View>
         {section.items.map((item: HomeSectionItem) => (
-          <Pressable key={item.id} style={styles.promoBanner}>
+          <Pressable key={item.id} style={styles.promoBanner} onPress={() => handleItemPress(item)}>
             <View style={styles.promoLeft}>
               <View style={styles.promoTag}><Text style={styles.promoTagText}>PROMO</Text></View>
               <Text style={styles.promoTitle}>{item.title}</Text>
