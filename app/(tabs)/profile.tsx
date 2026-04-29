@@ -181,7 +181,7 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Keluar dari Akun</Text>
         </Pressable>
 
-        <Text style={styles.version}>Push App v1.2.0</Text>
+        <Text style={styles.version}>Push App v1.0.0</Text>
       </ScrollView>
     </View>
   );
