@@ -47,6 +47,11 @@ export default function RootLayout() {
       if (match?.[1]) {
         router.push(`/post/${match[1]}` as any);
       }
+
+      // Handle verification success
+      if (url.includes('verify-success')) {
+        useAuthStore.getState().refreshUser();
+      }
     };
 
     // App sudah buka, dapat link baru
