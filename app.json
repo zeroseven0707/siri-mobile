@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "scheme": "Push",
     "userInterfaceStyle": "light",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/push.png",
     "splash": {
       "image": "./assets/images/push.png",
       "resizeMode": "contain",
@@ -22,7 +22,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/push.png",
         "backgroundColor": "#ffffff"
       },
       "package": "si.ri",

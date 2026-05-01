@@ -1,4 +1,4 @@
-const STORAGE_URL = process.env.EXPO_PUBLIC_STORAGE_URL;
+const STORAGE_URL = process.env.EXPO_PUBLIC_STORAGE_URL || 'https://duniakarya.store/storage/';
 
 export function storageUrl(path: string | null | undefined): string | null {
   if (!path) return null;
