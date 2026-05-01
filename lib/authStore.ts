@@ -16,6 +16,8 @@ interface AuthState {
   logout: () => Promise<void>;
   loadSession: () => Promise<void>;
   updateUser: (updatedData: Partial<User>) => Promise<void>;
+  resendVerification: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -91,6 +93,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       SecureStore.setItem('auth_user', JSON.stringify(newUser));
       return { user: newUser };
     });
+  },
+
+  refreshUser: async () => {
+    try {
+      const res = await api.get('/profile');
+      const freshUser = res.data.data;
+      await SecureStore.setItemAsync('auth_user', JSON.stringify(freshUser));
+      set({ user: freshUser });
+    } catch (e) {
+      console.error('Failed to refresh user', e);
+    }
+  },
+
+  resendVerification: async () => {
+    await api.post('/email/resend');
   },
 
   logout: async () => {

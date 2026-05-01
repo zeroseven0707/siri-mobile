@@ -75,6 +75,16 @@ export default function RootLayout() {
       return;
     }
 
+    // Redirect unverified users (except for those in auth screens or already on verify-email)
+    const isVerifying = segments.includes('verify-email');
+    
+    if (!user.is_verified) {
+      if (!isVerifying) {
+        router.replace('/(auth)/verify-email');
+      }
+      return;
+    }
+
     // Driver — harus selalu di halaman driver
     if (user.role === 'driver') {
       if (!inDriver) {

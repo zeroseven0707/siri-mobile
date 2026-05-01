@@ -8,6 +8,7 @@ export interface User {
   latitude: number | null;
   longitude: number | null;
   is_active: boolean;
+  is_verified: boolean;
   photo_url?: string | null;
   driver_profile?: DriverProfile;
   created_at: string;
