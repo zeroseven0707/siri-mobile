@@ -87,12 +87,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   updateUser: async (updatedData: Partial<User>) => {
-    set((state) => {
-      if (!state.user) return state;
-      const newUser = { ...state.user, ...updatedData };
-      SecureStore.setItem('auth_user', JSON.stringify(newUser));
-      return { user: newUser };
-    });
+    const currentState = useAuthStore.getState();
+    if (!currentState.user) return;
+    
+    const newUser = { ...currentState.user, ...updatedData };
+    await SecureStore.setItemAsync('auth_user', JSON.stringify(newUser));
+    set({ user: newUser });
   },
 
   refreshUser: async () => {
