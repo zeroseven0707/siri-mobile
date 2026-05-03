@@ -135,9 +135,13 @@ function init(){
       Object.keys(window._markers).forEach(function(id){if(ids.indexOf(id)===-1){window.map.removeLayer(window._markers[id]);delete window._markers[id];}});
     };
     window.syncPolyline=function(j,color){
-      var cs=JSON.parse(j);
-      if(window._polyline)window.map.removeLayer(window._polyline);
-      if(cs.length>1)window._polyline=L.polyline(cs.map(function(p){return[p.latitude,p.longitude];}),{color:color,weight:5,opacity:.85,lineJoin:'round',lineCap:'round'}).addTo(window.map);
+      try {
+        var cs=JSON.parse(j);
+        if(window._polyline){window.map.removeLayer(window._polyline);window._polyline=null;}
+        if(cs.length>1){
+          window._polyline=L.polyline(cs.map(function(p){return[p.latitude,p.longitude];}),{color:color,weight:5,opacity:.85,lineJoin:'round',lineCap:'round'}).addTo(window.map);
+        }
+      } catch(e) { console.error('Polyline sync error:', e); }
     };
     setTimeout(function(){window.map.invalidateSize();},200);
     window.ReactNativeWebView&&window.ReactNativeWebView.postMessage('ready');

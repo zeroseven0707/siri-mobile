@@ -41,6 +41,7 @@ export default function OrderTrackingScreen() {
 
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const orderPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastRouteFetchedAt = useRef('');
 
   useEffect(() => {
     const anim = Animated.loop(
@@ -101,7 +102,7 @@ export default function OrderTrackingScreen() {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const url = `http://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?overview=full&geometries=geojson`;
+      const url = `https://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?overview=full&geometries=geojson`;
       const res = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
       const data = await res.json();
@@ -130,6 +131,12 @@ export default function OrderTrackingScreen() {
 
   useEffect(() => {
     if (!driverLocation || !order) return;
+    
+    // Optimasi: Hanya fetch rute jika driver bergerak signifikan (lat/lng berubah di digit ke-3)
+    const moveKey = `${driverLocation.latitude.toFixed(3)},${driverLocation.longitude.toFixed(3)}`;
+    if (moveKey === lastRouteFetchedAt.current) return;
+    lastRouteFetchedAt.current = moveKey;
+
     if (order.status === 'on_progress' && destinationLocation) {
       fetchRoute(driverLocation, destinationLocation);
     } else if (order.status === 'accepted') {
@@ -139,7 +146,7 @@ export default function OrderTrackingScreen() {
         : null);
       if (target) fetchRoute(driverLocation, target);
     }
-  }, [driverLocation, order?.status]);
+  }, [driverLocation, order?.status, storeLocation, destinationLocation]);
 
   // Fit map hanya sekali saat pertama kali marker tersedia
   const hasInitialFit = useRef(false);

@@ -102,7 +102,7 @@ export default function DriverMapScreen() {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const url = `http://router.project-osrm.org/route/v1/driving/${driverPos.longitude},${driverPos.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson`;
+      const url = `https://router.project-osrm.org/route/v1/driving/${driverPos.longitude},${driverPos.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson`;
       const res = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
       const data = await res.json();
