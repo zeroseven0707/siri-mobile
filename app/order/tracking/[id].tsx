@@ -183,7 +183,7 @@ export default function OrderTrackingScreen() {
       longitude: storeLocation.longitude,
       color: '#3B82F6',
       label: order?.store?.name ?? 'Toko',
-      icon: 'home' as any,
+      icon: 'store' as any,
     }] : []),
     // Destination (tujuan akhir)
     ...(destinationLocation ? [{
@@ -192,7 +192,7 @@ export default function OrderTrackingScreen() {
       longitude: destinationLocation.longitude,
       color: '#EF4444',
       label: order?.destination_location ?? 'Tujuan',
-      icon: 'pin' as any,
+      icon: 'flag' as any,
     }] : []),
     // User location (fallback jika tidak ada destination)
     ...(!destinationLocation && userLocation ? [{
@@ -201,7 +201,7 @@ export default function OrderTrackingScreen() {
       longitude: userLocation.longitude,
       color: '#F97316',
       label: 'Lokasi Kamu',
-      icon: 'person' as any,
+      icon: 'home' as any,
     }] : []),
     // Driver - always on top
     ...(driverLocation ? [{

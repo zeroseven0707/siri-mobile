@@ -228,7 +228,7 @@ export default function DriverMapScreen() {
       longitude: dest.longitude,
       color: order?.status === 'on_progress' ? '#EF4444' : (isFood ? '#3B82F6' : '#F97316'),
       label: order?.status === 'on_progress' ? 'Tujuan Pelanggan' : (isFood ? order.store.name : 'Titik Jemput'),
-      icon: (order?.status === 'on_progress' ? 'pin' : isFood ? 'home' : 'person') as any,
+      icon: (order?.status === 'on_progress' ? 'flag' : isFood ? 'store' : 'person') as any,
     }] : []),
     ...(sec ? [{
       id: 'secondary',
@@ -237,19 +237,19 @@ export default function DriverMapScreen() {
       color: sec.color,
       label: sec.label,
       // Tentukan icon berdasarkan status dan kondisi
-      icon: (() => {
+        icon: (() => {
         if (order?.status === 'accepted') {
-          // Saat accepted, secondary adalah destination (pin)
-          return 'pin';
+          // Saat accepted, secondary adalah destination (flag)
+          return 'flag';
         }
         if (order?.status === 'on_progress') {
-          // Saat on_progress, secondary adalah store (home) atau pickup (person)
+          // Saat on_progress, secondary adalah store (store) atau pickup (person)
           if (order.store?.latitude && order.store?.longitude) {
-            return 'home';
+            return 'store';
           }
           return 'person';
         }
-        return 'pin';
+        return 'flag';
       })() as any,
     }] : []),
     // Driver - always on top

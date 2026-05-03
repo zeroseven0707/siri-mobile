@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } f
 import { StyleSheet, View, ViewStyle, ActivityIndicator, Text } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-export type MarkerIcon = 'circle' | 'bike' | 'car' | 'person' | 'pin' | 'home';
+export type MarkerIcon = 'circle' | 'bike' | 'car' | 'person' | 'pin' | 'home' | 'store' | 'flag';
 
 export interface MarkerData {
   id: string;
@@ -118,7 +118,9 @@ function init(){
         car:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M19 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/><path d="M5 9h14l-1.5-4H6.5L5 9z"/></svg>',
         person:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
         pin:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 28"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 20 8 20s8-14.6 8-20c0-4.4-3.6-8-8-8z" fill="'+c+'"/><circle cx="12" cy="8" r="3" fill="white"/></svg>',
-        home:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
+        home:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+        store:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><rect x="9" y="12" width="6" height="10"/><path d="M2 9h20"/></svg>',
+        flag:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>'
       };
       var pulse=m.pulse?'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:'+(sz+10)+'px;height:'+(sz+10)+'px;border-radius:50%;background:'+c+'33;animation:pulse 1.8s ease-in-out infinite;"></div>':'';
       return '<div style="position:relative;width:'+sz+'px;height:'+sz+'px;display:flex;align-items:center;justify-content:center;">'+pulse+'<div style="position:relative;z-index:1;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:white;border:2px solid '+c+';box-shadow:0 2px 6px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;charset=utf-8,'+encodeURIComponent(icons[t])+'" width="16" height="16" style="display:block;"/></div></div>';
