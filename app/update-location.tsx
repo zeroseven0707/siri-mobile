@@ -25,28 +25,40 @@ export default function UpdateLocationScreen() {
   const router = useRouter();
 
   const getLocation = async () => {
-    setLoading(true);
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert('Izin Ditolak', 'Harap izinkan akses lokasi di pengaturan HP agar kami bisa mengambil titik GPS Anda.');
-        return;
-      }
+    Alert.alert(
+      'Izin Akses Lokasi',
+      'Push memerlukan akses lokasi Anda untuk menentukan titik penjemputan atau pengantaran yang akurat. Data lokasi hanya digunakan saat Anda menggunakan fitur ini.',
+      [
+        { text: 'Batal', style: 'cancel' },
+        { 
+          text: 'Lanjutkan', 
+          onPress: async () => {
+            setLoading(true);
+            try {
+              let { status } = await Location.requestForegroundPermissionsAsync();
+              
+              if (status !== 'granted') {
+                Alert.alert('Izin Ditolak', 'Harap izinkan akses lokasi di pengaturan HP agar kami bisa mengambil titik GPS Anda.');
+                return;
+              }
 
-      let currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      
-      setCoords({
-        lat: currentLocation.coords.latitude,
-        lng: currentLocation.coords.longitude
-      });
-    } catch (err) {
-      Alert.alert('Error', 'Gagal mengambil lokasi GPS. Pastikan GPS Anda aktif.');
-    } finally {
-      setLoading(false);
-    }
+              let currentLocation = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+              });
+              
+              setCoords({
+                lat: currentLocation.coords.latitude,
+                lng: currentLocation.coords.longitude
+              });
+            } catch (err) {
+              Alert.alert('Error', 'Gagal mengambil lokasi GPS. Pastikan GPS Anda aktif.');
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   useEffect(() => {

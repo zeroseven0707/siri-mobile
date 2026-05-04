@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Edit2, ChevronRight, LogOut, User, MapPin, Shield, Receipt, Bell, Clock, HelpCircle, Info, FileText } from 'lucide-react-native';
@@ -15,6 +15,7 @@ const MENU_SECTIONS = [
       { icon: User, label: 'Edit Profil', color: GREEN, route: '/edit-profile' },
       { icon: MapPin, label: 'Alamat Saya', color: '#EF4444', route: '/update-location' },
       { icon: Shield, label: 'Keamanan Akun', color: '#3B82F6', route: '/security' },
+      { icon: LogOut, label: 'Hapus Akun', color: '#EF4444', route: '/delete-account' },
     ],
   },
   {

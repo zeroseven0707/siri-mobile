@@ -104,11 +104,25 @@ export default function TabsLayout() {
 
   const openScanner = async () => {
     if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) {
-        Alert.alert('Izin Kamera', 'Izinkan akses kamera untuk scan QR code pesanan');
-        return;
-      }
+      Alert.alert(
+        'Izin Kamera',
+        'Push memerlukan akses kamera untuk memindai QR code driver guna menyelesaikan pesanan Anda.',
+        [
+          { text: 'Batal', style: 'cancel' },
+          { 
+            text: 'Lanjutkan', 
+            onPress: async () => {
+              const result = await requestPermission();
+              if (!result.granted) {
+                Alert.alert('Izin Ditolak', 'Harap izinkan akses kamera di pengaturan HP agar Anda dapat memindai QR code.');
+                return;
+              }
+              setShowScanner(true);
+            }
+          }
+        ]
+      );
+      return;
     }
     setShowScanner(true);
   };

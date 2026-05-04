@@ -67,6 +67,7 @@ export default function DriverProfileScreen() {
         { icon: MapPin,      label: 'Alamat Saya',     color: '#EF4444', route: '/update-location' },
         { icon: ShieldCheck, label: 'Keamanan Akun',   color: GREEN,     route: '/security' },
         { icon: Settings,    label: 'Pengaturan',      color: '#6B7280', route: '/settings' },
+        { icon: LogOut,      label: 'Hapus Akun',      color: '#EF4444', route: '/delete-account' },
       ],
     },
     {

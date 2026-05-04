@@ -59,6 +59,7 @@ export default function ProfileScreen() {
         { icon: Receipt, label: 'Riwayat Transaksi', color: '#3B82F6', route: '/history-transactions' },
         { icon: MapPin, label: 'Alamat Saya', color: '#EF4444', route: '/update-location' },
         { icon: ShieldCheck, label: 'Keamanan Akun', color: GREEN, route: '/security' },
+        { icon: LogOut, label: 'Hapus Akun', color: '#EF4444', route: '/delete-account' },
       ]
     },
     {
