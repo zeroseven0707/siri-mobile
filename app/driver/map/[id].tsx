@@ -26,6 +26,7 @@ export default function DriverMapScreen() {
   const [distanceText, setDistanceText] = useState('');
   const [durationText, setDurationText] = useState('');
   const [fetchingRoute, setFetchingRoute] = useState(false);
+  const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const routeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -138,6 +139,12 @@ export default function DriverMapScreen() {
   const hasInitialFit = useRef(false);
   useEffect(() => {
     if (!driverLocation || !order || hasInitialFit.current) return;
+    
+    // Set map center sekali saja
+    if (!mapCenter) {
+      setMapCenter(driverLocation);
+    }
+
     const dest = getDestination();
     const sec = getSecondaryPoint();
     const points = [driverLocation, ...(dest ? [dest] : []), ...(sec ? [sec.loc] : [])];
@@ -272,8 +279,8 @@ export default function DriverMapScreen() {
         markers={markers}
         polyline={routeCoords}
         polylineColor={GREEN}
-        initialLat={driverLocation.latitude}
-        initialLng={driverLocation.longitude}
+        initialLat={mapCenter?.latitude ?? driverLocation.latitude}
+        initialLng={mapCenter?.longitude ?? driverLocation.longitude}
       />
 
       {/* Header */}

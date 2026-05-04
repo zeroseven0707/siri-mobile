@@ -42,6 +42,7 @@ export default function OrderTrackingScreen() {
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const orderPollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastRouteFetchedAt = useRef('');
+  const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
 
   useEffect(() => {
     const anim = Animated.loop(
@@ -152,6 +153,12 @@ export default function OrderTrackingScreen() {
   const hasInitialFit = useRef(false);
   useEffect(() => {
     if (!driverLocation || hasInitialFit.current) return;
+    
+    // Set map center sekali saja
+    if (!mapCenter) {
+      setMapCenter(driverLocation);
+    }
+
     const points = [
       driverLocation,
       ...(storeLocation ? [storeLocation] : []),
@@ -172,8 +179,8 @@ export default function OrderTrackingScreen() {
   );
 
   const statusLabel = STATUS_LABEL[order?.status] ?? 'Memproses pesanan';
-  const initialLat = driverLocation?.latitude ?? userLocation?.latitude ?? -6.2;
-  const initialLng = driverLocation?.longitude ?? userLocation?.longitude ?? 106.8;
+  const initialLat = mapCenter?.latitude ?? userLocation?.latitude ?? -6.2;
+  const initialLng = mapCenter?.longitude ?? userLocation?.longitude ?? 106.8;
 
   const markers: MarkerData[] = [
     // Store (food orders, fixed)

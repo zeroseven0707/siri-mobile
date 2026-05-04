@@ -81,7 +81,7 @@ const LeafletMap = forwardRef<LeafletMapRef, Props>(({
   const lng = Number(initialLng) || 106.8295;
   const zoom = Number(initialZoom) || 13;
 
-  const html = `<!DOCTYPE html>
+  const html = React.useMemo(() => `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -157,7 +157,7 @@ setTimeout(init,1500);
 })();
 </script>
 </body>
-</html>`;
+</html>`, [lat, lng, zoom]);
 
   return (
     <View style={[styles.container, style]}>
