@@ -10,19 +10,26 @@ interface Props extends TextInputProps {
 
 export default function Input({ label, error, isPassword, ...props }: Props) {
   const [show, setShow] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <View style={styles.wrapper}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={[styles.inputRow, error ? styles.inputError : styles.inputNormal]}>
+      {label && <Text style={[styles.label, isFocused && styles.labelFocused]}>{label}</Text>}
+      <View style={[
+        styles.inputRow, 
+        error ? styles.inputError : (isFocused ? styles.inputFocused : styles.inputNormal)
+      ]}>
         <TextInput
           style={styles.input}
           placeholderTextColor="#9CA3AF"
           secureTextEntry={isPassword && !show}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           {...props}
         />
         {isPassword && (
-          <Pressable onPress={() => setShow(!show)}>
-            {show ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
+          <Pressable onPress={() => setShow(!show)} style={styles.eyeIcon}>
+            {show ? <EyeOff size={20} color={isFocused ? '#2ECC71' : '#9CA3AF'} /> : <Eye size={20} color={isFocused ? '#2ECC71' : '#9CA3AF'} />}
           </Pressable>
         )}
       </View>
@@ -32,11 +39,22 @@ export default function Input({ label, error, isPassword, ...props }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 4 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, backgroundColor: '#fff' },
+  wrapper: { marginBottom: 18 },
+  label: { fontSize: 13, fontWeight: '700', color: '#4B5563', marginBottom: 6, marginLeft: 4 },
+  labelFocused: { color: '#2ECC71' },
+  inputRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1.5, 
+    borderRadius: 16, 
+    paddingHorizontal: 16, 
+    backgroundColor: '#fff',
+    minHeight: 56,
+  },
   inputNormal: { borderColor: '#E5E7EB' },
-  inputError: { borderColor: '#F87171' },
-  input: { flex: 1, paddingVertical: 14, fontSize: 16, color: '#1F2937' },
-  errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
+  inputFocused: { borderColor: '#2ECC71', backgroundColor: '#F0FDF4' },
+  inputError: { borderColor: '#F87171', backgroundColor: '#FEF2F2' },
+  input: { flex: 1, paddingVertical: 12, fontSize: 15, color: '#1F2937', fontWeight: '500' },
+  eyeIcon: { padding: 4 },
+  errorText: { color: '#EF4444', fontSize: 12, marginTop: 6, marginLeft: 4, fontWeight: '600' },
 });
