@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Platform, StatusBar, Image } from 'react-native';
 import {
   Settings, MessageSquare, ChevronRight, Clock, RefreshCw,
@@ -109,9 +109,6 @@ export default function ProfileScreen() {
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{user?.name}</Text>
             <Text style={styles.profileEmail}>{user?.email}</Text>
-            <View style={styles.memberBadge}>
-              <Text style={styles.memberText}>✦ Member Push</Text>
-            </View>
           </View>
           <Pressable style={styles.editBtn} onPress={() => router.push('/edit-profile')}>
             <Text style={styles.editBtnText}>Edit</Text>

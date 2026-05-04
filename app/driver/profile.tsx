@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
   Alert, Platform, StatusBar, Image,
@@ -22,7 +22,6 @@ interface DriverStats {
   today_orders: number;
   today_earnings: number;
   total_completed: number;
-  rating: number;
 }
 
 export default function DriverProfileScreen() {
@@ -32,7 +31,6 @@ export default function DriverProfileScreen() {
     today_orders: 0,
     today_earnings: 0,
     total_completed: 0,
-    rating: 5.0,
   });
 
   useFocusEffect(useCallback(() => {
@@ -49,7 +47,6 @@ export default function DriverProfileScreen() {
           today_orders: todayCompleted.length,
           today_earnings: todayCompleted.reduce((sum: number, o: any) => sum + Number(o.price), 0),
           total_completed: completed.length,
-          rating: 5.0,
         });
       })
       .catch(() => {});
@@ -151,14 +148,6 @@ export default function DriverProfileScreen() {
               </View>
               <Text style={styles.statValue}>{stats.total_completed}</Text>
               <Text style={styles.statLabel}>Total Selesai</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#FFFBEB' }]}>
-                <Star size={18} color="#F59E0B" fill="#F59E0B" />
-              </View>
-              <Text style={styles.statValue}>{stats.rating.toFixed(1)}</Text>
-              <Text style={styles.statLabel}>Rating</Text>
             </View>
           </View>
         </View>

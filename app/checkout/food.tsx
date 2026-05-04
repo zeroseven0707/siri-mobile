@@ -26,7 +26,6 @@ export default function FoodCheckoutScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [voucherCode, setVoucherCode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'xendit'>('cod');
   const [deliveryFee, setDeliveryFee] = useState(10000);
   const [distanceKm, setDistanceKm] = useState<number | null>(null);
@@ -104,7 +103,7 @@ export default function FoodCheckoutScreen() {
         destination_lng: user?.longitude ?? null,
         price: total,
         delivery_fee: deliveryFee,
-        notes: `Pembayaran: ${paymentMethod.toUpperCase()} | Voucher: ${voucherCode || 'None'}`,
+        notes: `Pembayaran: ${paymentMethod.toUpperCase()}`,
         food_items: cartItems.map((item: any) => ({
           food_item_id: item.id,
           qty: item.qty,
@@ -233,25 +232,6 @@ export default function FoodCheckoutScreen() {
               {paymentMethod === 'xendit'
                 ? <ShoppingCart size={20} color={GREEN} />
                 : <ShoppingCart size={20} color="#D1D5DB" />}
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Voucher */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Tag size={20} color={GREEN} />
-            <Text style={styles.sectionTitle}>Makin Hemat Pakai Voucher</Text>
-          </View>
-          <View style={styles.voucherBox}>
-            <TextInput
-              style={styles.voucherInput}
-              placeholder="Masukkan kode voucher"
-              value={voucherCode}
-              onChangeText={setVoucherCode}
-            />
-            <Pressable style={styles.voucherBtn}>
-              <Text style={styles.voucherBtnText}>Pakai</Text>
             </Pressable>
           </View>
         </View>
